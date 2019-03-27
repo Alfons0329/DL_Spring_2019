@@ -1,8 +1,13 @@
+"""
+env: Python 3.7 on Ubuntu 18.04.2
+cpu: Core i5 - 7500, gpu: NVIDIA GTX 1070
+"""
 import numpy as np
 import matplotlib as plt
 import csv
+import random as rd
 
-################# GLOBAL DEF############
+################# GLOBAL DEF ###########
 
 F_NAME = "titanic.csv"
 N_TRAIN_DATA = 800
@@ -25,7 +30,11 @@ def file_IO():
 ################## SGD #################
 
 
-
-
+################## NN ##################
+class NN(object):
+    def __init__(self, sizes):
+        self.sizes = sizes
+        self.num_layers = N_HIDDEN_LAYER
+        self.w = # weight of the layer
 if __name__ == '__main__':
     label, train_data, test_data = file_IO()
