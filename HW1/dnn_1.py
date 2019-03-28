@@ -52,6 +52,23 @@ class NN(object):
 
         return x
 
+    def backpropogation(self, x, y):
+        grad_b = [np.zeros(b.shape) for b in self.b]
+        grad_w = [np.zeros(w.shape) for w in self.w]
+
+    """
+    cross_entrophy_derivative: refer to https://blog.csdn.net/jasonzzj/article/details/52017438
+
+    x as the input batch and y as the result of batch
+    """
+    def cross_entrophy_derivative(self, output_activations, x, y):
+        output = [np.zeros(w.shape) for w in self.w]
+        for i in range(1, N_TRAIN_DATA + 1):
+            output = output + ((self.sigmoid() - y) * x)
+
+
+        return output / N_TRAIN_DATA
+
 if __name__ == '__main__':
     label, train_data, test_data = file_IO()
     net = NN([N_DIM , N_UNIT_1, N_UNIT_2, 1])
