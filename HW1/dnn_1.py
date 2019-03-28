@@ -131,6 +131,7 @@ class NN(object):
 
 
     ################## EVAL RESULT ############
+    # fix this no need for argmax, result (alive or dead put in another listfor comparison)
     def evaluate(self, test_data):
         results = [np.argmax((self.feedforward(x)), y) for x, y in test_data]
         return sum(int(x == y) for (x, y) in test_results)
@@ -138,6 +139,11 @@ class NN(object):
 
 if __name__ == '__main__':
     label, train_data, test_data = file_IO()
+    train_input = 0
+    train_expected_output = 0
+    test_input = 0
+    test_expected_output = 0
+
     net = NN([N_DIM , N_UNIT_1, N_UNIT_2, 1])
     #print('\nBias matrix: ', net.bias)
     #print('Weight matrix: ', net.weight)
