@@ -14,7 +14,7 @@ N_TEST_DATA = 91
 N_DIM = 6
 
 N_UNIT_1 = 6 # unit for layer 1
-N_UNIT_2 = 3 # unit for layer 2
+N_BATCH_SIZE = 80
 N_EPOCH_LIMIT = 100
 LEARNING_RATE = 0.50
 
@@ -115,7 +115,7 @@ class NN(object):
 
 
     ################## SGD ##################
-    def SGD(self, train_data, epochs, mini_batch_size, eta, test_data):
+    def SGD(self, train_data, epochs, mini_batch_size, eta, test_input, test_expected_output):
         for j in xrange(epochs):
             random.shuffle(train_data)
             mini_batch_all = [train_data[k: k + mini_batch_size] for k in xrange(0, N_TRAIN_DATA, mini_batch_size)]
@@ -124,26 +124,33 @@ class NN(object):
                 self.update_mini_batch(each_mini_batch, eta)
 
             if test_data:
-                print ("Epoch ", j, " ", self.evaluate(test_data), " / ", N_TEST_DATA)
+                print ("Epoch ", j, " ", self.evaluate(test_input, test_expected_output), " / ", N_TEST_DATA)
                 #print "Epoch {0}: {1} / {2}".format(j, self.evaluate(test_data), N_TEST_DATA)
             else:
                 print ("Epoch ", j, " complete")
 
 
     ################## EVAL RESULT ############
-    # fix this no need for argmax, result (alive or dead put in another listfor comparison)
-    def evaluate(self, test_data):
-        results = [np.argmax((self.feedforward(x)), y) for x, y in test_data]
-        return sum(int(x == y) for (x, y) in test_results)
+    # fix this no need for argmax, result (alive or dead put in another list for comparison)
+    def evaluate(self, test_input, test_expected_output):
+        test_results = [self.feedforward(x) for x in test_input]
+
+        return sum(int(x == y) for x, y in zip(test_results, test_expected_output))
 
 
 if __name__ == '__main__':
     label, train_data, test_data = file_IO()
-    train_input = 0
-    train_expected_output = 0
-    test_input = 0
-    test_expected_output = 0
+    train_input = train_data[,1:]
+    train_expected_output = train_data[:,0]
+    test_input = test_data[,1:]
+    test_expected_output = test_data[:,0]
+    for to_print in train_input, train_expected_output, test_input, test_expected_output:
+        input()
+        print(to_print)
+        print('\n')
 
-    net = NN([N_DIM , N_UNIT_1, N_UNIT_2, 1])
-    #print('\nBias matrix: ', net.bias)
-    #print('Weight matrix: ', net.weight)
+    net = NN([N_DIM , N_UNIT_1, 1])
+    print('\nBias matrix: ', net.bias)
+    print('Weight matrix: ', net.weight)
+
+    net.SGD(train_data, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input, test_expected_output)
