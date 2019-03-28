@@ -3,7 +3,7 @@ Env: Python 3.7 on Ubuntu 18.04.2
 """
 import numpy as np
 import matplotlib as plt
-import random as rd
+import random
 import csv, os, struct
 
 ################# GLOBAL DEF ###########
@@ -31,12 +31,19 @@ def file_IO():
 
     return label, train_data, test_data
 
+def extract(input_list, list_len, col_start, col_end):
+    res_list = []
+    for i in range(0, list_len):
+        res_list.append(input_list[i][col_start: col_end + 1])
+
+    return res_list
+
 ################# ACTV #################
 
-def sigmoid(self, z):
+def sigmoid(z):
     return 1.0/(1.0 + np.exp(-z))
 
-def sigmoid_prime(self, z):
+def sigmoid_prime(z):
     return self.sigmoid(z) * (1 - self.sigmoid(z))
 
 ################## NN ##################
@@ -65,20 +72,32 @@ class NN(object):
         zs = []
 
         # BP, 2nd, feedforward to chain together
+        # prevent safe rule error
+        activation = np.array(activation)
         for b, w in zip(self.bias, self.weight):
+            w = w.astype(float)
+            activation = activation.astype(float)
+            b = b.astype(float)
+
             z = np.dot(w, activation) + b
             zs.append(z)
+            #print(w, '\n')
+            #print(activation, '\n')
+            #print(b, '\n')
+            #print(z, '\n')
             activation = sigmoid(z)
             activations.append(activation)
 
         # BP, 3rd, output error
         z_L = zs[-1]
+        print("last activation ", activations[-1])
+        print("last w, b", w, '\n\n\n', b)
         delta_L = self.cross_entrophy_derivative(activations[-1], y) * sigmoid_prime(z_L)
         gra_b = delta_L
         gra_w = np.dot(delta_L, activations[-2].transpose())
 
         # BP, 4th, back propogation from the second-last layer
-        for layer in xrange(2, self.num_layers):
+        for layer in range(2, self.num_layers):
             z_layer = zs[-layer]
             s_prime = sigmoid_prime(z_layer)
             delta_L = np.dot(self.weight[-layer + 1].transpose(), delta_L) * s_prime
@@ -93,7 +112,7 @@ class NN(object):
 
     x as the input batch and y as the result of batch
     """
-    def cross_entrophy_derivative(self, output_activations, x, y): # unsure
+    def cross_entrophy_derivative(self, output_activations, x, y):
         output = [np.zeros(w.shape) for w in self.weight]
         for i in range(1, N_TRAIN_DATA + 1):
             output = output + ((self.sigmoid() - y) * x)
@@ -101,12 +120,13 @@ class NN(object):
         return output / N_TRAIN_DATA
 
     ################## BATCH ################
-    def update_mini_batch(self, mini_batch, eta):
+    def update_mini_batch(self, mini_batch, eta, train_expected_output):
         gra_b = [np.zeros(b.shape) for b in self.bias]
         gra_w = [np.zeros(w.shape) for w in self.weight]
-
-        for x, y in mini_batch:
-            delta_gra_b, delta_gra_w = self.backpropogation(x, y)
+        for x in mini_batch:
+            print('batch ', x)
+            input()
+            delta_gra_b, delta_gra_w = self.backpropogation(x, train_expected_output)
             gra_b = [nb + dnb for nb, dnb in zip(gra_b, delta_gra_b)]
             gra_w = [nw + dnw for nw, dnw in zip(gra_w, delta_gra_w)]
 
@@ -116,19 +136,18 @@ class NN(object):
 
     ################## SGD ##################
     def SGD(self, train_data, epochs, mini_batch_size, eta, test_input, test_expected_output):
-        for j in xrange(epochs):
+        for j in range(0, epochs):
             random.shuffle(train_data)
-            mini_batch_all = [train_data[k: k + mini_batch_size] for k in xrange(0, N_TRAIN_DATA, mini_batch_size)]
+            mini_batch_all = [train_data[k: k + mini_batch_size] for k in range(0, N_TRAIN_DATA, mini_batch_size)]
 
             for each_mini_batch in mini_batch_all:
-                self.update_mini_batch(each_mini_batch, eta)
+                self.update_mini_batch(each_mini_batch, eta, train_expected_output)
 
             if test_data:
                 print ("Epoch ", j, " ", self.evaluate(test_input, test_expected_output), " / ", N_TEST_DATA)
-                #print "Epoch {0}: {1} / {2}".format(j, self.evaluate(test_data), N_TEST_DATA)
             else:
                 print ("Epoch ", j, " complete")
-
+                #print "Epoch {0}: {1} / {2}".format(j, self.evaluate(test_data), N_TEST_DATA)
 
     ################## EVAL RESULT ############
     # fix this no need for argmax, result (alive or dead put in another list for comparison)
@@ -140,17 +159,19 @@ class NN(object):
 
 if __name__ == '__main__':
     label, train_data, test_data = file_IO()
-    train_input = train_data[,1:]
-    train_expected_output = train_data[:,0]
-    test_input = test_data[,1:]
-    test_expected_output = test_data[:,0]
+    train_input = extract(train_data, N_TRAIN_DATA, 1, 6)
+    train_expected_output = extract(train_data, N_TRAIN_DATA, 0, 0)
+    test_input = extract(test_data, N_TEST_DATA, 1, 6)
+    test_expected_output = extract(train_data, N_TEST_DATA, 0, 0)
+
+    """
     for to_print in train_input, train_expected_output, test_input, test_expected_output:
         input()
         print(to_print)
         print('\n')
-
+    """
     net = NN([N_DIM , N_UNIT_1, 1])
-    print('\nBias matrix: ', net.bias)
-    print('Weight matrix: ', net.weight)
+    #print('\nBias matrix: ', net.bias)
+    #print('Weight matrix: ', net.weight)
 
-    net.SGD(train_data, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input, test_expected_output)
+    net.SGD(train_input, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input, test_expected_output)
