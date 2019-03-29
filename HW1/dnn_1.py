@@ -14,9 +14,9 @@ N_TEST_DATA = 91
 N_DIM = 6
 
 N_UNIT_1 = 4 # unit for layer 1
-N_BATCH_SIZE = 20
+N_BATCH_SIZE = 10
 N_EPOCH_LIMIT = 100
-LEARNING_RATE = 0.50
+LEARNING_RATE = 0.2
 
 ################# FILE IO ##############
 
@@ -33,8 +33,12 @@ def file_IO():
 
 def extract(input_list, list_len, col_start, col_end):
     res_list = []
-    for i in range(0, list_len):
-        res_list.append(input_list[i][col_start: col_end + 1])
+    if col_end == col_start:
+         for i in range(0, list_len):
+            res_list.append(input_list[i][col_start])
+    else:
+        for i in range(0, list_len):
+            res_list.append(input_list[i][col_start: col_end + 1])
 
     return res_list
 
@@ -57,14 +61,13 @@ class NN(object):
 
     ################## FWD #################
     def forward(self, x):
-        print('input x ', x)
-        for b, w in zip(self.bias, self.weight):
-            x = np.array(x)
-            nx = x.astype(float)
-            x = sigmoid(np.dot(w, nx) + b)
-            print(b, w, x)
+        x = np.array(x)
+        x = x.astype(float)
+        x = x.reshape(1, N_DIM)
 
-        input()
+        for b, w in zip(self.bias, self.weight):
+            x = sigmoid(np.dot(x, w.T) + b.T)
+
         return x
     ################## BP ##################
     # BP, 1st, input
@@ -76,23 +79,18 @@ class NN(object):
         activations = [[[]]]
         zs = []
         # BP, 2nd, feedforward to chain together
-        # prevent safe rule error
+
         activation = np.array(activation)
         activation = activation.astype(float)
         activation = activation.reshape(1, N_DIM)
-        activations.append(activation)
 
+        activations.append(activation)
         for b, w in zip(self.bias, self.weight):
             w = w.astype(float)
             b = b.astype(float)
             z = np.dot(activation, w.T) + b.T
-            # print('dim input ', activation.shape, 'dim w.T ', w.T.shape, 'dim b', b.shape)
-            #z = np.dot(activation, w.T) + b
-            # print('dim z(input * W.t + b) is', z.shape)
             zs.append(z)
             activation = sigmoid(z)
-            # print('activation shape ', activation)
-            #input()
             activations.append(activation)
 
         # BP, 3rd, output error
@@ -102,16 +100,12 @@ class NN(object):
         gra_w[-1] = np.dot(delta_L, np.array(activations[-2]))
 
         # BP, 4th, back propogation from the second-last layer
-        # print('delta_L first.shape ', delta_L.shape)
-        # print('gra_w ', gra_w)
-
         for layer in range(2, self.num_layers):
             # print('num_layers ', self.num_layers)
             z_layer = zs[-layer]
             s_prime = sigmoid_prime(z_layer)
             delta_L = np.dot(self.weight[-layer + 1].T, delta_L) * s_prime.T
             gra_b[-layer] = delta_L
-            # print('delta_L shape ', delta_L.shape, ' activation shape ', np.array(activations[-layer - 1]).shape)
             gra_w[-layer] = np.dot(delta_L, np.array(activations[-layer - 1]).astype(float))
 
         return gra_b, gra_w
@@ -123,8 +117,6 @@ class NN(object):
     x as the input batch and y as the result of batch
     """
     def cross_entrophy_derivative(self, network_output_a, expected_output_y):
-        #a_float = [float(i, j) for i, j in network_output_a]
-        #y_float = [float(i, j) for i, j in expected_output_y]
         a_todo = float(network_output_a[0][0])
         y_todo = float(expected_output_y[0][0])
         return (a_todo - y_todo) / (a_todo * (1 - a_todo))
@@ -148,6 +140,7 @@ class NN(object):
             together = list(zip(train_input, train_expected_output))
             random.shuffle(together)
             train_input, train_expected_output = zip(*together)
+
             mini_batch_all_input = [train_input[k: k + mini_batch_size] for k in range(0, N_TRAIN_DATA, mini_batch_size)]
             mini_batch_all_expected_output = [train_expected_output[k: k + mini_batch_size] for k in range(0, N_TRAIN_DATA, mini_batch_size)]
 
@@ -164,7 +157,18 @@ class NN(object):
     # fix this no need for argmax, result (alive or dead put in another list for comparison)
     def evaluate(self, test_input, test_expected_output):
         test_results = [self.forward(x) for x in test_input]
-        return sum(int(x == y) for x, y in zip(test_results, test_expected_output))
+        for i in range(0, len(test_results)):
+            if test_results[i] < 0.5:
+                test_results[i] = 0
+            else:
+                test_results[i] = 1
+
+        total_match = 0
+        for x, y in zip(test_results, test_expected_output):
+            if x == int(y):
+                total_match += 1
+
+        return total_match
 
 
 if __name__ == '__main__':
@@ -175,6 +179,4 @@ if __name__ == '__main__':
     test_expected_output = extract(train_data, N_TEST_DATA, 0, 0)
 
     net = NN([N_DIM , N_UNIT_1, 1])
-    print('\nBias matrix: ', net.bias)
-    print('Weight matrix: ', net.weight)
     net.SGD(train_input, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input, test_expected_output)
