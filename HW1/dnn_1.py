@@ -58,7 +58,7 @@ class NN(object):
     ################## FWD #################
     def forward(self, x):
         for b, w in zip(self.bias, self.weight):
-            x = self.sigmoid(np.dot(w, x) + b)
+            x = sigmoid(np.dot(w, x) + b)
 
         return x
     ################## BP ##################
@@ -68,14 +68,14 @@ class NN(object):
         gra_w = [np.zeros(w.shape) for w in self.weight]
 
         activation = x
-        activations = [x]
+        activations = [[[]]]
         zs = []
-
         # BP, 2nd, feedforward to chain together
         # prevent safe rule error
         activation = np.array(activation)
         activation = activation.astype(float)
         activation = activation.reshape(1, N_DIM)
+        activations.append(activation)
 
         for b, w in zip(self.bias, self.weight):
             w = w.astype(float)
@@ -86,26 +86,27 @@ class NN(object):
             print('dim z(input * W.t + b) is', z.shape)
             zs.append(z)
             activation = sigmoid(z)
-            activations.append(activation.tolist())
+            print('activation shape ', activation)
+            #input()
+            activations.append(activation)
 
         # BP, 3rd, output error
         z_L = zs[-1]
-        #delta_L = np.multiply(self.cross_entrophy_derivative(activations[-1], y), sigmoid_prime(z_L))
         delta_L = self.cross_entrophy_derivative(activations[-1], y) * sigmoid_prime(z_L)
-
         gra_b[-1] = delta_L
         gra_w[-1] = np.dot(delta_L, np.array(activations[-2]))
 
         # BP, 4th, back propogation from the second-last layer
         print('delta_L first.shape ', delta_L.shape)
-        print('gra_b first.shape ', gra_b)
+        print('gra_w ', gra_w)
 
         for layer in range(2, self.num_layers):
+            print('num_layers ', self.num_layers)
             z_layer = zs[-layer]
             s_prime = sigmoid_prime(z_layer)
-            delta_L = np.dot(self.weight[-layer + 1].T, delta_L) * s_prime
-            print('weight shape ', self.weight[-layer + 1].shape, 'delta_L.shape', delta_L.shape, 's_prime.shape ', s_prime.shape)
+            delta_L = np.dot(self.weight[-layer + 1].T, delta_L) * s_prime.T
             gra_b[-layer] = delta_L
+            print('delta_L shape ', delta_L.shape, ' activation shape ', np.array(activations[-layer - 1]).shape)
             gra_w[-layer] = np.dot(delta_L, np.array(activations[-layer - 1]).astype(float))
 
         return gra_b, gra_w
@@ -158,7 +159,7 @@ class NN(object):
     ################## EVAL RESULT ############
     # fix this no need for argmax, result (alive or dead put in another list for comparison)
     def evaluate(self, test_input, test_expected_output):
-        test_results = [self.feedforward(x) for x in test_input]
+        test_results = [self.forward(x) for x in test_input]
         return sum(int(x == y) for x, y in zip(test_results, test_expected_output))
 
 
@@ -178,5 +179,4 @@ if __name__ == '__main__':
     net = NN([N_DIM , N_UNIT_1, 1])
     print('\nBias matrix: ', net.bias)
     print('Weight matrix: ', net.weight)
-
     net.SGD(train_input, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input, test_expected_output)
