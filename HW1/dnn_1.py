@@ -13,7 +13,7 @@ N_TRAIN_DATA = 800
 N_TEST_DATA = 91
 N_DIM = 6
 
-N_UNIT_1 = 6 # unit for layer 1
+N_UNIT_1 = 4 # unit for layer 1
 N_BATCH_SIZE = 80
 N_EPOCH_LIMIT = 100
 LEARNING_RATE = 0.50
@@ -74,24 +74,21 @@ class NN(object):
         # BP, 2nd, feedforward to chain together
         # prevent safe rule error
         activation = np.array(activation)
+        activation = activation.astype(float)
+        activation = activation.reshape(1, N_DIM)
+        print(activation.shape, 'act shape \n')
         for b, w in zip(self.bias, self.weight):
             w = w.astype(float)
-            activation = activation.astype(float)
             b = b.astype(float)
-
-            z = np.dot(w, activation) + b
+            z = np.dot(activation, w.T) + b.T
             zs.append(z)
-            #print(w, '\n')
-            #print(activation, '\n')
-            #print(b, '\n')
-            #print(z, '\n')
             activation = sigmoid(z)
-            activations.append(activation)
+            print('z ', z, 'activation ' ,  activation)
+            activations.append(activation.tolist())
 
         # BP, 3rd, output error
         z_L = zs[-1]
-        print("last activation ", activations[-1])
-        print("last w, b", w, '\n\n\n', b)
+        print(zs, 'zsfinal \n')
         delta_L = self.cross_entrophy_derivative(activations[-1], y) * sigmoid_prime(z_L)
         gra_b = delta_L
         gra_w = np.dot(delta_L, activations[-2].transpose())
@@ -171,7 +168,7 @@ if __name__ == '__main__':
         print('\n')
     """
     net = NN([N_DIM , N_UNIT_1, 1])
-    #print('\nBias matrix: ', net.bias)
-    #print('Weight matrix: ', net.weight)
+    print('\nBias matrix: ', net.bias)
+    print('Weight matrix: ', net.weight)
 
     net.SGD(train_input, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input, test_expected_output)
