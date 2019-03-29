@@ -2,7 +2,7 @@
 Env: Python 3.7 on Ubuntu 18.04.2
 """
 import numpy as np
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import random
 import csv, os, struct
 
@@ -13,11 +13,13 @@ N_TRAIN_DATA = 800
 N_TEST_DATA = 91
 N_DIM = 6
 
-N_UNIT_1 = 4 # unit for layer 1
-N_BATCH_SIZE = 10
-N_EPOCH_LIMIT = 100
-LEARNING_RATE = 0.5
+N_UNIT_1 = 3 # unit for layer 1
+N_BATCH_SIZE = 200
+N_EPOCH_LIMIT = 1000
+LEARNING_RATE = 1.0
 
+epoch_list = []
+accuracy_list = []
 ################# FILE IO ##############
 
 def file_IO():
@@ -41,6 +43,12 @@ def extract(input_list, list_len, col_start, col_end):
             res_list.append(input_list[i][col_start: col_end + 1])
 
     return res_list
+
+################# GRAPH ################
+
+def make_graph():
+    plt.plot(epoch_list, accuracy_list)
+    plt.show()
 
 ################# ACTV #################
 
@@ -137,7 +145,7 @@ class NN(object):
 
     ################## SGD ##################
     def SGD(self, train_input, train_expected_output, epochs, mini_batch_size, eta, test_input, test_expected_output):
-        for j in range(0, epochs):
+        for j in range(0, N_EPOCH_LIMIT):
             together = list(zip(train_input, train_expected_output))
             random.shuffle(together)
             train_input, train_expected_output = zip(*together)
@@ -149,7 +157,9 @@ class NN(object):
                 self.update_mini_batch(mini_batch_input, eta, mini_batch_expected_output)
 
             if test_data:
-                print ("Epoch ", j, " ", self.evaluate(test_input, test_expected_output), " / ", N_TEST_DATA)
+                #print ("Epoch ", j, " ", self.evaluate(test_input, test_expected_output), " / ", N_TEST_DATA)
+                epoch_list.append(j)
+                accuracy_list.append(self.evaluate(test_input, test_expected_output) / N_TEST_DATA)
             else:
                 print ("Epoch ", j, " complete")
                 #print "Epoch {0}: {1} / {2}".format(j, self.evaluate(test_data), N_TEST_DATA)
@@ -181,3 +191,4 @@ if __name__ == '__main__':
 
     net = NN([N_DIM , N_UNIT_1, 1])
     net.SGD(train_input, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input, test_expected_output)
+    make_graph()
