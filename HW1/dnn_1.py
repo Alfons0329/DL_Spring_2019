@@ -81,6 +81,9 @@ class NN(object):
             w = w.astype(float)
             b = b.astype(float)
             z = np.dot(activation, w.T) + b.T
+            print('dim input ', activation.shape, 'dim w.T ', w.T.shape, 'dim b', b.shape)
+            #z = np.dot(activation, w.T) + b
+            print('dim z(input * W.t + b) is', z.shape)
             zs.append(z)
             activation = sigmoid(z)
             print('z ', z, 'activation ' ,  activation)
