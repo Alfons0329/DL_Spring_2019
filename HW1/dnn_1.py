@@ -14,7 +14,7 @@ N_TEST_DATA = 91
 N_DIM = 6
 
 N_UNIT_1 = 4 # unit for layer 1
-N_BATCH_SIZE = 40
+N_BATCH_SIZE = 20
 N_EPOCH_LIMIT = 100
 LEARNING_RATE = 0.50
 
@@ -59,16 +59,12 @@ class NN(object):
     def forward(self, x):
         print('input x ', x)
         for b, w in zip(self.bias, self.weight):
-            nb = np.array(self.bias)
-            nw = np.array(self.weight)
-            nx = np.array(x)
+            x = np.array(x)
+            nx = x.astype(float)
+            x = sigmoid(np.dot(w, nx) + b)
+            print(b, w, x)
 
-            nb = nb.astype(float)
-            nw = nb.astype(float)
-            nx = nb.astype(float)
-            x = sigmoid(np.dot(w, x) + b)
-
-        print('result x', x)
+        input()
         return x
     ################## BP ##################
     # BP, 1st, input
@@ -142,12 +138,9 @@ class NN(object):
             delta_gra_b, delta_gra_w = self.backpropogation(i, j)
             gra_b = [nb + dnb for nb, dnb in zip(gra_b, delta_gra_b)]
             gra_w = [nw + dnw for nw, dnw in zip(gra_w, delta_gra_w)]
-            print('gra_w ', gra_w)
 
         self.bias = [b - (eta/len(mini_batch)) * nb for b, nb in zip(self.bias, gra_b)]
         self.weight = [w - (eta/len(mini_batch)) * nw for w, nw in zip(self.weight, gra_w)]
-        print('weight update to ', self.weight)
-        input()
 
     ################## SGD ##################
     def SGD(self, train_input, train_expected_output, epochs, mini_batch_size, eta, test_input, test_expected_output):
@@ -162,9 +155,7 @@ class NN(object):
                 self.update_mini_batch(mini_batch_input, eta, mini_batch_expected_output)
 
             if test_data:
-                print('temp end')
-                return;
-                # print ("Epoch ", j, " ", self.evaluate(test_input, test_expected_output), " / ", N_TEST_DATA)
+                print ("Epoch ", j, " ", self.evaluate(test_input, test_expected_output), " / ", N_TEST_DATA)
             else:
                 print ("Epoch ", j, " complete")
                 #print "Epoch {0}: {1} / {2}".format(j, self.evaluate(test_data), N_TEST_DATA)
