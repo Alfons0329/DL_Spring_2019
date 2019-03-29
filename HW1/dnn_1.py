@@ -119,6 +119,7 @@ class NN(object):
     def cross_entrophy_derivative(self, network_output_a, expected_output_y):
         a_todo = float(network_output_a[0][0])
         y_todo = float(expected_output_y[0][0])
+        print('atodo ', a_todo, 'y_todo', y_todo)
         return (a_todo - y_todo) / (a_todo * (1 - a_todo))
 
     ################## BATCH ################
