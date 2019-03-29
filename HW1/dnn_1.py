@@ -14,7 +14,7 @@ N_TEST_DATA = 91
 N_DIM = 6
 
 N_UNIT_1 = 4 # unit for layer 1
-N_BATCH_SIZE = 80
+N_BATCH_SIZE = 40
 N_EPOCH_LIMIT = 100
 LEARNING_RATE = 0.50
 
@@ -57,9 +57,18 @@ class NN(object):
 
     ################## FWD #################
     def forward(self, x):
+        print('input x ', x)
         for b, w in zip(self.bias, self.weight):
+            nb = np.array(self.bias)
+            nw = np.array(self.weight)
+            nx = np.array(x)
+
+            nb = nb.astype(float)
+            nw = nb.astype(float)
+            nx = nb.astype(float)
             x = sigmoid(np.dot(w, x) + b)
 
+        print('result x', x)
         return x
     ################## BP ##################
     # BP, 1st, input
@@ -81,12 +90,12 @@ class NN(object):
             w = w.astype(float)
             b = b.astype(float)
             z = np.dot(activation, w.T) + b.T
-            print('dim input ', activation.shape, 'dim w.T ', w.T.shape, 'dim b', b.shape)
+            # print('dim input ', activation.shape, 'dim w.T ', w.T.shape, 'dim b', b.shape)
             #z = np.dot(activation, w.T) + b
-            print('dim z(input * W.t + b) is', z.shape)
+            # print('dim z(input * W.t + b) is', z.shape)
             zs.append(z)
             activation = sigmoid(z)
-            print('activation shape ', activation)
+            # print('activation shape ', activation)
             #input()
             activations.append(activation)
 
@@ -97,16 +106,16 @@ class NN(object):
         gra_w[-1] = np.dot(delta_L, np.array(activations[-2]))
 
         # BP, 4th, back propogation from the second-last layer
-        print('delta_L first.shape ', delta_L.shape)
-        print('gra_w ', gra_w)
+        # print('delta_L first.shape ', delta_L.shape)
+        # print('gra_w ', gra_w)
 
         for layer in range(2, self.num_layers):
-            print('num_layers ', self.num_layers)
+            # print('num_layers ', self.num_layers)
             z_layer = zs[-layer]
             s_prime = sigmoid_prime(z_layer)
             delta_L = np.dot(self.weight[-layer + 1].T, delta_L) * s_prime.T
             gra_b[-layer] = delta_L
-            print('delta_L shape ', delta_L.shape, ' activation shape ', np.array(activations[-layer - 1]).shape)
+            # print('delta_L shape ', delta_L.shape, ' activation shape ', np.array(activations[-layer - 1]).shape)
             gra_w[-layer] = np.dot(delta_L, np.array(activations[-layer - 1]).astype(float))
 
         return gra_b, gra_w
@@ -136,7 +145,9 @@ class NN(object):
 
         self.biases = [b - (eta/len(mini_batch)) * nb for b, nb in zip(self.bias, gra_b)]
         self.weights = [w - (eta/len(mini_batch))* nw for w, nw in zip(self.weight, gra_w)]
-
+        print('bias update to ', self.biases)
+        print('weight update to ', self.weight)
+        input()
 
     ################## SGD ##################
     def SGD(self, train_input, train_expected_output, epochs, mini_batch_size, eta, test_input, test_expected_output):
@@ -151,7 +162,9 @@ class NN(object):
                 self.update_mini_batch(mini_batch_input, eta, mini_batch_expected_output)
 
             if test_data:
-                print ("Epoch ", j, " ", self.evaluate(test_input, test_expected_output), " / ", N_TEST_DATA)
+                print('temp end')
+                return;
+                # print ("Epoch ", j, " ", self.evaluate(test_input, test_expected_output), " / ", N_TEST_DATA)
             else:
                 print ("Epoch ", j, " complete")
                 #print "Epoch {0}: {1} / {2}".format(j, self.evaluate(test_data), N_TEST_DATA)
@@ -170,12 +183,6 @@ if __name__ == '__main__':
     test_input = extract(test_data, N_TEST_DATA, 1, 6)
     test_expected_output = extract(train_data, N_TEST_DATA, 0, 0)
 
-    """
-    for to_print in train_input, train_expected_output, test_input, test_expected_output:
-        input()
-        print(to_print)
-        print('\n')
-    """
     net = NN([N_DIM , N_UNIT_1, 1])
     print('\nBias matrix: ', net.bias)
     print('Weight matrix: ', net.weight)
