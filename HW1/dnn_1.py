@@ -15,7 +15,7 @@ N_DIM = 6
 
 N_UNIT_1 = 4 # unit for layer 1
 N_BATCH_SIZE = 32
-N_EPOCH_LIMIT = 500
+N_EPOCH_LIMIT = 3000
 LEARNING_RATE = 0.00001
 
 epoch_list = []
