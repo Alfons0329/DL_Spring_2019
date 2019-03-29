@@ -16,7 +16,7 @@ N_DIM = 6
 N_UNIT_1 = 4 # unit for layer 1
 N_BATCH_SIZE = 10
 N_EPOCH_LIMIT = 100
-LEARNING_RATE = 0.2
+LEARNING_RATE = 0.5
 
 ################# FILE IO ##############
 
@@ -88,6 +88,7 @@ class NN(object):
         for b, w in zip(self.bias, self.weight):
             w = w.astype(float)
             b = b.astype(float)
+
             z = np.dot(activation, w.T) + b.T
             zs.append(z)
             activation = sigmoid(z)
@@ -119,7 +120,6 @@ class NN(object):
     def cross_entrophy_derivative(self, network_output_a, expected_output_y):
         a_todo = float(network_output_a[0][0])
         y_todo = float(expected_output_y[0][0])
-        print('atodo ', a_todo, 'y_todo', y_todo)
         return (a_todo - y_todo) / (a_todo * (1 - a_todo))
 
     ################## BATCH ################
