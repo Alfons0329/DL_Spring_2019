@@ -14,9 +14,9 @@ N_TEST_DATA = 91
 N_DIM = 6
 
 N_UNIT_1 = 4 # unit for layer 1
-N_BATCH_SIZE = 32
-N_EPOCH_LIMIT = 3000
-LEARNING_RATE = 0.00001
+N_BATCH_SIZE = int(sys.argv[2])
+N_EPOCH_LIMIT = 1
+LEARNING_RATE = float(sys.argv[3])
 
 epoch_list = []
 accuracy_list = []
@@ -47,9 +47,10 @@ def extract(input_list, list_len, col_start, col_end):
 ################# GRAPH ################
 
 def make_graph():
-    plt.title('x = Epoch, y = Cross Entropy Loss', fontsize = 20)
+    title_str = 'x = Epoch, y = CE Loss, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(LEARNING_RATE)
+    plt.title(title_str)
     plt.plot(epoch_list, accuracy_list, linewidth = 5.0)
-    plt.savefig(sys.argv[1], dpi = 600)
+    plt.savefig(sys.argv[1] + '.png', dpi = 600)
 
 ################# ACTV #################
 
