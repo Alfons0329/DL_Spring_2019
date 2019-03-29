@@ -13,7 +13,7 @@ N_TRAIN_DATA = 800
 N_TEST_DATA = 91
 N_DIM = 6
 
-N_UNIT_1 = 2 # unit for layer 1
+N_UNIT_1 = 4 # unit for layer 1
 N_BATCH_SIZE = 80
 N_EPOCH_LIMIT = 100
 LEARNING_RATE = 0.50
@@ -76,13 +76,12 @@ class NN(object):
         activation = np.array(activation)
         activation = activation.astype(float)
         activation = activation.reshape(1, N_DIM)
-        print(activation.shape, 'act shape \n')
+
         for b, w in zip(self.bias, self.weight):
             w = w.astype(float)
             b = b.astype(float)
             z = np.dot(activation, w.T) + b.T
             print('dim input ', activation.shape, 'dim w.T ', w.T.shape, 'dim b', b.shape)
-            print(activation, w.T, b)
             #z = np.dot(activation, w.T) + b
             print('dim z(input * W.t + b) is', z.shape)
             zs.append(z)
@@ -91,18 +90,23 @@ class NN(object):
 
         # BP, 3rd, output error
         z_L = zs[-1]
-        print(zs, 'zsfinal \n')
+        #delta_L = np.multiply(self.cross_entrophy_derivative(activations[-1], y), sigmoid_prime(z_L))
         delta_L = self.cross_entrophy_derivative(activations[-1], y) * sigmoid_prime(z_L)
-        gra_b = delta_L
-        gra_w = np.dot(delta_L, activations[-2].T)
+
+        gra_b[-1] = delta_L
+        gra_w[-1] = np.dot(delta_L, np.array(activations[-2]))
 
         # BP, 4th, back propogation from the second-last layer
+        print('delta_L first.shape ', delta_L.shape)
+        print('gra_b first.shape ', gra_b)
+
         for layer in range(2, self.num_layers):
             z_layer = zs[-layer]
             s_prime = sigmoid_prime(z_layer)
-            delta_L = np.dot(self.weight[-layer + 1].transpose(), delta_L) * s_prime
+            delta_L = np.dot(self.weight[-layer + 1].T, delta_L) * s_prime
+            print('weight shape ', self.weight[-layer + 1].shape, 'delta_L.shape', delta_L.shape, 's_prime.shape ', s_prime.shape)
             gra_b[-layer] = delta_L
-            gra_w[-layer] = np.dot(delta, activations[-layer - 1].transpose())
+            gra_w[-layer] = np.dot(delta_L, np.array(activations[-layer - 1]).astype(float))
 
         return gra_b, gra_w
 
