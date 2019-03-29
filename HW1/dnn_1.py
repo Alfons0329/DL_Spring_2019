@@ -144,8 +144,8 @@ class NN(object):
             gra_w = [nw + dnw for nw, dnw in zip(gra_w, delta_gra_w)]
             print('gra_w ', gra_w)
 
-        self.biases = [b - (eta/len(mini_batch)) * nb for b, nb in zip(self.bias, gra_b)]
-        self.weights = [w - (eta/len(mini_batch)) * nw for w, nw in zip(self.weight, gra_w)]
+        self.bias = [b - (eta/len(mini_batch)) * nb for b, nb in zip(self.bias, gra_b)]
+        self.weight = [w - (eta/len(mini_batch)) * nw for w, nw in zip(self.weight, gra_w)]
         print('weight update to ', self.weight)
         input()
 
