@@ -4,7 +4,7 @@ Env: Python 3.7 on Ubuntu 18.04.2
 import numpy as np
 import matplotlib.pyplot as plt
 import random
-import csv, os, struct
+import csv, os, struct, math, sys
 
 ################# GLOBAL DEF ###########
 
@@ -13,10 +13,10 @@ N_TRAIN_DATA = 800
 N_TEST_DATA = 91
 N_DIM = 6
 
-N_UNIT_1 = 3 # unit for layer 1
-N_BATCH_SIZE = 200
-N_EPOCH_LIMIT = 1000
-LEARNING_RATE = 1.0
+N_UNIT_1 = 4 # unit for layer 1
+N_BATCH_SIZE = 32
+N_EPOCH_LIMIT = 500
+LEARNING_RATE = 0.00001
 
 epoch_list = []
 accuracy_list = []
@@ -47,8 +47,9 @@ def extract(input_list, list_len, col_start, col_end):
 ################# GRAPH ################
 
 def make_graph():
-    plt.plot(epoch_list, accuracy_list)
-    plt.show()
+    plt.title('x = Epoch, y = Cross Entropy Loss', fontsize = 20)
+    plt.plot(epoch_list, accuracy_list, linewidth = 5.0)
+    plt.savefig(sys.argv[1], dpi = 600)
 
 ################# ACTV #################
 
@@ -140,8 +141,9 @@ class NN(object):
             gra_b = [nb + dnb for nb, dnb in zip(gra_b, delta_gra_b)]
             gra_w = [nw + dnw for nw, dnw in zip(gra_w, delta_gra_w)]
 
-        self.bias = [b - (eta/len(mini_batch)) * nb for b, nb in zip(self.bias, gra_b)]
-        self.weight = [w - (eta/len(mini_batch)) * nw for w, nw in zip(self.weight, gra_w)]
+        #print('eta ', eta, 'minilen ', len(mini_batch), ' div ', (eta / len(mini_batch)))
+        self.bias = [b - (eta) * nb for b, nb in zip(self.bias, gra_b)]
+        self.weight = [w - (eta) * nw for w, nw in zip(self.weight, gra_w)]
 
     ################## SGD ##################
     def SGD(self, train_input, train_expected_output, epochs, mini_batch_size, eta, test_input, test_expected_output):
@@ -157,7 +159,7 @@ class NN(object):
                 self.update_mini_batch(mini_batch_input, eta, mini_batch_expected_output)
 
             if test_data:
-                #print ("Epoch ", j, " ", self.evaluate(test_input, test_expected_output), " / ", N_TEST_DATA)
+                print ("Epoch ", j, ", Cross Entropy = ", self.evaluate(test_input, test_expected_output))
                 epoch_list.append(j)
                 accuracy_list.append(self.evaluate(test_input, test_expected_output) / N_TEST_DATA)
             else:
@@ -168,18 +170,11 @@ class NN(object):
     # fix this no need for argmax, result (alive or dead put in another list for comparison)
     def evaluate(self, test_input, test_expected_output):
         test_results = [self.forward(x) for x in test_input]
-        for i in range(0, len(test_results)):
-            if test_results[i] < 0.5:
-                test_results[i] = 0
-            else:
-                test_results[i] = 1
-
-        total_match = 0
-        for x, y in zip(test_results, test_expected_output):
-            if x == int(y):
-                total_match += 1
-
-        return total_match
+        ce = 0.0
+        ce = float(ce)
+        for i, j in zip(test_results, test_expected_output):
+            ce += float(j) * math.log2(float(i[0][0]))
+        return ce * (-1.0)
 
 
 if __name__ == '__main__':
