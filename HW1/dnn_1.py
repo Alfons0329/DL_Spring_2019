@@ -49,7 +49,7 @@ def extract(input_list, list_len, col_start, col_end):
 def make_graph():
     title_str = 'x = Epoch, y = CE Loss, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(LEARNING_RATE)
     plt.title(title_str)
-    plt.plot(epoch_list, accuracy_list, linewidth = 5.0)
+    plt.plot(epoch_list, accuracy_list)
     plt.savefig(sys.argv[1] + '.png', dpi = 600)
 
 ################# ACTV #################
