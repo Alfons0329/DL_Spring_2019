@@ -182,7 +182,7 @@ class NN(object):
     ################## EVAL RESULT ############
     # fix this no need for argmax, result (alive or dead put in another list for comparison)
     def evaluate(self, inpu, expected_output):
-        test_results = [self.forward(x) for x in test_inpu]
+        test_results = [self.forward(x) for x in inpu]
         ce = 0.0
         ce = float(ce)
         for i, j in zip(test_results, expected_output):
