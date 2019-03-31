@@ -19,7 +19,11 @@ N_EPOCH_LIMIT = 3000
 LEARNING_RATE = float(sys.argv[3])
 
 epoch_list = []
-accuracy_list = []
+learning_curve = []
+train_error_curve = []
+test_error_curve = []
+
+
 ################# FILE IO ##############
 
 def file_IO():
@@ -47,11 +51,20 @@ def extract(input_list, list_len, col_start, col_end):
 ################# GRAPH ################
 
 def make_graph():
-    title_str = 'x = Epoch, y = CE Loss, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(LEARNING_RATE)
+    title_str = 'Learning Curve, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(LEARNING_RATE)
     plt.title(title_str)
-    plt.plot(epoch_list, accuracy_list)
-    plt.savefig(sys.argv[1] + '.png', dpi = 600)
+    plt.plot(epoch_list, learning_curve)
+    plt.savefig(sys.argv[1] + '_' + 'LC' + '.png', dpi = 600)
 
+    title_str = 'Train Error, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(LEARNING_RATE)
+    plt.title(title_str)
+    plt.plot(epoch_list, train_error_curve)
+    plt.savefig(sys.argv[1] + '_' + 'TRE' + '.png', dpi = 600)
+
+    title_str = 'Test Error, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(LEARNING_RATE)
+    plt.title(title_str)
+    plt.plot(epoch_list, test_error_curve)
+    plt.savefig(sys.argv[1] + '_' + 'TEE' + '.png', dpi = 600)
 ################# ACTV #################
 
 def sigmoid(z):
@@ -162,18 +175,17 @@ class NN(object):
             if test_data:
                 print ("Epoch ", j, ", Cross Entropy = ", self.evaluate(test_input, test_expected_output))
                 epoch_list.append(j)
-                accuracy_list.append(self.evaluate(test_input, test_expected_output) / N_TEST_DATA)
-            else:
-                print ("Epoch ", j, " complete")
-                #print "Epoch {0}: {1} / {2}".format(j, self.evaluate(test_data), N_TEST_DATA)
+                learning_curve.append(1.0 - self.evaluate(test_input, test_expected_output) / N_TEST_DATA)
+                train_error_curve.append(self.evaluate(train_input, train_expected_output) / N_TEST_DATA)
+                test_error_curve.append(self.evaluate(test_input, test_expected_output) / N_TEST_DATA)
 
     ################## EVAL RESULT ############
     # fix this no need for argmax, result (alive or dead put in another list for comparison)
-    def evaluate(self, test_input, test_expected_output):
-        test_results = [self.forward(x) for x in test_input]
+    def evaluate(self, inpu, expected_output):
+        test_results = [self.forward(x) for x in test_inpu]
         ce = 0.0
         ce = float(ce)
-        for i, j in zip(test_results, test_expected_output):
+        for i, j in zip(test_results, expected_output):
             ce += float(j) * math.log2(float(i[0][0]))
         return ce * (-1.0)
 
