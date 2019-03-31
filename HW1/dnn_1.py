@@ -15,7 +15,7 @@ N_DIM = 6
 
 N_UNIT_1 = 4 # unit for layer 1
 N_BATCH_SIZE = int(sys.argv[2])
-N_EPOCH_LIMIT = 3000
+N_EPOCH_LIMIT = 300
 LEARNING_RATE = float(sys.argv[3])
 
 epoch_list = []
@@ -56,11 +56,13 @@ def make_graph():
     plt.plot(epoch_list, learning_curve)
     plt.savefig(sys.argv[1] + '_' + 'LC' + '.png', dpi = 600)
 
+    plt.clf()
     title_str = 'Train Error, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(LEARNING_RATE)
     plt.title(title_str)
     plt.plot(epoch_list, train_error_curve)
     plt.savefig(sys.argv[1] + '_' + 'TRE' + '.png', dpi = 600)
 
+    plt.clf()
     title_str = 'Test Error, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(LEARNING_RATE)
     plt.title(title_str)
     plt.plot(epoch_list, test_error_curve)
