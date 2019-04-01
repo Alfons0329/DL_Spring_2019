@@ -54,19 +54,19 @@ def make_graph():
     title_str = 'Learning Curve, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(LEARNING_RATE)
     plt.title(title_str)
     plt.plot(epoch_list, learning_curve)
-    plt.savefig(sys.argv[1] + '_' + 'LC' + '.png', dpi = 600)
+    plt.savefig(sys.argv[1] + '_' + 'LC' + '.png', dpi = 300)
 
     plt.clf()
     title_str = 'Train Error, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(LEARNING_RATE)
     plt.title(title_str)
     plt.plot(epoch_list, train_error_curve)
-    plt.savefig(sys.argv[1] + '_' + 'TRE' + '.png', dpi = 600)
+    plt.savefig(sys.argv[1] + '_' + 'TRE' + '.png', dpi = 300)
 
     plt.clf()
     title_str = 'Test Error, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(LEARNING_RATE)
     plt.title(title_str)
     plt.plot(epoch_list, test_error_curve)
-    plt.savefig(sys.argv[1] + '_' + 'TEE' + '.png', dpi = 600)
+    plt.savefig(sys.argv[1] + '_' + 'TEE' + '.png', dpi = 300)
 ################# ACTV #################
 
 def sigmoid(z):
