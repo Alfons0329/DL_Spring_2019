@@ -53,20 +53,26 @@ def extract(input_list, list_len, col_start, col_end):
 def make_graph():
     title_str = 'Learning Curve, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(LEARNING_RATE)
     plt.title(title_str)
+    plt.xlabel('Epochs')
+    plt.ylabel('1 - Loss')
     plt.plot(epoch_list, learning_curve)
-    plt.savefig(sys.argv[1] + '_' + 'LC' + '.png', dpi = 300)
+    plt.savefig(sys.argv[1] + '_' + 'LC' + '.png', dpi = 100)
 
     plt.clf()
     title_str = 'Train Error, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(LEARNING_RATE)
     plt.title(title_str)
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
     plt.plot(epoch_list, train_error_curve)
-    plt.savefig(sys.argv[1] + '_' + 'TRE' + '.png', dpi = 300)
+    plt.savefig(sys.argv[1] + '_' + 'TRE' + '.png', dpi = 100)
 
     plt.clf()
     title_str = 'Test Error, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(LEARNING_RATE)
     plt.title(title_str)
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
     plt.plot(epoch_list, test_error_curve)
-    plt.savefig(sys.argv[1] + '_' + 'TEE' + '.png', dpi = 300)
+    plt.savefig(sys.argv[1] + '_' + 'TEE' + '.png', dpi = 100)
 ################# ACTV #################
 
 def sigmoid(z):
