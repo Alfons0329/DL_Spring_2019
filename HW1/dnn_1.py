@@ -1,6 +1,7 @@
 """
 Env: Python 3.7 on Ubuntu 18.04.2
 """
+from sklearn.preprocessing import normalize
 import numpy as np
 import matplotlib.pyplot as plt
 import random
@@ -33,6 +34,10 @@ learning_curve_n = []
 train_error_curve_n = []
 test_error_curve_n = []
 
+learning_curve_n_all = []
+train_error_curve_n_all = []
+test_error_curve_n_all = []
+
 def stddev(data):
     data = np.array(data).astype(float)
     sigma = 0.0
@@ -45,6 +50,23 @@ def stddev(data):
     plt.ylabel('STDDEV')
     plt.title('STDDEV of each feature')
     plt.savefig('STDDEV', dpi = 150)
+
+def norm_col(data, col):
+    data = np.array(data).astype(float)
+    for_norm = data[:,[col]]
+    for_norm = normalize(for_norm, axis = 0)
+    data = np.concatenate(data[:,[0, col - 1]], for_norm, axis = 1)
+    print(data)
+    input()
+    return data
+
+def norm_col(data):
+    data = np.array(data).astype(float)
+    data = normalize(data, axis = 0, norm = 'max')
+    print(data)
+    input()
+    return data
+
 ################# FILE IO ##############
 
 def file_IO():
@@ -78,7 +100,9 @@ def make_graph():
     plt.title(title_str)
     plt.xlabel('Epochs')
     plt.ylabel('1 - Loss')
-    plt.plot(epoch_list, learning_curve)
+    plt.plot(epoch_list, learning_curve, color = 'blue', label = 'no norm')
+    plt.plot(epoch_list, learning_curve_n, color = 'red', label = 'norm fare')
+    plt.plot(epoch_list, learning_curve_n_all, color = 'green', label = 'norm all')
     plt.savefig(sys.argv[1] + '_' + 'LC' + '.png', dpi = 150)
 
     plt.clf()
@@ -86,7 +110,9 @@ def make_graph():
     plt.title(title_str)
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
-    plt.plot(epoch_list, train_error_curve)
+    plt.plot(epoch_list, train_error_curve, color = 'blue', label = 'no norm')
+    plt.plot(epoch_list, train_error_curve_n, color = 'red', label = 'norm fare')
+    plt.plot(epoch_list, train_error_curve_n_all, color = 'green', label = 'norm all')
     plt.savefig(sys.argv[1] + '_' + 'TRE' + '.png', dpi = 150)
 
     plt.clf()
@@ -94,7 +120,9 @@ def make_graph():
     plt.title(title_str)
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
-    plt.plot(epoch_list, test_error_curve)
+    plt.plot(epoch_list, test_error_curve, color = 'blue', label = 'no norm')
+    plt.plot(epoch_list, test_error_curve_n, color = 'red', label = 'norm fare')
+    plt.plot(epoch_list, test_error_curve_n_all, color = 'green', label = 'norm all')
     plt.savefig(sys.argv[1] + '_' + 'TEE' + '.png', dpi = 150)
 ################# ACTV #################
 
@@ -191,7 +219,12 @@ class NN(object):
         self.weight = [w - (eta) * nw for w, nw in zip(self.weight, gra_w)]
 
     ################## SGD ##################
-    def SGD(self, train_input, train_expected_output, epochs, mini_batch_size, eta, test_input, test_expected_output):
+    """
+    type 0 for un-normalize
+    type 1 for normalize the 'fare' feature
+    type 2 for normalize all required feature
+    """
+    def SGD(self, train_input, train_expected_output, epochs, mini_batch_size, eta, test_input, test_expected_output, do_type):
         for j in range(0, N_EPOCH_LIMIT):
             together = list(zip(train_input, train_expected_output))
             random.shuffle(together)
@@ -204,11 +237,22 @@ class NN(object):
                 self.update_mini_batch(mini_batch_input, eta, mini_batch_expected_output)
 
             if test_data:
-                print ("Epoch ", j, ", Cross Entropy = ", self.evaluate(test_input, test_expected_output))
-                epoch_list.append(j)
-                learning_curve.append(1.0 - self.evaluate(test_input, test_expected_output) / N_TEST_DATA)
-                train_error_curve.append(self.evaluate(train_input, train_expected_output) / N_TEST_DATA)
-                test_error_curve.append(self.evaluate(test_input, test_expected_output) / N_TEST_DATA)
+                if do_type == 0:
+                    print ("Epoch ", j, ", Cross Entropy = ", self.evaluate(test_input, test_expected_output))
+                    epoch_list.append(j)
+                    learning_curve.append(self.evaluate(test_input, test_expected_output) ** -1 / N_TEST_DATA)
+                    train_error_curve.append(self.evaluate(train_input, train_expected_output) / N_TEST_DATA)
+                    test_error_curve.append(self.evaluate(test_input, test_expected_output) / N_TEST_DATA)
+                elif do_type == 1:
+                    print ("Epoch ", j, ", Cross Entropy = ", self.evaluate(test_input, test_expected_output))
+                    learning_curve_n.append(self.evaluate(test_input, test_expected_output) ** -1 / N_TEST_DATA)
+                    train_error_curve_n.append(self.evaluate(train_input, train_expected_output) / N_TEST_DATA)
+                    test_error_curve_n.append(self.evaluate(test_input, test_expected_output) / N_TEST_DATA)
+                elif do_type == 2:
+                    print ("Epoch ", j, ", Cross Entropy = ", self.evaluate(test_input, test_expected_output))
+                    learning_curve_n_all.append(self.evaluate(test_input, test_expected_output) ** -1 / N_TEST_DATA)
+                    train_error_curve_n_all.append(self.evaluate(train_input, train_expected_output) / N_TEST_DATA)
+                    test_error_curve_n_all.append(self.evaluate(test_input, test_expected_output) / N_TEST_DATA)
 
     ################## EVAL RESULT ############
     # fix this no need for argmax, result (alive or dead put in another list for comparison)
@@ -231,9 +275,14 @@ if __name__ == '__main__':
 
     ################## NORMALIZE  ############
     stddev(train_input + test_input)
-    #train_input_n = norm(train_input_n, [5])
-    #test_input_n = norm(test_input)
+    train_input_n = norm_col(train_input, 5)
+    test_input_n = norm_col(test_input, 5)
+
+    train_input_n_all = norm(train_input)
+    test_input_n_all = norm(test_input)
 
     net = NN([N_DIM , N_UNIT_1, 1])
-    net.SGD(train_input, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input, test_expected_output)
+    net.SGD(train_input, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input, test_expected_output, 0)
+    net.SGD(train_input_n, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input_n, test_expected_output, 1)
+    net.SGD(train_input_n_all, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input_n_all, test_expected_output, 2)
     make_graph()
