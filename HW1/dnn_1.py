@@ -73,6 +73,7 @@ def extract(input_list, list_len, col_start, col_end):
 ################# GRAPH ################
 
 def make_graph():
+    plt.clf()
     title_str = 'Learning Curve, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(LEARNING_RATE)
     plt.title(title_str)
     plt.xlabel('Epochs')
@@ -216,7 +217,7 @@ class NN(object):
         ce = 0.0
         ce = float(ce)
         for i, j in zip(test_results, expected_output):
-            ce += float(j) * math.log2(float(i[0][0]))
+            ce += float(j) * math.log(float(i[0][0]))
         return ce * (-1.0)
 
 
@@ -230,8 +231,8 @@ if __name__ == '__main__':
 
     ################## NORMALIZE  ############
     stddev(train_input + test_input)
-    train_input_n = norm(train_input_n, [5])
-    test_input_n = norm(test_input)
+    #train_input_n = norm(train_input_n, [5])
+    #test_input_n = norm(test_input)
 
     net = NN([N_DIM , N_UNIT_1, 1])
     net.SGD(train_input, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input, test_expected_output)

@@ -9,5 +9,5 @@ then
         python3 dnn_1.py $1\_$batch_size\_$learning_rate $batch_size $learning_rate
     done
 else
-    python3 dnn_1.py $1_32_0.00001 32 0.00001
+    python3 dnn_1.py $1_8_0.000005 8 0.000005
 fi
