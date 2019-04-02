@@ -16,7 +16,7 @@ N_DIM = 6
 
 N_UNIT_1 = 4 # unit for layer 1
 N_BATCH_SIZE = int(sys.argv[2])
-N_EPOCH_LIMIT = 3000
+N_EPOCH_LIMIT = 50
 LEARNING_RATE = float(sys.argv[3])
 
 epoch_list = []
@@ -98,9 +98,14 @@ def make_graph():
     plt.title(title_str)
     plt.xlabel('Epochs')
     plt.ylabel('1 - Loss')
+
     plt.plot(epoch_list, learning_curve, color = 'blue', label = 'no norm')
-    plt.plot(epoch_list, learning_curve_n, color = 'red', label = 'norm fare')
-    plt.plot(epoch_list, learning_curve_n_all, color = 'green', label = 'norm all')
+    if learning_curve_n != []:
+        plt.plot(epoch_list, learning_curve_n, color = 'red', label = 'norm fare')
+    if learning_curve_n_all != []:
+        plt.plot(epoch_list, learning_curve_n_all, color = 'green', label = 'norm all')
+
+    plt.legend() # show what the line represents
     plt.savefig(sys.argv[1] + '_' + 'LC' + '.png', dpi = 150)
 
     plt.clf()
@@ -108,9 +113,14 @@ def make_graph():
     plt.title(title_str)
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
+
     plt.plot(epoch_list, train_error_curve, color = 'blue', label = 'no norm')
-    plt.plot(epoch_list, train_error_curve_n, color = 'red', label = 'norm fare')
-    plt.plot(epoch_list, train_error_curve_n_all, color = 'green', label = 'norm all')
+    if train_error_curve_n != []:
+        plt.plot(epoch_list, train_error_curve_n, color = 'red', label = 'norm fare')
+    if test_error_curve_n_all != []:
+        plt.plot(epoch_list, train_error_curve_n_all, color = 'green', label = 'norm all')
+
+    plt.legend() # show what the line represents
     plt.savefig(sys.argv[1] + '_' + 'TRE' + '.png', dpi = 150)
 
     plt.clf()
@@ -118,9 +128,14 @@ def make_graph():
     plt.title(title_str)
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
+
     plt.plot(epoch_list, test_error_curve, color = 'blue', label = 'no norm')
-    plt.plot(epoch_list, test_error_curve_n, color = 'red', label = 'norm fare')
-    plt.plot(epoch_list, test_error_curve_n_all, color = 'green', label = 'norm all')
+    if test_error_curve_n != []:
+        plt.plot(epoch_list, test_error_curve_n, color = 'red', label = 'norm fare')
+    if test_error_curve_n_all != []:
+        plt.plot(epoch_list, test_error_curve_n_all, color = 'green', label = 'norm all')
+
+    plt.legend() # show what the line represents
     plt.savefig(sys.argv[1] + '_' + 'TEE' + '.png', dpi = 150)
 ################# ACTV #################
 
@@ -281,6 +296,6 @@ if __name__ == '__main__':
 
     net = NN([N_DIM , N_UNIT_1, 1])
     net.SGD(train_input, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input, test_expected_output, 0)
-    net.SGD(train_input_n, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input_n, test_expected_output, 1)
-    net.SGD(train_input_n_all, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input_n_all, test_expected_output, 2)
+    # net.SGD(train_input_n, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input_n, test_expected_output, 1)
+    # net.SGD(train_input_n_all, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input_n_all, test_expected_output, 2)
     make_graph()
