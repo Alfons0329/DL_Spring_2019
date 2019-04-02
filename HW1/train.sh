@@ -2,7 +2,7 @@
 read -p "1: All combination of batch, 2: Current best " sel
 if [ $sel -eq 1 ];
 then
-    batch_size = $2
+    batch_size=$2
     for learning_rate in 0.000005 0.000008 0.00001 0.00005 0.00008
     do
         echo $learning_rate
