@@ -23,7 +23,21 @@ learning_curve = []
 train_error_curve = []
 test_error_curve = []
 
+stddev_list = [] # standard deviation of each column
+features = ['Pclass', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare']
+################# NORMALIZE ############
+def stddev(data):
+    data = np.array(data).astype(float)
+    sigma = 0.0
+    stddev_list = np.std(data, axis = 0)
 
+    ypos = np.arange(len(features))
+    print('stddev_list ', stddev_list)
+    plt.bar(ypos, stddev_list, align = 'center', alpha = 0.5)
+    plt.xticks(ypos, features)
+    plt.ylabel('STDDEV')
+    plt.title('STDDEV of each feature')
+    plt.savefig('STDDEV', dpi = 150)
 ################# FILE IO ##############
 
 def file_IO():
@@ -34,6 +48,7 @@ def file_IO():
         label = rows[0]
         train_data = rows[1: N_TRAIN_DATA + 1]
         test_data = rows[N_TRAIN_DATA + 1:]
+        all_data = train_data + test_data
 
     return label, train_data, test_data
 
@@ -56,7 +71,7 @@ def make_graph():
     plt.xlabel('Epochs')
     plt.ylabel('1 - Loss')
     plt.plot(epoch_list, learning_curve)
-    plt.savefig(sys.argv[1] + '_' + 'LC' + '.png', dpi = 100)
+    plt.savefig(sys.argv[1] + '_' + 'LC' + '.png', dpi = 150)
 
     plt.clf()
     title_str = 'Train Error, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(LEARNING_RATE)
@@ -64,7 +79,7 @@ def make_graph():
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.plot(epoch_list, train_error_curve)
-    plt.savefig(sys.argv[1] + '_' + 'TRE' + '.png', dpi = 100)
+    plt.savefig(sys.argv[1] + '_' + 'TRE' + '.png', dpi = 150)
 
     plt.clf()
     title_str = 'Test Error, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(LEARNING_RATE)
@@ -72,7 +87,7 @@ def make_graph():
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.plot(epoch_list, test_error_curve)
-    plt.savefig(sys.argv[1] + '_' + 'TEE' + '.png', dpi = 100)
+    plt.savefig(sys.argv[1] + '_' + 'TEE' + '.png', dpi = 150)
 ################# ACTV #################
 
 def sigmoid(z):
@@ -205,6 +220,7 @@ if __name__ == '__main__':
     test_input = extract(test_data, N_TEST_DATA, 1, 6)
     test_expected_output = extract(train_data, N_TEST_DATA, 0, 0)
 
+    stddev(train_input + test_input)
     net = NN([N_DIM , N_UNIT_1, 1])
     net.SGD(train_input, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input, test_expected_output)
     make_graph()
