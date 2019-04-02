@@ -13,4 +13,4 @@ else
 fi
 
 mkdir -p $1\_P2
-mv $1*\_P2.png $1\_P2/
+mv $1*\.png $1\_P2/
