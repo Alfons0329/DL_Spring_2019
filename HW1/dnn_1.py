@@ -23,9 +23,16 @@ learning_curve = []
 train_error_curve = []
 test_error_curve = []
 
+
 stddev_list = [] # standard deviation of each column
 features = ['Pclass', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare']
+
 ################# NORMALIZE ############
+
+learning_curve_n = []
+train_error_curve_n = []
+test_error_curve_n = []
+
 def stddev(data):
     data = np.array(data).astype(float)
     sigma = 0.0
@@ -215,12 +222,17 @@ class NN(object):
 
 if __name__ == '__main__':
     label, train_data, test_data = file_IO()
+
     train_input = extract(train_data, N_TRAIN_DATA, 1, 6)
     train_expected_output = extract(train_data, N_TRAIN_DATA, 0, 0)
     test_input = extract(test_data, N_TEST_DATA, 1, 6)
     test_expected_output = extract(train_data, N_TEST_DATA, 0, 0)
 
+    ################## NORMALIZE  ############
     stddev(train_input + test_input)
+    train_input_n = norm(train_input_n, [5])
+    test_input_n = norm(test_input)
+
     net = NN([N_DIM , N_UNIT_1, 1])
     net.SGD(train_input, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input, test_expected_output)
     make_graph()
