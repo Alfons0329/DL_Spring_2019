@@ -55,16 +55,14 @@ def norm_col(data, col):
     data = np.array(data).astype(float)
     for_norm = data[:,[col]]
     for_norm = normalize(for_norm, axis = 0)
-    data = np.concatenate(data[:,[0, col - 1]], for_norm, axis = 1)
-    print(data)
-    input()
+    data = np.concatenate((data[ :, : N_DIM - 1], for_norm), axis = 1)
+    print('normalize col 5: ', data)
     return data
 
-def norm_col(data):
+def norm_all(data):
     data = np.array(data).astype(float)
-    data = normalize(data, axis = 0, norm = 'max')
-    print(data)
-    input()
+    data = normalize(data, axis = 0)
+    print('normalize all col: ', data)
     return data
 
 ################# FILE IO ##############
@@ -278,8 +276,8 @@ if __name__ == '__main__':
     train_input_n = norm_col(train_input, 5)
     test_input_n = norm_col(test_input, 5)
 
-    train_input_n_all = norm(train_input)
-    test_input_n_all = norm(test_input)
+    train_input_n_all = norm_all(train_input)
+    test_input_n_all = norm_all(test_input)
 
     net = NN([N_DIM , N_UNIT_1, 1])
     net.SGD(train_input, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input, test_expected_output, 0)
