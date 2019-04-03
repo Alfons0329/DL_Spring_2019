@@ -13,6 +13,7 @@ F_NAME = 'titanic.csv'
 N_TRAIN_DATA = 800
 N_TEST_DATA = 91
 N_DIM = 6
+RANDOM_SEED = 4
 
 N_UNIT_1 = 4 # unit for layer 1
 N_BATCH_SIZE = int(sys.argv[2])
@@ -295,6 +296,7 @@ if __name__ == '__main__':
     test_input_n_all = norm_all(test_input)
 
     net = NN([N_DIM , N_UNIT_1, 1])
+    random.seed(RANDOM_SEED)
     net.SGD(train_input, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input, test_expected_output, 0)
     net.SGD(train_input_n, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input_n, test_expected_output, 1)
     net.SGD(train_input_n_all, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input_n_all, test_expected_output, 2)
