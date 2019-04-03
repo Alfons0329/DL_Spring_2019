@@ -12,6 +12,7 @@ F_NAME = 'titanic.csv'
 N_TRAIN_DATA = 800
 N_TEST_DATA = 91
 N_DIM = 6
+RANDOM_SEED = 4
 
 N_UNIT_1 = 3 # unit for hidden layer 1
 N_UNIT_2 = 3 # unit for hidden layer 2
@@ -130,7 +131,7 @@ class NN(object):
         z_L = zs[-1]
         delta_L = self.cross_entrophy_derivative(activations[-1], y) * sigmoid_prime(z_L)
         gra_b[-1] = delta_L
-        gra_w[-1] = np.dot(delta_L, np.array(activations[-2]))
+        gra_w[-1] = np.dot(delta_L.T, np.array(activations[-2]))
 
         # BP, 4th, back propogation from the second-last layer
         for layer in range(2, self.num_layers):
@@ -184,7 +185,7 @@ class NN(object):
             if test_data:
                 print ("Epoch ", j, ", Cross Entropy = ", self.evaluate(test_input, test_expected_output))
                 epoch_list.append(j)
-                learning_curve.append(1.0 - self.evaluate(test_input, test_expected_output) / N_TEST_DATA)
+                learning_curve.append(self.evaluate(test_input, test_expected_output) ** -1 / N_TEST_DATA)
                 train_error_curve.append(self.evaluate(train_input, train_expected_output) / N_TEST_DATA)
                 test_error_curve.append(self.evaluate(test_input, test_expected_output) / N_TEST_DATA)
 
@@ -192,6 +193,8 @@ class NN(object):
     # fix this no need for argmax, result (alive or dead put in another list for comparison)
     def evaluate(self, inpu, expected_output):
         test_results = [self.forward(x) for x in inpu]
+        print('test results', test_results)
+        input()
         ce = 0.0
         ce = float(ce)
         for i, j in zip(test_results, expected_output):
@@ -206,6 +209,6 @@ if __name__ == '__main__':
     test_input = extract(test_data, N_TEST_DATA, 1, 6)
     test_expected_output = extract(train_data, N_TEST_DATA, 0, 0)
 
-    net = NN([N_DIM , N_UNIT_1, N_UNIT_2, 2, 1])
+    net = NN([N_DIM , N_UNIT_1, N_UNIT_2, 2])
     net.SGD(train_input, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input, test_expected_output)
     make_graph()
