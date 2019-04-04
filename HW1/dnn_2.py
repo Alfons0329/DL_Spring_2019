@@ -212,5 +212,6 @@ if __name__ == '__main__':
     test_expected_output = extract(train_data, N_TEST_DATA, 0, 0)
 
     net = NN([N_DIM , N_UNIT_1, N_UNIT_2, 2])
+    random.seed(RANDOM_SEED)
     net.SGD(train_input, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input, test_expected_output)
     make_graph()

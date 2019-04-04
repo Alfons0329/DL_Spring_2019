@@ -1,5 +1,6 @@
 #!/bin/bash
 read -p "1: All combination of batch, 2: Current best " sel
+
 if [ $sel -eq 1 ];
 then
     batch_size=$2
@@ -12,5 +13,5 @@ else
     python3 dnn_1.py $1_8_0.000005 8 0.000005
 fi
 
-mkdir -p $1\_P3
-mv $1*\.png $1\_P3/
+#mkdir -p $1\_P3
+#mv $1*\.png $1\_P3/
