@@ -130,14 +130,16 @@ class NN(object):
         # BP, 3rd, output error
         z_L = zs[-1]
         delta_L = self.cross_entrophy_derivative(activations[-1], y) * sigmoid_prime(z_L)
-        gra_b[-1] = delta_L
+        gra_b[-1] = delta_L.T
         gra_w[-1] = np.dot(delta_L.T, np.array(activations[-2]))
-
         # BP, 4th, back propogation from the second-last layer
+        delta_L = delta_L.T
+
         for layer in range(2, self.num_layers):
-            # print('num_layers ', self.num_layers)
+            print('num_layers ',layer)
             z_layer = zs[-layer]
             s_prime = sigmoid_prime(z_layer)
+            print('bp: ', self.weight[-layer + 1].T.shape , delta_L.shape, s_prime.T.shape)
             delta_L = np.dot(self.weight[-layer + 1].T, delta_L) * s_prime.T
             gra_b[-layer] = delta_L
             gra_w[-layer] = np.dot(delta_L, np.array(activations[-layer - 1]).astype(float))
