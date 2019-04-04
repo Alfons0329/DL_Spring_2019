@@ -181,6 +181,7 @@ class NN(object):
         activation = activation.reshape(1, N_DIM)
 
         activations.append(activation)
+
         for b, w in zip(self.bias, self.weight):
             w = w.astype(float)
             b = b.astype(float)
@@ -199,7 +200,6 @@ class NN(object):
         delta_L = delta_L.T
 
         for layer in range(2, self.num_layers):
-            # print('num_layers ', self.num_layers)
             z_layer = zs[-layer]
             s_prime = sigmoid_prime(z_layer)
             delta_L = np.dot(self.weight[-layer + 1].T, delta_L) * s_prime.T

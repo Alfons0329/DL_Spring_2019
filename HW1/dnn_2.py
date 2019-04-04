@@ -118,6 +118,7 @@ class NN(object):
         activation = activation.reshape(1, N_DIM)
 
         activations.append(activation)
+
         for b, w in zip(self.bias, self.weight):
             w = w.astype(float)
             b = b.astype(float)
@@ -136,10 +137,8 @@ class NN(object):
         delta_L = delta_L.T
 
         for layer in range(2, self.num_layers):
-            print('num_layers ',layer)
             z_layer = zs[-layer]
             s_prime = sigmoid_prime(z_layer)
-            print('bp: ', self.weight[-layer + 1].T.shape , delta_L.shape, s_prime.T.shape)
             delta_L = np.dot(self.weight[-layer + 1].T, delta_L) * s_prime.T
             gra_b[-layer] = delta_L
             gra_w[-layer] = np.dot(delta_L, np.array(activations[-layer - 1]).astype(float))
@@ -195,13 +194,14 @@ class NN(object):
     # fix this no need for argmax, result (alive or dead put in another list for comparison)
     def evaluate(self, inpu, expected_output):
         test_results = [self.forward(x) for x in inpu]
-        print('test results', test_results)
-        input()
-        ce = 0.0
+        ce = 0.0 # for alive
+        ce_2 = 0.0 # for death
         ce = float(ce)
+        ce_2 = float(ce_2)
         for i, j in zip(test_results, expected_output):
             ce += float(j) * math.log2(float(i[0][0]))
-        return ce * (-1.0)
+            ce_2 += float(j) * math.log2(float(i[0][1]))
+        return (ce + ce_2) * (-1.0)
 
 
 if __name__ == '__main__':
