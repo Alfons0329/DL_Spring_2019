@@ -30,6 +30,36 @@ stddev_list = [] # standard deviation of each column
 features = ['Pclass', 'Sex', 'Age', 'SibSp', 'Parch', 'Fare']
 
 ################# NORMALIZE ############
+def correlation(feature_data, output_data):
+    feature_data = np.array(feature_data).astype(float)
+    output_data = np.array(output_data).astype(float)
+    coef = []
+
+    stddev_feature = np.std(feature_data, axis = 0)
+    stddev_output = np.std(output_data, axis = 0)
+    avg_feature = feature_data.mean(axis = 0)
+    avg_output = output_data.mean(axis = 0)
+
+    stddev_both = []
+    tmp = 0.0
+    for j in range(len(feature_data[0])):
+        tmp = 0.0
+        for i in range(len(feature_data)):
+            tmp += (feature_data[i][j] - stddev_feature[j]) * (output_data[i] - stddev_output)
+
+        tmp /= len(feature_data)
+        r = tmp / (stddev_feature[j] * stddev_output)
+        coef.append(tmp)
+
+    ypos = np.arange(len(features))
+    plt.bar(ypos, coef, align = 'center', alpha = 0.5)
+    plt.xticks(ypos, features)
+    plt.ylabel('CORRCOEF')
+    plt.title('CORRCOEF of features vs alive')
+    plt.savefig('CORRCOEF', dpi = 150)
+
+
+################# NORMALIZE ############
 
 learning_curve_n = []
 train_error_curve_n = []
@@ -45,7 +75,6 @@ def stddev(data):
     stddev_list = np.std(data, axis = 0)
 
     ypos = np.arange(len(features))
-    print('stddev_list ', stddev_list)
     plt.bar(ypos, stddev_list, align = 'center', alpha = 0.5)
     plt.xticks(ypos, features)
     plt.ylabel('STDDEV')
@@ -57,13 +86,11 @@ def norm_col(data, col):
     for_norm = data[:,[col]]
     for_norm = normalize(for_norm, axis = 0)
     data = np.concatenate((data[ :, : N_DIM - 1], for_norm), axis = 1)
-    print('normalize col 5: ', data)
     return data
 
 def norm_all(data):
     data = np.array(data).astype(float)
     data = normalize(data, axis = 0)
-    print('normalize all col: ', data)
     return data
 
 ################# FILE IO ##############
@@ -288,6 +315,8 @@ if __name__ == '__main__':
     test_input = extract(test_data, N_TEST_DATA, 1, 6)
     test_expected_output = extract(train_data, N_TEST_DATA, 0, 0)
 
+    correlation(train_input + test_input, train_expected_output + test_expected_output)
+
     ################## NORMALIZE  ############
     stddev(train_input + test_input)
     train_input_n = norm_col(train_input, 5)
@@ -299,6 +328,6 @@ if __name__ == '__main__':
     net = NN([N_DIM , N_UNIT_1, 1])
     random.seed(RANDOM_SEED)
     net.SGD(train_input, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input, test_expected_output, 0)
-    #net.SGD(train_input_n, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input_n, test_expected_output, 1)
-    #net.SGD(train_input_n_all, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input_n_all, test_expected_output, 2)
+    net.SGD(train_input_n, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input_n, test_expected_output, 1)
+    net.SGD(train_input_n_all, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input_n_all, test_expected_output, 2)
     make_graph()

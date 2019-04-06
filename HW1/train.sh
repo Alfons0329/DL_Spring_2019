@@ -10,8 +10,8 @@ then
         python3 dnn_1.py $1\_$batch_size\_$learning_rate $batch_size $learning_rate
     done
 else
-    python3 dnn_1.py $1_8_0.000005 8 0.000005
+    python3 dnn_1.py $1_16_0.00001 16 0.00001
 fi
 
-mkdir -p $1_1
-mv $1*\.png $1_1/
+mkdir -p $1_1_P3
+mv $1*\.png $1_1_P3/
