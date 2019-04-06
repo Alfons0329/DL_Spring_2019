@@ -49,7 +49,7 @@ def correlation(feature_data, output_data):
 
         tmp /= len(feature_data)
         r = tmp / (stddev_feature[j] * stddev_output)
-        coef.append(tmp)
+        coef.append(r)
 
     ypos = np.arange(len(features))
     plt.bar(ypos, coef, align = 'center', alpha = 0.5)
