@@ -22,7 +22,6 @@ def file_IO():
 
 def parse(data):
     data = np.array(data)
-    print('CHECK_COLUMN ', CHECK_COLUMN)
     col = int(CHECK_COLUMN)
     to_check = data[:,col]
     m = dict()
