@@ -17,7 +17,7 @@ RANDOM_SEED = 4
 
 N_UNIT_1 = 16 # unit for layer 1
 N_BATCH_SIZE = int(sys.argv[2])
-N_EPOCH_LIMIT = 300
+N_EPOCH_LIMIT = 3000
 LEARNING_RATE = float(sys.argv[3])
 
 epoch_list = []
