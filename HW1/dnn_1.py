@@ -323,7 +323,7 @@ class NN(object):
                 correct += 1
         correct = float(correct)
 
-        return correct / (float)(len(test_results))
+        return 1 - correct / (float)(len(test_results))
 
 if __name__ == '__main__':
     label, train_data, test_data = file_IO()
