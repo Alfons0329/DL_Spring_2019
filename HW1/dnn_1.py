@@ -331,7 +331,7 @@ if __name__ == '__main__':
     train_input = extract(train_data, N_TRAIN_DATA, 1, 6)
     train_expected_output = extract(train_data, N_TRAIN_DATA, 0, 0)
     test_input = extract(test_data, N_TEST_DATA, 1, 6)
-    test_expected_output = extract(train_data, N_TEST_DATA, 0, 0)
+    test_expected_output = extract(test_data, N_TEST_DATA, 0, 0)
 
     correlation(train_input + test_input, train_expected_output + test_expected_output)
 
