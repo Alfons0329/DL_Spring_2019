@@ -13,5 +13,5 @@ else
     python3 dnn_1.py $1_16_0.00001 16 0.00001
 fi
 
-mkdir -p $1_1_P3
-mv $1*\.png $1_1_P3/
+mkdir -p $1 #_P3
+mv $1*\.png $1/ #_P3/

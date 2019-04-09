@@ -17,7 +17,7 @@ RANDOM_SEED = 4
 
 N_UNIT_1 = 16 # unit for layer 1
 N_BATCH_SIZE = int(sys.argv[2])
-N_EPOCH_LIMIT = 3000
+N_EPOCH_LIMIT = 300
 LEARNING_RATE = float(sys.argv[3])
 
 epoch_list = []
@@ -140,7 +140,7 @@ def make_graph():
     title_str = 'Train Error, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(LEARNING_RATE)
     plt.title(title_str)
     plt.xlabel('Epochs')
-    plt.ylabel('Loss')
+    plt.ylabel('Train error')
 
     plt.plot(epoch_list, train_error_curve, color = 'blue', label = 'no norm')
     if train_error_curve_n != []:
@@ -155,7 +155,7 @@ def make_graph():
     title_str = 'Test Error, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(LEARNING_RATE)
     plt.title(title_str)
     plt.xlabel('Epochs')
-    plt.ylabel('Loss')
+    plt.ylabel('Test error')
 
     plt.plot(epoch_list, test_error_curve, color = 'blue', label = 'no norm')
     if test_error_curve_n != []:
@@ -280,25 +280,25 @@ class NN(object):
 
             if test_data:
                 if do_type == 0:
-                    print ("Epoch ", j, ", Cross Entropy = ", self.evaluate(test_input, test_expected_output))
+                    print ("Epoch ", j, ", Cross Entropy = ", self.evaluate_loss(test_input, test_expected_output))
                     epoch_list.append(j)
-                    learning_curve.append(self.evaluate(test_input, test_expected_output) ** -1 / N_TEST_DATA)
-                    train_error_curve.append(self.evaluate(train_input, train_expected_output) / N_TEST_DATA)
-                    test_error_curve.append(self.evaluate(test_input, test_expected_output) / N_TEST_DATA)
+                    learning_curve.append(self.evaluate_loss(test_input, test_expected_output)/ N_TEST_DATA)
+                    train_error_curve.append(self.evaluate_error(train_input, train_expected_output))
+                    test_error_curve.append(self.evaluate_error(test_input, test_expected_output))
                 elif do_type == 1:
-                    print ("Epoch ", j, ", Cross Entropy = ", self.evaluate(test_input, test_expected_output))
-                    learning_curve_n.append(self.evaluate(test_input, test_expected_output) ** -1 / N_TEST_DATA)
-                    train_error_curve_n.append(self.evaluate(train_input, train_expected_output) / N_TEST_DATA)
-                    test_error_curve_n.append(self.evaluate(test_input, test_expected_output) / N_TEST_DATA)
+                    print ("Epoch ", j, ", Cross Entropy = ", self.evaluate_loss(test_input, test_expected_output))
+                    learning_curve_n.append(self.evaluate_loss(test_input, test_expected_output)/ N_TEST_DATA)
+                    train_error_curve_n.append(self.evaluate_error(train_input, train_expected_output))
+                    test_error_curve_n.append(self.evaluate_error(test_input, test_expected_output))
                 elif do_type == 2:
-                    print ("Epoch ", j, ", Cross Entropy = ", self.evaluate(test_input, test_expected_output))
-                    learning_curve_n_all.append(self.evaluate(test_input, test_expected_output) ** -1 / N_TEST_DATA)
-                    train_error_curve_n_all.append(self.evaluate(train_input, train_expected_output) / N_TEST_DATA)
-                    test_error_curve_n_all.append(self.evaluate(test_input, test_expected_output) / N_TEST_DATA)
+                    print ("Epoch ", j, ", Cross Entropy = ", self.evaluate_loss(test_input, test_expected_output))
+                    learning_curve_n_all.append(self.evaluate_loss(test_input, test_expected_output)/ N_TEST_DATA)
+                    train_error_curve_n_all.append(self.evaluate_error(train_input, train_expected_output))
+                    test_error_curve_n_all.append(self.evaluate_error(test_input, test_expected_output))
 
     ################## EVAL RESULT ############
     # fix this no need for argmax, result (alive or dead put in another list for comparison)
-    def evaluate(self, inpu, expected_output):
+    def evaluate_loss(self, inpu, expected_output):
         test_results = [self.forward(x) for x in inpu]
         ce = 0.0
         ce = float(ce)
@@ -306,6 +306,21 @@ class NN(object):
             ce += float(j) * math.log(float(i[0][0]))
         return ce * (-1.0)
 
+    def evaluate_error(self, inpu, expected_output):
+        test_results = [self.forward(x) for x in inpu]
+        correct = 0
+        for i in range(len(test_results)):
+            if test_results[i][0] > 0.5:
+                test_results[i][0] = 1
+            else:
+                test_results[i][0] = 0
+
+        for i, j in zip(test_results, expected_output):
+            if int(i[0][0]) == int(j):
+                correct += 1
+        correct = float(correct)
+
+        return correct / (float)(len(test_results))
 
 if __name__ == '__main__':
     label, train_data, test_data = file_IO()
