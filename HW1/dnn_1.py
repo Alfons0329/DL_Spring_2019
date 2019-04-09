@@ -125,7 +125,7 @@ def make_graph():
     title_str = 'Learning Curve, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(LEARNING_RATE)
     plt.title(title_str)
     plt.xlabel('Epochs')
-    plt.ylabel('Loss ^ -1')
+    plt.ylabel('Loss')
 
     plt.plot(epoch_list, learning_curve, color = 'blue', label = 'no norm')
     if learning_curve_n != []:
