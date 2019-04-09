@@ -280,18 +280,21 @@ class NN(object):
 
             if test_data:
                 if do_type == 0:
-                    print ("Epoch ", j, ", Cross Entropy = ", self.evaluate_loss(test_input, test_expected_output))
+                    print ("N_BATCH_SIZE ", N_BATCH_SIZE, "ETA ", LEARNING_RATE , "Epoch ", j, ", CE = ", self.evaluate_loss(test_input, test_expected_output))
+                    print ("Epoch ", j, ", E = ", self.evaluate_error(test_input, test_expected_output))
                     epoch_list.append(j)
                     learning_curve.append(self.evaluate_loss(test_input, test_expected_output)/ N_TEST_DATA)
                     train_error_curve.append(self.evaluate_error(train_input, train_expected_output))
                     test_error_curve.append(self.evaluate_error(test_input, test_expected_output))
                 elif do_type == 1:
-                    print ("Epoch ", j, ", Cross Entropy = ", self.evaluate_loss(test_input, test_expected_output))
+                    print ("N_BATCH_SIZE ", N_BATCH_SIZE, "ETA ", LEARNING_RATE , "Epoch ", j, ", CE = ", self.evaluate_loss(test_input, test_expected_output))
+                    print ("Epoch ", j, ", E = ", self.evaluate_error(test_input, test_expected_output))
                     learning_curve_n.append(self.evaluate_loss(test_input, test_expected_output)/ N_TEST_DATA)
                     train_error_curve_n.append(self.evaluate_error(train_input, train_expected_output))
                     test_error_curve_n.append(self.evaluate_error(test_input, test_expected_output))
                 elif do_type == 2:
-                    print ("Epoch ", j, ", Cross Entropy = ", self.evaluate_loss(test_input, test_expected_output))
+                    print ("N_BATCH_SIZE ", N_BATCH_SIZE, "ETA ", LEARNING_RATE , "Epoch ", j, ", CE = ", self.evaluate_loss(test_input, test_expected_output))
+                    print ("Epoch ", j, ", E = ", self.evaluate_error(test_input, test_expected_output))
                     learning_curve_n_all.append(self.evaluate_loss(test_input, test_expected_output)/ N_TEST_DATA)
                     train_error_curve_n_all.append(self.evaluate_error(train_input, train_expected_output))
                     test_error_curve_n_all.append(self.evaluate_error(test_input, test_expected_output))
