@@ -288,16 +288,16 @@ class NN(object):
                     test_error_curve.append(self.evaluate_error(test_input, test_expected_output))
                 elif do_type == 1:
                     print ("N_BATCH_SIZE ", N_BATCH_SIZE, "ETA ", LEARNING_RATE , "Epoch ", j, ", CE = ", self.evaluate_loss(test_input, test_expected_output))
-                    print ("Epoch ", j, ", E = ", self.evaluate_error(test_input, test_expected_output))
+                    #print ("Epoch ", j, ", E = ", self.evaluate_error(test_input, test_expected_output))
                     learning_curve_n.append(self.evaluate_loss(test_input, test_expected_output)/ N_TEST_DATA)
-                    train_error_curve_n.append(self.evaluate_error(train_input, train_expected_output))
-                    test_error_curve_n.append(self.evaluate_error(test_input, test_expected_output))
+                    #train_error_curve_n.append(self.evaluate_error(train_input, train_expected_output))
+                    #test_error_curve_n.append(self.evaluate_error(test_input, test_expected_output))
                 elif do_type == 2:
                     print ("N_BATCH_SIZE ", N_BATCH_SIZE, "ETA ", LEARNING_RATE , "Epoch ", j, ", CE = ", self.evaluate_loss(test_input, test_expected_output))
-                    print ("Epoch ", j, ", E = ", self.evaluate_error(test_input, test_expected_output))
+                    #print ("Epoch ", j, ", E = ", self.evaluate_error(test_input, test_expected_output))
                     learning_curve_n_all.append(self.evaluate_loss(test_input, test_expected_output)/ N_TEST_DATA)
-                    train_error_curve_n_all.append(self.evaluate_error(train_input, train_expected_output))
-                    test_error_curve_n_all.append(self.evaluate_error(test_input, test_expected_output))
+                    #train_error_curve_n_all.append(self.evaluate_error(train_input, train_expected_output))
+                    #test_error_curve_n_all.append(self.evaluate_error(test_input, test_expected_output))
 
     ################## EVAL RESULT ############
     # fix this no need for argmax, result (alive or dead put in another list for comparison)
@@ -351,7 +351,7 @@ if __name__ == '__main__':
     #alive = [0, 1, 13, 2, 4, 100.0]
     #print(net.forward(dead))
     #print(net.forward(alive))
-    net.SGD(train_input_n, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input_n, test_expected_output, 1)
-    net.SGD(train_input_n_all, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input_n_all, test_expected_output, 2)
+    #net.SGD(train_input_n, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input_n, test_expected_output, 1)
+    #net.SGD(train_input_n_all, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input_n_all, test_expected_output, 2)
     make_graph()
 
