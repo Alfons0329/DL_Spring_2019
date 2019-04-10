@@ -343,8 +343,8 @@ if __name__ == '__main__':
     train_input_n_all = norm_all(train_input)
     test_input_n_all = norm_all(test_input)
 
-    net = NN([N_DIM , N_UNIT_1, 1])
     random.seed(RANDOM_SEED)
+    net = NN([N_DIM , N_UNIT_1, 1])
     net.SGD(train_input, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input, test_expected_output, 0)
     ################# ARTIFICIALLY DESIGNED SAMPLE ##########
     #dead = [0, 1, 13, 2, 4, 2]

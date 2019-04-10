@@ -185,10 +185,11 @@ class NN(object):
 
             if test_data:
                 print ("Epoch ", j, ", Cross Entropy = ", self.evaluate(test_input, test_expected_output))
+                print ("Epoch ", j, ", E = ", self.evaluate_error(test_input, test_expected_output))
                 epoch_list.append(j)
-                learning_curve.append(self.evaluate(test_input, test_expected_output) ** -1 / N_TEST_DATA)
-                train_error_curve.append(self.evaluate(train_input, train_expected_output) / N_TEST_DATA)
-                test_error_curve.append(self.evaluate(test_input, test_expected_output) / N_TEST_DATA)
+                learning_curve.append(self.evaluate(test_input, test_expected_output) / N_TEST_DATA)
+                train_error_curve.append(self.evaluate_error(train_input, train_expected_output))
+                test_error_curve.append(self.evaluate_error(test_input, test_expected_output))
 
     ################## EVAL RESULT ############
     # fix this no need for argmax, result (alive or dead put in another list for comparison)
@@ -203,13 +204,31 @@ class NN(object):
             ce_2 += float(j) * math.log2(float(i[0][1]))
         return (ce + ce_2) * (-1.0)
 
+    def evaluate_error(self, inpu, expected_output):
+        test_results = [self.forward(x) for x in inpu]
+        correct = 0
+        alive_dead = []
+        test_results = np.array(test_results)
+        for i in range(len(test_results)):
+            if test_results[i][0][0] > test_results[i][0][1]:
+                alive_dead.append(1)
+            else:
+                alive_dead.append(0)
+
+        for i, j in zip(alive_dead, expected_output):
+            if int(i) == int(j):
+                correct += 1
+        correct = float(correct)
+        one = 1.0
+        one = float(one)
+        return one - correct / (float)(len(test_results))
 
 if __name__ == '__main__':
     label, train_data, test_data = file_IO()
     train_input = extract(train_data, N_TRAIN_DATA, 1, 6)
     train_expected_output = extract(train_data, N_TRAIN_DATA, 0, 0)
     test_input = extract(test_data, N_TEST_DATA, 1, 6)
-    test_expected_output = extract(train_data, N_TEST_DATA, 0, 0)
+    test_expected_output = extract(test_data, N_TEST_DATA, 0, 0)
 
     net = NN([N_DIM , N_UNIT_1, N_UNIT_2, 2])
     random.seed(RANDOM_SEED)
