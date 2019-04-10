@@ -56,7 +56,7 @@ def make_graph():
     title_str = 'Learning Curve, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(LEARNING_RATE)
     plt.title(title_str)
     plt.xlabel('Epochs')
-    plt.ylabel('1 - Loss')
+    plt.ylabel('Loss')
     plt.plot(epoch_list, learning_curve)
     plt.savefig(sys.argv[1] + '_' + 'LC_P2' + '.png', dpi = 100)
 
@@ -64,7 +64,7 @@ def make_graph():
     title_str = 'Train Error, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(LEARNING_RATE)
     plt.title(title_str)
     plt.xlabel('Epochs')
-    plt.ylabel('Loss')
+    plt.ylabel('Error rate')
     plt.plot(epoch_list, train_error_curve)
     plt.savefig(sys.argv[1] + '_' + 'TRE_P2' + '.png', dpi = 100)
 
@@ -72,7 +72,7 @@ def make_graph():
     title_str = 'Test Error, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(LEARNING_RATE)
     plt.title(title_str)
     plt.xlabel('Epochs')
-    plt.ylabel('Loss')
+    plt.ylabel('Error rate')
     plt.plot(epoch_list, test_error_curve)
     plt.savefig(sys.argv[1] + '_' + 'TEE_P2' + '.png', dpi = 100)
 ################# ACTV #################
@@ -211,9 +211,9 @@ class NN(object):
         test_results = np.array(test_results)
         for i in range(len(test_results)):
             if test_results[i][0][0] > test_results[i][0][1]:
-                alive_dead.append(1)
+                alive_dead.append(1) #alive
             else:
-                alive_dead.append(0)
+                alive_dead.append(0) #dead
 
         for i, j in zip(alive_dead, expected_output):
             if int(i) == int(j):
@@ -231,6 +231,5 @@ if __name__ == '__main__':
     test_expected_output = extract(test_data, N_TEST_DATA, 0, 0)
 
     net = NN([N_DIM , N_UNIT_1, N_UNIT_2, 2])
-    random.seed(RANDOM_SEED)
     net.SGD(train_input, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input, test_expected_output)
     make_graph()
