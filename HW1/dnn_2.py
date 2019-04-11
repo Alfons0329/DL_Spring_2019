@@ -88,6 +88,7 @@ class NN(object):
     def __init__(self, sizes):
         self.sizes = sizes
         self.num_layers = len(sizes)
+        np.random.seed(RANDOM_SEED)
         self.weight = [np.random.randn(y, x) for x, y in zip(sizes[:-1], sizes[1:])]# weight of the layer
         self.bias = [np.random.randn(y, 1) for y in sizes[1:]]
 
@@ -229,7 +230,7 @@ if __name__ == '__main__':
     train_expected_output = extract(train_data, N_TRAIN_DATA, 0, 0)
     test_input = extract(test_data, N_TEST_DATA, 1, 6)
     test_expected_output = extract(test_data, N_TEST_DATA, 0, 0)
-
+    random.seed(RANDOM_SEED)
     net = NN([N_DIM , N_UNIT_1, N_UNIT_2, 2])
     net.SGD(train_input, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input, test_expected_output)
     make_graph()
