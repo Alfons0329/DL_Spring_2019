@@ -178,6 +178,7 @@ class NN(object):
     def __init__(self, sizes):
         self.sizes = sizes
         self.num_layers = len(sizes)
+        np.random.seed(RANDOM_SEED)
         self.weight = [np.random.randn(y, x) for x, y in zip(sizes[:-1], sizes[1:])]# weight of the layer
         self.bias = [np.random.randn(y, 1) for y in sizes[1:]]
 
@@ -343,8 +344,10 @@ if __name__ == '__main__':
     train_input_n_all = norm_all(train_input)
     test_input_n_all = norm_all(test_input)
 
-    # random.seed(RANDOM_SEED)
+    random.seed(RANDOM_SEED)
     net = NN([N_DIM , N_UNIT_1, 1])
+    print(net.weight)
+    input()
     net.SGD(train_input, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input, test_expected_output, 0)
     ################# ARTIFICIALLY DESIGNED SAMPLE ##########
     #dead = [0, 1, 13, 2, 4, 2]
