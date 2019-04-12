@@ -178,7 +178,7 @@ class NN(object):
     def __init__(self, sizes):
         self.sizes = sizes
         self.num_layers = len(sizes)
-        np.random.seed(RANDOM_SEED)
+        #np.random.seed(RANDOM_SEED)
         self.weight = [np.random.randn(y, x) for x, y in zip(sizes[:-1], sizes[1:])]# weight of the layer
         self.bias = [np.random.randn(y, 1) for y in sizes[1:]]
 
@@ -281,24 +281,29 @@ class NN(object):
 
             if test_data:
                 if do_type == 0:
-                    print ("N_BATCH_SIZE ", N_BATCH_SIZE, "ETA ", LEARNING_RATE , "Epoch ", j, ", CE = ", self.evaluate_loss(test_input, test_expected_output))
-                    print ("Epoch ", j, ", E = ", self.evaluate_error(test_input, test_expected_output))
+                    if j % 100 == 0:
+                        print ("N_BATCH_SIZE ", N_BATCH_SIZE, "ETA ", LEARNING_RATE , "Epoch ", j, ", CE = ", self.evaluate_loss(test_input, test_expected_output))
+                        print ("Epoch ", j, ", E = ", self.evaluate_error(test_input, test_expected_output))
                     epoch_list.append(j)
                     learning_curve.append(self.evaluate_loss(test_input, test_expected_output)/ N_TEST_DATA)
                     train_error_curve.append(self.evaluate_error(train_input, train_expected_output))
                     test_error_curve.append(self.evaluate_error(test_input, test_expected_output))
                 elif do_type == 1:
-                    print ("N_BATCH_SIZE ", N_BATCH_SIZE, "ETA ", LEARNING_RATE , "Epoch ", j, ", CE = ", self.evaluate_loss(test_input, test_expected_output))
-                    #print ("Epoch ", j, ", E = ", self.evaluate_error(test_input, test_expected_output))
+                    if j % 100 == 0:
+                        print ("N_BATCH_SIZE ", N_BATCH_SIZE, "ETA ", LEARNING_RATE , "Epoch ", j, ", CE = ", self.evaluate_loss(test_input, test_expected_output))
+                        print ("Epoch ", j, ", E = ", self.evaluate_error(test_input, test_expected_output))
+
                     learning_curve_n.append(self.evaluate_loss(test_input, test_expected_output)/ N_TEST_DATA)
-                    #train_error_curve_n.append(self.evaluate_error(train_input, train_expected_output))
-                    #test_error_curve_n.append(self.evaluate_error(test_input, test_expected_output))
+                    train_error_curve_n.append(self.evaluate_error(train_input, train_expected_output))
+                    test_error_curve_n.append(self.evaluate_error(test_input, test_expected_output))
                 elif do_type == 2:
-                    print ("N_BATCH_SIZE ", N_BATCH_SIZE, "ETA ", LEARNING_RATE , "Epoch ", j, ", CE = ", self.evaluate_loss(test_input, test_expected_output))
-                    #print ("Epoch ", j, ", E = ", self.evaluate_error(test_input, test_expected_output))
+                    if j % 100 == 0:
+                        print ("N_BATCH_SIZE ", N_BATCH_SIZE, "ETA ", LEARNING_RATE , "Epoch ", j, ", CE = ", self.evaluate_loss(test_input, test_expected_output))
+                        print ("Epoch ", j, ", E = ", self.evaluate_error(test_input, test_expected_output))
+
                     learning_curve_n_all.append(self.evaluate_loss(test_input, test_expected_output)/ N_TEST_DATA)
-                    #train_error_curve_n_all.append(self.evaluate_error(train_input, train_expected_output))
-                    #test_error_curve_n_all.append(self.evaluate_error(test_input, test_expected_output))
+                    train_error_curve_n_all.append(self.evaluate_error(train_input, train_expected_output))
+                    test_error_curve_n_all.append(self.evaluate_error(test_input, test_expected_output))
 
     ################## EVAL RESULT ############
     # fix this no need for argmax, result (alive or dead put in another list for comparison)
@@ -344,7 +349,7 @@ if __name__ == '__main__':
     train_input_n_all = norm_all(train_input)
     test_input_n_all = norm_all(test_input)
 
-    random.seed(RANDOM_SEED)
+    #random.seed(RANDOM_SEED)
     net = NN([N_DIM , N_UNIT_1, 1])
     #print(net.weight)
     #input()

@@ -185,8 +185,9 @@ class NN(object):
                 self.update_mini_batch(mini_batch_input, eta, mini_batch_expected_output)
 
             if test_data:
-                print ("Epoch ", j, ", Cross Entropy = ", self.evaluate(test_input, test_expected_output))
-                print ("Epoch ", j, ", E = ", self.evaluate_error(test_input, test_expected_output))
+                if j % 100 == 0:
+                    print ("Epoch ", j, ", Cross Entropy = ", self.evaluate(test_input, test_expected_output))
+                    print ("Epoch ", j, ", E = ", self.evaluate_error(test_input, test_expected_output))
                 epoch_list.append(j)
                 learning_curve.append(self.evaluate(test_input, test_expected_output) / N_TEST_DATA)
                 train_error_curve.append(self.evaluate_error(train_input, train_expected_output))
