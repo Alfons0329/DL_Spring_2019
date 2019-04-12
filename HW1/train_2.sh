@@ -12,8 +12,10 @@ then
         done
     done
 else
-    python3 dnn_2.py $1_16_0.000003 16 0.000003
-    python3 dnn_2.py $1_16_0.000001 16 0.000001
+    #python3 dnn_2.py $1_16_0.1 32 0.1
+    #python3 dnn_2.py $1_16_0.01 32 0.01
+    python3 dnn_2.py $1_16_0.001 32 0.001
+    python3 dnn_2.py $1_16_0.0001 32 0.0001
 fi
 
 mkdir -p $1 #_P3
