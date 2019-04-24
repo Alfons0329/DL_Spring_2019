@@ -349,7 +349,7 @@ if __name__ == '__main__':
     train_input_n_all = norm_all(train_input)
     test_input_n_all = norm_all(test_input)
 
-    #random.seed(RANDOM_SEED)
+    random.seed(RANDOM_SEED)
     net = NN([N_DIM , N_UNIT_1, 1])
     #print(net.weight)
     #input()
