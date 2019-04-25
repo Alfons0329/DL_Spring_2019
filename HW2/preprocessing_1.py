@@ -31,14 +31,14 @@ def add_label():
     for i in range(N_TRAIN_DATA):
         if i % 1000 == 0 and i != 0:
             class_idx = class_idx + 1
-        train_label.append(classes[class_idx])
+        train_label.append(class_idx)
 
     test_label = []
     class_idx = 0
     for i in range(N_TEST_DATA):
         if i % 400 == 0 and i != 0:
             class_idx = class_idx + 1
-        test_label.append(classes[class_idx])
+        test_label.append(class_idx)
 
     return train_label, test_label
 
