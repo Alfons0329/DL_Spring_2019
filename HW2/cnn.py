@@ -25,10 +25,13 @@ def img_show(img):
     plt.show()
 
 if __name__ == '__main__':
-    train_input, test_input = pre.IO_preprocess(1)
-    train_input_wlabel = pre.add_label(train_input, N_TRAIN_DATA)#with label now
+    train_input, test_input = pre.IO_preprocess(N_BATCH_SIZE)
+    print(len(train_input), len(test_input))
+    for img, label in train_input:
+        img_show(torchvision.utils.make_grid(img))
 
+    """
     for each in range(len(train_input_wlabel)):
         print(type(train_input_wlabel[each][0]), train_input_wlabel[each][1])
         img_show(train_input_wlabel[each][0])
-
+    """

@@ -25,11 +25,18 @@ def IO_preprocess(b_size):
 def add_label(input_data, input_len):
     output_data = np.zeros((input_len, 2))
     class_idx = 0
-    for j in range(len(input_data)):
-        if j % 1000 == 0 and j != 0:
+    cnt = 0
+    print(input_data)
+    input_data = iter(input_data)
+    print('iter ', input_data)
+    for j in input_data:
+        if cnt % 1000 == 0 and cnt != 0:
             class_idx += 1
-        output_data[class_idx][0] = input_data[j]
-        output_data[class_idx][1] = class_idx
+
+        print('cnt ', cnt, 'j', j, type(j))
+        output_data[cnt][0] = j
+        output_data[cnt][1] = class_idx
+        cnt += 1
 
     return output_data
 
