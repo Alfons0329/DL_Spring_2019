@@ -6,10 +6,12 @@ import cv2
 import os, sys
 
 ########### GLOBAL DEF ############
-classes = ('dog', 'horse', 'elephant', 'butterfly', 'chicken', 'cat', 'cow', 'sheep', 'spider', 'squirrel') ### represent in [0. 9]
+classes = ('butterfly', 'cat', 'chicken', 'cow', 'dog', 'elephant', 'horse', 'sheep', 'spider', 'squirrel')
 train_path = 'animal/train/'
 valid_path = 'animal/val/'
 N_CPU_THREADS = 12
+N_TRAIN_DATA = 10000
+N_TEST_DATA = 4000
 
 ########### IO PREPROCESS ##########
 def IO_preprocess(b_size):
@@ -22,23 +24,21 @@ def IO_preprocess(b_size):
     test_loader = torch.utils.data.DataLoader(test_input, batch_size = b_size, num_workers = N_CPU_THREADS, shuffle = False)
     return train_loader, test_loader
 
-def add_label(input_data, input_len):
-    output_data = np.zeros((input_len, 2))
+########### ADD LABEL FOR DATA ##########
+def add_label():
+    train_label = []
     class_idx = 0
-    cnt = 0
-    print(input_data)
-    input_data = iter(input_data)
-    print('iter ', input_data)
-    for j in input_data:
-        if cnt % 1000 == 0 and cnt != 0:
-            class_idx += 1
+    for i in range(N_TRAIN_DATA):
+        if i % 1000 == 0 and i != 0:
+            class_idx = class_idx + 1
+        train_label.append(classes[class_idx])
 
-        print('cnt ', cnt, 'j', j, type(j))
-        output_data[cnt][0] = j
-        output_data[cnt][1] = class_idx
-        cnt += 1
+    test_label = []
+    class_idx = 0
+    for i in range(N_TEST_DATA):
+        if i % 400 == 0 and i != 0:
+            class_idx = class_idx + 1
+        test_label.append(classes[class_idx])
 
-    return output_data
-
-
+    return train_label, test_label
 

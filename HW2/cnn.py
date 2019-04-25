@@ -26,9 +26,15 @@ def img_show(img):
 
 if __name__ == '__main__':
     train_input, test_input = pre.IO_preprocess(N_BATCH_SIZE)
+    train_input_label, test_input_label = pre.add_label()
     print(len(train_input), len(test_input))
+
+    cnt = 0
     for img, label in train_input:
+        print(train_input_label[0: cnt * 1000])
+        print(test_input_label[0: cnt * 400])
         img_show(torchvision.utils.make_grid(img))
+        cnt += 1
 
     """
     for each in range(len(train_input_wlabel)):
