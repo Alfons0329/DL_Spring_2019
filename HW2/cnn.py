@@ -9,32 +9,26 @@ import os, sys
 
 from PIL import Image
 ############# MY PROPROCESSS #########
-import preprocessing_1
+import preprocessing_1 as pre
 
 ############# GLOBAL DEF ####### #####
 classes = ('dog', 'horse', 'elephant', 'butterfly', 'chicken', 'cat', 'cow', 'sheep', 'spider', 'squirrel')
 train_path = 'animal/train/'
 valid_path = 'animal/val/'
 N_BATCH_SIZE = int(sys.argv[2])
-
-#class NN(object):
-
+N_TRAIN_DATA = 10000
 
 ############# DEBUG SHOW #############
 def img_show(img):
-    img = img / 2 + 0.5
     npimg = img.numpy()
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
-    plt.show
+    plt.show()
 
 if __name__ == '__main__':
-    train_input, test_input = preprocessing_1.IO_preprocess()
-    my_transform_2 = transforms.Compose([transforms.ToPILImage()])
-    print(type(train_input), len(train_input), type(test_input), len(test_input))
-    #train_input = my_transform_2(train_input)
+    train_input, test_input = pre.IO_preprocess(1)
+    train_input_wlabel = pre.add_label(train_input, N_TRAIN_DATA)#with label now
 
-    for epoch in range(100):
-        for img, label in train_input:
-            print(1)
-            #do something of NN
+    for each in range(len(train_input_wlabel)):
+        print(type(train_input_wlabel[each][0]), train_input_wlabel[each][1])
+        img_show(train_input_wlabel[each][0])
 
