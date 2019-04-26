@@ -55,26 +55,31 @@ class vgg_net(nn.Module):
             elif one_layer == 'M5':
                 layers.append(nn.MaxPool2d(kernel_size = 3, stride = 1, padding = 1))
             elif one_layer == "FC1":
-                layers.append(nn.Conv2d(in_channels = 512, out_channels = 1024, kernel_size = 3, padding = 6, dilation = 6))
+                layers.append(nn.Dropout())
+                layers.append(nn.Linear(512, 512))
                 layers.append(nn.ReLU(inplace = True))
             elif one_layer == "FC2":
-                layers.append(nn.Conv2d(1024,1024, kernel_size = 1))
+                layers.append(nn.Dropout())
+                layers.append(nn.Linear(512, 512))
                 layers.append(nn.ReLU(inplace = True))
             elif one_layer == "FC":
-                layers.append(nn.Conv2d(1024,self.num_classes, kernel_size = 1))
+                layers.append(nn.Linear(512, 10))
             else:
                 layers.append(nn.Conv2d(in_channels = in_channels, out_channels = one_layer, kernel_size = 3, padding = 1))
                 layers.append(nn.ReLU(inplace = True))
                 in_channels = one_layer
 
         self.vgg = nn.ModuleList(layers)
-
     ########## FORWARDING COMPUTE ###
     def forward(self, input_data):
         x = input_data
+        cnt = 0
         for one_layer in self.vgg:
+            print('cnt ', cnt, 'forward x shape ', x.size())
+            cnt += 1
             x = one_layer(x)
 
+        print('cnt ', cnt, 'forward x shape ', x.size())
         return x # the final output
 
 ########## MY TRAINING ###########
