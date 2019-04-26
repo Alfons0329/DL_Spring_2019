@@ -105,10 +105,9 @@ def train_2(cur_epoch):
 
     for i, data in enumerate(train_input, 0):
         inputs, labels = data
-        print('input ', inputs, 'labels ', labels)
         optimizer.zero_grad()
-
-        outputs = cnn(inputs)
+        outputs = cnn.forward(inputs)
+        print(type(i), type(data), inputs.size(), labels.size(), outputs.size())
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
