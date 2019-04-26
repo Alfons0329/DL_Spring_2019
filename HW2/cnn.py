@@ -19,21 +19,32 @@ import preprocessing_1 as pre
 # define the classes, represent in [0, 9] will be better
 classes = ('dog', 'horse', 'elephant', 'butterfly', 'chicken', 'cat', 'cow', 'sheep', 'spider', 'squirrel')
 # define the VGG 16 layer architecture
-net_one_layer16 = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M5', "FC1", "FC2", "FC"]
+net_arch_16 = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M5', "FC1", "FC2", "FC"]
 train_path = 'animal/train/'
 valid_path = 'animal/val/'
 
-N_LEARN_RATE = int(sys.argv[1])
+N_LEARN_RATE = float(sys.argv[1])
 N_BATCH_SIZE = int(sys.argv[2])
 N_STRID_SIZE = int(sys.argv[3])
 
 N_TRAIN_DATA = 10000
 N_EPOCH_LIMIT = 100
 
+############# LOAD DATASET ###########
+train_input, test_input = pre.IO_preprocess(N_BATCH_SIZE, True) # make them together
+train_input_label, test_input_label = pre.add_label()
+train_input_list = []
+test_input_list = []
+print(len(train_input), len(train_input_label))
+print(len(test_input), len(test_input_label))
+
+############# CUUUUUUUDA #############
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
 ############# NN MAIN PART ############
 class vgg_net(nn.Module):
+    ########## NN ARCHITECTURE ###
     def __init__(self, net_arch, num_classes):
-        ########## NN one_layerITECTURE ###
         super(vgg_net, self).__init__() # inherit from father nn.module object
         self.num_classes = num_classes
         layers = []
@@ -58,29 +69,59 @@ class vgg_net(nn.Module):
 
         self.vgg = nn.ModuleList(layers)
 
+    ########## FORWARDING COMPUTE ###
     def forward(self, input_data):
         x = input_data
-        for one_layer in vgg:
+        for one_layer in self.vgg:
             x = one_layer(x)
 
         return x # the final output
 
-    def train(train_input, train_input_label, test_input, test_input_label, batch_size):
-        criteron = nn.CrossEntropyLoss()
-        optimizer = optim.SGD(self.vgg_net.params(), lr = N_LEARN_RATE, momentum = 0.9)
-        train_input_label_batch = [[]]
-        test_input_label_batch = [[]]
+########## MY TRAINING ###########
+def train(train_input, train_input_label, test_input, test_input_label, batch_size):
+    criteron = nn.CrossEntropyLoss()
+    optimizer = optim.SGD(self.vgg_net.params(), lr = N_LEARN_RATE, momentum = 0.9)
+    train_input_label_batch = [[]]
+    test_input_label_batch = [[]]
 
-        for batch_cnt in range(0,N_TRAIN_DATA / batch_size):
-            train_input_label_batch.append(train_input_label[batch_cnt * batch_size: (batch_cnt + 1) * batch_size])
+    for batch_cnt in range(0,N_TRAIN_DATA / batch_size):
+        train_input_label_batch.append(train_input_label[batch_cnt * batch_size: (batch_cnt + 1) * batch_size])
 
-        for cur_epoch in range(0, N_EPOCH_LIMIT):
-            print('len input batch %d len train batch %d' %len(train_input_label_batch), len(train_input))
-            together = zip(train)
-            #for img in zip(train_input, train_input_label):
+    for cur_epoch in range(0, N_EPOCH_LIMIT):
+        print('len input batch %d len train batch %d' %len(train_input_label_batch), len(train_input))
+        together = zip(train)
+        #for img in zip(train_input, train_input_label):
 
-############# CUUUUUUUDA #############
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+######### OFFICIAL TRAINING ########
+cnn = vgg_net(net_arch_16, len(classes))
+criterion = nn.CrossEntropyLoss()
+optimizer = optim.SGD(cnn.parameters(), lr = N_LEARN_RATE, momentum = 0.9)
+
+def train_2(cur_epoch):
+    print('\nEpoch: %d' % cur_epoch)
+    train_loss = 0
+    correct = 0
+    total = 0
+    for batch_idx, (inputs, labels) in enumerate(train_input):
+        print(1)
+        optimizer.zero_grad()
+        print(2)
+        outputs = cnn(inputs)
+        print(3)
+        loss = criterion(outputs, labels)
+        print(4)
+        loss.backward()
+        print(5)
+        optimizer.step()
+        print(6)
+        train_loss += loss.data[0]
+        print(7)
+        _, predicted = torch.max(outputs.data, 1)
+        print(8)
+        total += labels.size(0)
+        print(9)
+        correct += predicted.eq(tartgets.data).cpu().sum()
+        print('loss %f accuracy %f ' %(train_loss, correct / N_TRAIN_DATA))
 
 ############# DEBUG SHOW #############
 def img_show(img):
@@ -89,17 +130,16 @@ def img_show(img):
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
     plt.show()
 
-if __name__ == '__main__':
-    train_input, test_input = pre.IO_preprocess(1) # make them together
-    train_input_label, test_input_label = pre.add_label()
-    print(len(train_input), len(train_input_label))
-    print(len(test_input), len(test_input_label))
 
-    cnt = 0
-    for each_img, each_label in zip(train_input, train_input_label):
-        #img_show(torchvision.utils.make_grid(img))
+for cur_epoch in range(0, N_EPOCH_LIMIT):
+    train_2(cur_epoch)
+    """
+    for each_img in test_input:
+        test_input_list.append(each_img)
         cnt += 1
-        print('img %d with label %d' %(cnt, each_label))
-        if cnt % 1000 == 0:
+        if cnt % 400 == 0:
             input()
 
+    for each_img in train_input:
+        train_input_list.append(each_img)
+    """
