@@ -31,7 +31,7 @@ N_TRAIN_DATA = 10000
 N_EPOCH_LIMIT = 100
 
 ############# LOAD DATASET ###########
-train_input, test_input = pre.IO_preprocess(N_BATCH_SIZE, True) # make them together
+train_input, test_input = pre.IO_preprocess(N_BATCH_SIZE, False) # make them together
 train_input_label, test_input_label = pre.add_label()
 train_input_list = []
 test_input_list = []
@@ -102,26 +102,19 @@ def train_2(cur_epoch):
     train_loss = 0
     correct = 0
     total = 0
-    for batch_idx, (inputs, labels) in enumerate(train_input):
-        print(1)
+
+    for i, data in enumerate(train_input, 0):
+        inputs, labels = data
+        print('input ', inputs, 'labels ', labels)
         optimizer.zero_grad()
-        print(2)
+
         outputs = cnn(inputs)
-        print(3)
         loss = criterion(outputs, labels)
-        print(4)
         loss.backward()
-        print(5)
         optimizer.step()
-        print(6)
-        train_loss += loss.data[0]
-        print(7)
-        _, predicted = torch.max(outputs.data, 1)
-        print(8)
-        total += labels.size(0)
-        print(9)
-        correct += predicted.eq(tartgets.data).cpu().sum()
-        print('loss %f accuracy %f ' %(train_loss, correct / N_TRAIN_DATA))
+
+        train_loss += loss.item()
+        print('epoch %d batch %d, loss %f' %(cur_epoch, i + 1, train_loss / N_BATCH_SIZE))
 
 ############# DEBUG SHOW #############
 def img_show(img):
