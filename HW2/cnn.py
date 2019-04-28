@@ -22,7 +22,17 @@ import preprocessing_1 as pre
 classes = ('dog', 'horse', 'elephant', 'butterfly', 'chicken', 'cat', 'cow', 'sheep', 'spider', 'squirrel')
 
 # define the VGG 16 layer architecture
+
 VGG16_arch = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M']
+VGG16_arch_small = [64, 'M', 128, 'M', 256, 'M', 512, 'M', 512, 'M']
+
+VGG_linear = str(sys.argv[4])
+linear_size = 0
+if VGG_linear == '--vgg_small':
+    linear_size = 1024
+else:
+    linear_size = 4096
+
 train_path = 'animal/train/'
 valid_path = 'animal/val/'
 
@@ -43,13 +53,13 @@ class VGG(nn.Module):
         super(VGG, self).__init__()
         self.features = features
         self.classifier = nn.Sequential(
-                nn.Linear(512 * 7 * 7, 4096),
+                nn.Linear(512 * 7 * 7, linear_size),
                 nn.ReLU(True),
                 nn.Dropout(),
-                nn.Linear(4096, 4096),
+                nn.Linear(linear_size, linear_size),
                 nn.ReLU(True),
                 nn.Dropout(),
-                nn.Linear(4096, len(classes)),
+                nn.Linear(linear_size, len(classes)),
                 )
         # Initialize weights
         for m in self.modules():
@@ -61,11 +71,11 @@ class VGG(nn.Module):
 
     def forward(self, x):
         x = self.features(x)
-        print('forward x shape ', x.size())
+        #print('forward x shape ', x.size())
         x = x.view(x.size(0), -1) # flatten to be input to classifier
-        print('after view x shape ', x.size())
+        #print('after view x shape ', x.size())
         x = self.classifier(x)
-        print('after classifier x shape ', x.size())
+        #print('after classifier x shape ', x.size())
         return x
 
 
@@ -106,7 +116,7 @@ def train(train_loader, model, criterion, optimizer, cur_epoch, device):
         train_loss += loss.item()
 
         if i % N_BATCH_SIZE == 0:
-            print('[Epoch %5d batch %5d] CE loss: %.3f\n' %(cur_epoch, batch_cnt, train_loss / N_BATCH_SIZE))
+            print('[Epoch %5d batch %5d] CE loss: %.3f\n' %(cur_epoch, batch_cnt, train_loss))
             train_loss = 0.0
 
 ############# DEBUG SHOW #############
@@ -125,7 +135,11 @@ if __name__ == '__main__':
     ############# CUUUUUUUDA #############
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    model = VGG(make_layers(VGG16_arch))
+    if VGG_linear == '--vgg_small':
+        model = VGG(make_layers(VGG16_arch_small))
+    else:
+        model = VGG(make_layers(VGG16_arch))
+
     if device == 'cuda':
         print('Train with CUDA ')
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
