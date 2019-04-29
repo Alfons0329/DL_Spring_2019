@@ -1,18 +1,19 @@
 #!/bin/bash
+set -e
 read -p "1: All combination of batch, 2: Current best " sel
 
 if [ $sel -eq 1 ];
 then
-    for batch_size in 64 128 256 1024 4096
+    for batch_size in 100
     do
-        for learning_rate in  0.0000001 0.0000005 0.000001 0.000005 0.00001
+        for learning_rate in 0.001
         do
             echo $learning_rate
-            python3 cnn.py $1\_$batch_size\_$learning_rate $batch_size $learning_rate
+            python3 cnn.py $learning_rate $batch_size 1 --vgg_small ada
         done
     done
 else
-    echo "None"
+    echo "do it later"
     #python3 dnn_1.py $1_16_0.00001 16 0.00001
 fi
 

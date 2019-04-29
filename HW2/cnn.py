@@ -19,9 +19,10 @@ import preprocessing_1 as pre
 
 ############# GLOBAL DEF #############
 # simple argument parsing
-ARGV_CNT = 5
-if len(sys.argv) != 5:
+ARGV_CNT = 6
+if len(sys.argv) != ARGV_CNT:
     print('Error: usage: python3 cnn.py $learning_rate $batch_size $stride_size { --vgg_normal | --vgg_small } { ada | no_ada }')
+    sys.exit(1)
 
 N_LEARN_RATE = float(sys.argv[1])
 N_BATCH_SIZE = int(sys.argv[2])
@@ -32,7 +33,7 @@ adaptive_lr = str(sys.argv[5])
 linear_size = 0
 if VGG_linear == '--vgg_small':
     linear_size = 1024
-else if VGG_linear == '--vgg_normal':
+elif VGG_linear == '--vgg_normal':
     linear_size = 4096
 
 # train data and epoch limit
@@ -54,6 +55,7 @@ train_acc_list = []
 test_acc_list = []
 
 def make_graph():
+    # plot the learning curve
     plt.clf()
     title_str = 'Learning Curve, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(N_LEARN_RATE)
     plt.title(title_str)
@@ -63,6 +65,18 @@ def make_graph():
     plt.plot(epoch_list, learning_curve, color = 'blue', label = 'no norm')
     plt.legend() # show what the line represents
     plt.savefig(sys.argv[1] + '_' + 'LC' + '.png', dpi = 150)
+
+    # plot the accuracy of training set and testing set
+    plt.clf()
+    title_str = 'Accuracy, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(N_LEARN_RATE)
+    plt.title(title_str)
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+
+    plt.plot(epoch_list, train_acc_list, color = 'blue', label = 'train acc')
+    plt.plot(epoch_list, test_acc_list, color = 'red', label = 'train acc')
+    plt.legend()
+    plt.savefig(sys.argv[1] + '_' + 'ACC' + '.png', dpi = 150)
 
 ############# NN MAIN PART ############
 class VGG(nn.Module):
@@ -88,10 +102,10 @@ class VGG(nn.Module):
                 nn.init.kaiming_normal_(m.weight, mode = 'fan_out', nonlinearity = 'relu')
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
-            else if isinstance(m, nn.BatchNorm2d):
+            elif isinstance(m, nn.BatchNorm2d):
                 nn.init.constant_(m.weight, 1)
                 nn.init.constant_(m.bias, 0)
-            else if isinstance(m, nn.Linear):
+            elif isinstance(m, nn.Linear):
                 nn.init.normal_(m.weight, 0, 0.01)
                 nn.init.constant_(m.bias, 0)
 
@@ -118,7 +132,6 @@ def make_layers(arch, batch_norm=False):
     return nn.Sequential(*layers)
 
 ############# TRAIN NN #################
-
 def train(train_loader, model, criterion, optimizer, cur_epoch, device):
     print('\nEpoch: %d' % cur_epoch)
     train_loss = 0.0
@@ -143,7 +156,8 @@ def train(train_loader, model, criterion, optimizer, cur_epoch, device):
         batch_cnt += 1
         train_loss = 0.0
 
-def validate(val_loader, model, critetion, cur_epoch, device, what):
+############# VALIDATE NN ##############
+def validate(val_loader, model, criterion, cur_epoch, device, what):
     correct = 0
     class_correct = list(0. for i in range(len(classes)))
     class_total = list(0. for i in range(len(classes)))
@@ -162,9 +176,9 @@ def validate(val_loader, model, critetion, cur_epoch, device, what):
                 class_correct[label] += class_predicted[i].item()
                 class_total[label] += 1
 
-    print('Accuracy on %5s set of %d images is %f', %(what, N_TEST_DATA, float(correct) / float(total)))
-    for i in range(len(classes))
-    print('Accuracy on %5s set of %10s class is %f', %(what, classes[i], float(class_correct[i]) / float(class_total[i])))
+    print('Accuracy on %5s set of %d images is %f' %(what, N_TEST_DATA, float(correct) / float(total)))
+    for i in range(len(classes)):
+        print('Accuracy on %5s set of %10s class is %f' %(what, classes[i], float(class_correct[i]) / float(class_total[i])))
 
 ############# DEBUG SHOW #############
 def img_show(img):
@@ -198,8 +212,11 @@ if __name__ == '__main__':
     for cur_epoch in range(N_EPOCH_LIMIT):
         if adaptive_lr == 'ada':
             N_LEARN_RATE /= 5
+
         epoch_list.append(cur_epoch)
         optimizer = optim.SGD(model.parameters(), lr = N_LEARN_RATE, momentum = 0.9)
         train(train_loader, model, criterion, optimizer, cur_epoch, device)
+        validate(train_loader, model, criterion, cur_epoch, device, 'train')
+        validate(train_loader, model, criterion, cur_epoch, device, 'test')
 
     make_graph()
