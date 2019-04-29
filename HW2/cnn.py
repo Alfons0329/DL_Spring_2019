@@ -43,6 +43,20 @@ N_STRID_SIZE = int(sys.argv[3])
 N_TRAIN_DATA = 10000
 N_EPOCH_LIMIT = 100
 
+############# FOR GRAPHING ############
+epoch_list = []
+learning_curve = []
+
+def make_graph():
+    plt.clf()
+    title_str = 'Learning Curve, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(N_LEARN_RATE)
+    plt.title(title_str)
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+
+    plt.plot(epoch_list, learning_curve, color = 'blue', label = 'no norm')
+    plt.legend() # show what the line represents
+    plt.savefig(sys.argv[1] + '_' + 'LC' + '.png', dpi = 150)
 
 ############# NN MAIN PART ############
 class VGG(nn.Module):
@@ -115,9 +129,12 @@ def train(train_loader, model, criterion, optimizer, cur_epoch, device):
 
         train_loss += loss.item()
 
-        if i % N_BATCH_SIZE == 0:
-            print('[Epoch %5d batch %5d] CE loss: %.3f\n' %(cur_epoch, batch_cnt, train_loss))
-            train_loss = 0.0
+        #if i % N_BATCH_SIZE == 0:
+        learning_curve.append(train_loss)
+        epoch_list.append(cur_epoch)
+        print('[Epoch %5d batch %5d ith_data %5d] CE loss: %.3f\n' %(cur_epoch, batch_cnt, i, train_loss))
+        batch_cnt += 1
+        train_loss = 0.0
 
 ############# DEBUG SHOW #############
 def img_show(img):
@@ -151,3 +168,4 @@ if __name__ == '__main__':
     print('Start training, batch = %5d, total epoch = %5d\n'%(N_BATCH_SIZE, N_EPOCH_LIMIT))
     for cur_epoch in range(0, N_EPOCH_LIMIT):
         train(train_loader, model, criterion, optimizer, cur_epoch, device)
+    make_graph()
