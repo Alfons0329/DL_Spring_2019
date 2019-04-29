@@ -46,7 +46,7 @@ classes = ('dog', 'horse', 'elephant', 'butterfly', 'chicken', 'cat', 'cow', 'sh
 
 # define the VGG 16 layer architecture
 VGG16_arch = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M']
-VGG16_arch_small = [64, 'M', 128, 'M', 256, 'M', 512, 'M'] # condense the upper 'VGG16_arch model'
+VGG16_arch_small = [8, 'M', 16, 'M', 32, 'M', 64, 'M'] # condense the upper 'VGG16_arch model'
 
 ############# FOR GRAPHING ############
 epoch_list = []
@@ -88,7 +88,7 @@ class VGG(nn.Module):
         self.features = features
         self.avgpool = nn.AdaptiveAvgPool2d((7, 7))
         self.classifier = nn.Sequential(
-                nn.Linear(512 * 7 * 7, linear_size),
+                nn.Linear(64 * 7 * 7, linear_size),
                 nn.ReLU(True),
                 nn.Dropout(),
                 nn.Linear(linear_size, linear_size),
@@ -121,19 +121,18 @@ def make_layers(arch, batch_norm=False):
     in_channels = 3 # first channel lies in RGB
     for v in arch:
         if v == 'M':
-            layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
+            layers += [nn.MaxPool2d(kernel_size = 2, stride = 2)]
         else:
-            conv2d = nn.Conv2d(in_channels, v, kernel_size=3, padding=1)
+            conv2d = nn.Conv2d(in_channels, v, kernel_size = 3, padding = 1)
             if batch_norm:
-                layers += [conv2d, nn.BatchNorm2d(v), nn.ReLU(inplace=True)]
+                layers += [conv2d, nn.BatchNorm2d(v), nn.ReLU(inplace = True)]
             else:
-                layers += [conv2d, nn.ReLU(inplace=True)]
+                layers += [conv2d, nn.ReLU(inplace = True)]
             in_channels = v
     return nn.Sequential(*layers)
 
 ############# TRAIN NN #################
 def train(train_loader, model, criterion, optimizer, cur_epoch, device):
-    print('\nEpoch: %d' % cur_epoch)
     train_loss = 0.0
     total = 0
     batch_cnt = 0
@@ -196,13 +195,14 @@ if __name__ == '__main__':
     train_loader, test_loader = pre.IO_preprocess(N_BATCH_SIZE, True) # make them together
     print(len(train_loader), len(test_loader))
 
-    ############# CUUUUUUUDA #############
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
+    ############# MODEL SELECT ###########
     if VGG_linear == '--vgg_small':
         model = VGG(make_layers(VGG16_arch_small))
     else:
         model = VGG(make_layers(VGG16_arch))
+
+    ############# CUUUUUUUDA #############
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     if device == 'cuda':
         print('Train with CUDA ')
@@ -211,11 +211,23 @@ if __name__ == '__main__':
         model.cuda()
         criterion = nn.CrossEntropyLoss().cuda()
 
-    print('Start training, batch = %5d, total epoch = %5d\n'%(N_BATCH_SIZE, N_EPOCH_LIMIT))
+    ############# TRAINING ###############
+    print('Start training, N_BATCH_SIZE = %4d, N_EPOCH_LIMIT = %4d, N_LEARN_RATE %f\n' %(N_BATCH_SIZE, N_EPOCH_LIMIT, N_LEARN_RATE))
+    adaptive_lr_phase = [0.2, 0.5, 0.9]
+    phase_idx = 0
     for cur_epoch in range(N_EPOCH_LIMIT):
-        if adaptive_lr == 'ada':
-            N_LEARN_RATE /= 5
+        ############# ADA LEARN RATE ###############
+        if phase_idx < len(adaptive_lr_phase) and float(cur_epoch) == float(N_EPOCH_LIMIT * adaptive_lr_phase[phase_idx]):
+            if adaptive_lr == 'ada':
+                if adaptive_lr_phase[phase_idx] == 0.2:
+                    N_LEARN_RATE /= 10
+                elif adaptive_lr_phase[phase_idx] == 0.5:
+                    N_LEARN_RATE /= 2
+                elif adaptive_lr_phase[phase_idx] == 0.9:
+                    N_LEARN_RATE /= 2
+            phase_idx += 1
 
+        print('cur_epoch %d N_LEARN_RATE %f' %(cur_epoch, N_LEARN_RATE))
         epoch_list.append(cur_epoch)
         optimizer = optim.SGD(model.parameters(), lr = N_LEARN_RATE, momentum = 0.9)
         train(train_loader, model, criterion, optimizer, cur_epoch, device)
