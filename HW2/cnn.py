@@ -18,41 +18,47 @@ from PIL import Image
 import preprocessing_1 as pre
 
 ############# GLOBAL DEF #############
-# define the classes, represent in [0, 9] will be better
-classes = ('dog', 'horse', 'elephant', 'butterfly', 'chicken', 'cat', 'cow', 'sheep', 'spider', 'squirrel')
-
-# define the VGG 16 layer architecture
-
-VGG16_arch = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M']
-VGG16_arch_small = [64, 'M', 128, 'M', 256, 'M', 512, 'M', 512, 'M']
-
-VGG_linear = str(sys.argv[4])
-linear_size = 0
-if VGG_linear == '--vgg_small':
-    linear_size = 1024
-else:
-    linear_size = 4096
-
-train_path = 'animal/train/'
-valid_path = 'animal/val/'
+# simple argument parsing
+ARGV_CNT = 5
+if len(sys.argv) != 5:
+    print('Error: usage: python3 cnn.py $learning_rate $batch_size $stride_size { --vgg_normal | --vgg_small } { ada | no_ada }')
 
 N_LEARN_RATE = float(sys.argv[1])
 N_BATCH_SIZE = int(sys.argv[2])
 N_STRID_SIZE = int(sys.argv[3])
+VGG_linear = str(sys.argv[4])
+adaptive_lr = str(sys.argv[5])
 
+linear_size = 0
+if VGG_linear == '--vgg_small':
+    linear_size = 1024
+else if VGG_linear == '--vgg_normal':
+    linear_size = 4096
+
+# train data and epoch limit
 N_TRAIN_DATA = 10000
+N_TEST_DATA = 4000
 N_EPOCH_LIMIT = 100
+
+# define the classes, represent in [0, 9] will be better
+classes = ('dog', 'horse', 'elephant', 'butterfly', 'chicken', 'cat', 'cow', 'sheep', 'spider', 'squirrel')
+
+# define the VGG 16 layer architecture
+VGG16_arch = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M']
+VGG16_arch_small = [64, 'M', 128, 'M', 256, 'M', 512, 'M', 512, 'M'] # condense the upper 'VGG16_arch model'
 
 ############# FOR GRAPHING ############
 epoch_list = []
 learning_curve = []
+train_acc_list = []
+test_acc_list = []
 
 def make_graph():
     plt.clf()
     title_str = 'Learning Curve, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(N_LEARN_RATE)
     plt.title(title_str)
     plt.xlabel('Epochs')
-    plt.ylabel('Loss')
+    plt.ylabel('Cross Entropy')
 
     plt.plot(epoch_list, learning_curve, color = 'blue', label = 'no norm')
     plt.legend() # show what the line represents
@@ -66,6 +72,7 @@ class VGG(nn.Module):
     def __init__(self, features):
         super(VGG, self).__init__()
         self.features = features
+        self.avgpool = nn.AdaptiveAvgPool2d((7, 7))
         self.classifier = nn.Sequential(
                 nn.Linear(512 * 7 * 7, linear_size),
                 nn.ReLU(True),
@@ -78,20 +85,22 @@ class VGG(nn.Module):
         # Initialize weights
         for m in self.modules():
             if isinstance(m, nn.Conv2d): # if m is the convolutional layer, init it
-                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                m.weight.data.normal_(0, math.sqrt(2. / n))
-                m.bias.data.zero_()
-
+                nn.init.kaiming_normal_(m.weight, mode = 'fan_out', nonlinearity = 'relu')
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            else if isinstance(m, nn.BatchNorm2d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+            else if isinstance(m, nn.Linear):
+                nn.init.normal_(m.weight, 0, 0.01)
+                nn.init.constant_(m.bias, 0)
 
     def forward(self, x):
         x = self.features(x)
-        #print('forward x shape ', x.size())
+        x = self.avgpool(x)
         x = x.view(x.size(0), -1) # flatten to be input to classifier
-        #print('after view x shape ', x.size())
         x = self.classifier(x)
-        #print('after classifier x shape ', x.size())
         return x
-
 
 def make_layers(arch, batch_norm=False):
     layers = []
@@ -113,7 +122,6 @@ def make_layers(arch, batch_norm=False):
 def train(train_loader, model, criterion, optimizer, cur_epoch, device):
     print('\nEpoch: %d' % cur_epoch)
     train_loss = 0.0
-    correct = 0
     total = 0
     batch_cnt = 0
 
@@ -131,10 +139,32 @@ def train(train_loader, model, criterion, optimizer, cur_epoch, device):
 
         #if i % N_BATCH_SIZE == 0:
         learning_curve.append(train_loss)
-        epoch_list.append(cur_epoch)
-        print('[Epoch %5d batch %5d ith_data %5d] CE loss: %.3f\n' %(cur_epoch, batch_cnt, i, train_loss))
+        print('[Epoch %5d batch %5d ith_data %5d] CE loss: %.3f' %(cur_epoch, batch_cnt, i, train_loss))
         batch_cnt += 1
         train_loss = 0.0
+
+def validate(val_loader, model, critetion, cur_epoch, device, what):
+    correct = 0
+    class_correct = list(0. for i in range(len(classes)))
+    class_total = list(0. for i in range(len(classes)))
+    with torch.no_grad():
+        for data in val_loader:
+            inputs, labels = data
+            inputs, labels = inputs.to(device), labels.to(device)
+            outputs = model(inputs)
+            _, predicted = torch.max(outputs.data, 1)
+            class_predicted = (predicted == labels).squeeze()
+            total += labels.size(0)
+            correct += (predicted == labels).sum.item()
+
+            for i in range(4):
+                label = labels[i]
+                class_correct[label] += class_predicted[i].item()
+                class_total[label] += 1
+
+    print('Accuracy on %5s set of %d images is %f', %(what, N_TEST_DATA, float(correct) / float(total)))
+    for i in range(len(classes))
+    print('Accuracy on %5s set of %10s class is %f', %(what, classes[i], float(class_correct[i]) / float(class_total[i])))
 
 ############# DEBUG SHOW #############
 def img_show(img):
@@ -143,7 +173,7 @@ def img_show(img):
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
     plt.show()
 
-
+############# MAIN FUNCT #############
 if __name__ == '__main__':
     ############# LOAD DATASET ###########
     train_loader, test_loader = pre.IO_preprocess(N_BATCH_SIZE, True) # make them together
@@ -164,8 +194,12 @@ if __name__ == '__main__':
         model.cuda()
         criterion = nn.CrossEntropyLoss().cuda()
 
-    optimizer = optim.SGD(model.parameters(), lr = N_LEARN_RATE, momentum = 0.9)
     print('Start training, batch = %5d, total epoch = %5d\n'%(N_BATCH_SIZE, N_EPOCH_LIMIT))
-    for cur_epoch in range(0, N_EPOCH_LIMIT):
+    for cur_epoch in range(N_EPOCH_LIMIT):
+        if adaptive_lr == 'ada':
+            N_LEARN_RATE /= 5
+        epoch_list.append(cur_epoch)
+        optimizer = optim.SGD(model.parameters(), lr = N_LEARN_RATE, momentum = 0.9)
         train(train_loader, model, criterion, optimizer, cur_epoch, device)
+
     make_graph()
