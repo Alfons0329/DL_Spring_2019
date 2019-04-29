@@ -46,7 +46,7 @@ classes = ('dog', 'horse', 'elephant', 'butterfly', 'chicken', 'cat', 'cow', 'sh
 
 # define the VGG 16 layer architecture
 VGG16_arch = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M']
-VGG16_arch_small = [64, 'M', 128, 'M', 256, 'M', 512, 'M', 512, 'M'] # condense the upper 'VGG16_arch model'
+VGG16_arch_small = [64, 'M', 128, 'M', 256, 'M', 512, 'M'] # condense the upper 'VGG16_arch model'
 
 ############# FOR GRAPHING ############
 epoch_list = []
@@ -159,8 +159,10 @@ def train(train_loader, model, criterion, optimizer, cur_epoch, device):
 ############# VALIDATE NN ##############
 def validate(val_loader, model, criterion, cur_epoch, device, what):
     correct = 0
+    total = 0
     class_correct = list(0. for i in range(len(classes)))
     class_total = list(0. for i in range(len(classes)))
+
     with torch.no_grad():
         for data in val_loader:
             inputs, labels = data
@@ -169,7 +171,7 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
             _, predicted = torch.max(outputs.data, 1)
             class_predicted = (predicted == labels).squeeze()
             total += labels.size(0)
-            correct += (predicted == labels).sum.item()
+            correct += (predicted == labels).sum().item()
 
             for i in range(4):
                 label = labels[i]
@@ -177,6 +179,7 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
                 class_total[label] += 1
 
     print('Accuracy on %5s set of %d images is %f' %(what, N_TEST_DATA, float(correct) / float(total)))
+
     for i in range(len(classes)):
         print('Accuracy on %5s set of %10s class is %f' %(what, classes[i], float(class_correct[i]) / float(class_total[i])))
 

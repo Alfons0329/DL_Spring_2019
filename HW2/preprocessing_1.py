@@ -17,12 +17,13 @@ N_TEST_DATA = 4000
 ########### IO PREPROCESS ##########
 def IO_preprocess(b_size, shuffle_or_not):
     # image rgb range [0, 255] -> [0.0, 1.0] and -> [-1, 1]
-    my_transform = transforms.Compose([transforms.Resize((256, 256)),transforms.RandomCrop((224, 224)), transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]) # NOTE: The order of tr
+    # 0430 delete random crop to see if better and force the shuffle to be true
+    my_transform = transforms.Compose([transforms.Resize((256, 256)), transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]) # NOTE: The order of tr
     train_input = torchvision.datasets.ImageFolder(root = train_path, transform = my_transform)
-    train_loader = torch.utils.data.DataLoader(train_input, batch_size = b_size, num_workers = N_CPU_THREADS, shuffle = shuffle_or_not)
+    train_loader = torch.utils.data.DataLoader(train_input, batch_size = b_size, num_workers = N_CPU_THREADS, shuffle = True)
 
     test_input = torchvision.datasets.ImageFolder(root = valid_path, transform = my_transform)
-    test_loader = torch.utils.data.DataLoader(test_input, batch_size = b_size, num_workers = N_CPU_THREADS, shuffle = shuffle_or_not)
+    test_loader = torch.utils.data.DataLoader(test_input, batch_size = b_size, num_workers = N_CPU_THREADS, shuffle = True)
     return train_loader, test_loader
 
 ########### ADD LABEL FOR DATA ##########
