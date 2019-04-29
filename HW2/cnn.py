@@ -84,7 +84,7 @@ def make_graph():
     plt.ylabel('Accuracy')
 
     plt.plot(epoch_list, train_acc_list, color = 'blue', label = 'train acc')
-    plt.plot(epoch_list, test_acc_list, color = 'red', label = 'train acc')
+    plt.plot(epoch_list, test_acc_list, color = 'red', label = 'test acc')
     plt.legend()
     plt.savefig(sys.argv[1] + '_' + 'ACC' + '.png', dpi = 150)
 
@@ -188,7 +188,7 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
                 class_correct[label] += class_predicted[i].item()
                 class_total[label] += 1
 
-    print('Accuracy on %5s set of %d images is %f' %(what, N_TEST_DATA, float(correct) / float(total)))
+    print('Accuracy on %5s set of %d images is %f' %(what, len(val_loader), float(correct) / float(total)))
 
     for i in range(len(classes)):
         print('Accuracy on %5s set of %10s class is %f' %(what, classes[i], float(class_correct[i]) / float(class_total[i])))

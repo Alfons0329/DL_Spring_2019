@@ -6,7 +6,7 @@ if [ $sel -eq 1 ];
 then
     for batch_size in 100
     do
-        for learning_rate in 0.01
+        for learning_rate in 0.01 0.001
         do
             echo $learning_rate
             python3 cnn.py $learning_rate $batch_size 1 --vgg_small ada
