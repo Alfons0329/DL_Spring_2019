@@ -1,3 +1,13 @@
+"""
+Reduced VGG16 version in this python code, original version is VGG16_arch and reduced is VGG16_arch_small due to the hardware limitation of compute capability
+Please run with --vgg_normal if you have HW such like TITAN V
+
+My HW as follows:
+    CPU = i7 8700K @ 4GHz
+    GPU = 1070 8GB
+    RAM = 32GB DDR4
+    SSD = PM981 512GB
+"""
 ############# IMPORT MODULE #########
 import torch
 import torchvision
@@ -32,7 +42,7 @@ adaptive_lr = str(sys.argv[5])
 
 linear_size = 0
 if VGG_linear == '--vgg_small':
-    linear_size = 1024
+    linear_size = 256
 elif VGG_linear == '--vgg_normal':
     linear_size = 4096
 
@@ -91,9 +101,10 @@ class VGG(nn.Module):
                 nn.Linear(64 * 7 * 7, linear_size),
                 nn.ReLU(True),
                 nn.Dropout(),
-                nn.Linear(linear_size, linear_size),
-                nn.ReLU(True),
-                nn.Dropout(),
+                # try to save some computational resource
+                #nn.Linear(linear_size, linear_size),
+                #nn.ReLU(True),
+                #nn.Dropout(),
                 nn.Linear(linear_size, len(classes)),
                 )
         # Initialize weights
