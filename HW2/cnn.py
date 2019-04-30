@@ -56,7 +56,11 @@ classes = ('dog', 'horse', 'elephant', 'butterfly', 'chicken', 'cat', 'cow', 'sh
 
 # define the VGG 16 layer architecture
 VGG16_arch = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M']
-VGG16_arch_small = [8, 'M', 16, 'M', 32, 'M', 64, 'M'] # condense the upper 'VGG16_arch model'
+VGG16_arch_small = [8, 'M', 16, 'M', 32, 'M', 64, 'M'] # condense the upper 'VGG16_arch model'O
+# save the model
+model_path = 'my_vgg.pt'
+acc_path = 'best_acc.txt'
+best_acc = 0.0
 
 ############# FOR GRAPHING ############
 epoch_list = []
@@ -146,7 +150,6 @@ def make_layers(arch, batch_norm=False):
 def train(train_loader, model, criterion, optimizer, cur_epoch, device):
     train_loss = 0.0
     total = 0
-    batch_cnt = 0
 
     for i, data in enumerate(train_loader, 0):
         inputs, labels = data
@@ -160,11 +163,8 @@ def train(train_loader, model, criterion, optimizer, cur_epoch, device):
 
         train_loss += loss.item()
 
-        #if i % N_BATCH_SIZE == 0:
-        learning_curve.append(train_loss)
-        print('[Epoch %5d batch %5d ith_data %5d] CE loss: %.3f' %(cur_epoch, batch_cnt, i, train_loss))
-        batch_cnt += 1
-        train_loss = 0.0
+    learning_curve.append(float(train_loss) / float(N_BATCH_SIZE))
+    print('[Epoch %5d CE loss: %.3f' %(cur_epoch, train_loss, float(train_loss) / float(N_BATCH_SIZE)))
 
 ############# VALIDATE NN ##############
 def validate(val_loader, model, criterion, cur_epoch, device, what):
@@ -189,9 +189,10 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
                 class_total[label] += 1
 
     print('Accuracy on %5s set of %d images is %f' %(what, len(val_loader), float(correct) / float(total)))
-
     for i in range(len(classes)):
         print('Accuracy on %5s set of %10s class is %f' %(what, classes[i], float(class_correct[i]) / float(class_total[i])))
+    # return the accuracy
+    return float(correct) / float(total)
 
 ############# DEBUG SHOW #############
 def img_show(img):
@@ -204,11 +205,21 @@ def img_show(img):
 if __name__ == '__main__':
     ############# LOAD DATASET ###########
     train_loader, test_loader = pre.IO_preprocess(N_BATCH_SIZE, True) # make them together
-    print(len(train_loader), len(test_loader))
 
-    ############# MODEL SELECT ###########
+    ############# MODEL SELECT / LOAD ####
+    has_pretrained = False
     if VGG_linear == '--vgg_small':
         model = VGG(make_layers(VGG16_arch_small))
+        if os.path.isfile(model_path): # if has a self-pretrained model, just fucking load it
+            model.load_state_dict(torch.load(model_path))
+            model.eval()
+            has_pretrained = True
+            if os.paht.isfile(acc_path)
+                f = open(acc_path, 'r'):
+                best_acc = (f.read())
+            print('Has my own pretrained model, directly load it!')
+            print('Current best acc ', best_acc)
+            print(model)
     else:
         model = VGG(make_layers(VGG16_arch))
 
@@ -226,6 +237,8 @@ if __name__ == '__main__':
     print('Start training, N_BATCH_SIZE = %4d, N_EPOCH_LIMIT = %4d, N_LEARN_RATE %f\n' %(N_BATCH_SIZE, N_EPOCH_LIMIT, N_LEARN_RATE))
     adaptive_lr_phase = [0.2, 0.5, 0.9]
     phase_idx = 0
+    cur_acc = 0.0
+
     for cur_epoch in range(N_EPOCH_LIMIT):
         ############# ADA LEARN RATE ###############
         if phase_idx < len(adaptive_lr_phase) and float(cur_epoch) == float(N_EPOCH_LIMIT * adaptive_lr_phase[phase_idx]):
@@ -242,7 +255,8 @@ if __name__ == '__main__':
         epoch_list.append(cur_epoch)
         optimizer = optim.SGD(model.parameters(), lr = N_LEARN_RATE, momentum = 0.9)
         train(train_loader, model, criterion, optimizer, cur_epoch, device)
-        validate(train_loader, model, criterion, cur_epoch, device, 'train')
-        validate(train_loader, model, criterion, cur_epoch, device, 'test')
+        train_acc_list.append(float(validate(train_loader, model, criterion, cur_epoch, device, 'train'))
+        cur_acc = float(validate(test_loader, model, criterion, cur_epoch, device, 'test'))
+        test_acc_list.append(cur_acc)
 
     make_graph()
