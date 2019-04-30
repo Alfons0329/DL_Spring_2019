@@ -14,8 +14,10 @@ then
         done
     done
 else
-    python3 cnn_1.py 0.01 200 1 --vgg_small ada
-    python3 cnn_1.py 0.1 100 1 --vgg_small ada
+    rm -rf my_vgg.pt best_acc.txt
+    python3 cnn.py 0.01 200 1 --vgg_small ada
+    rm -rf my_vgg.pt best_acc.txt
+    python3 cnn.py 0.1 100 1 --vgg_small ada
 fi
 
 mkdir -p $1 #_P3
