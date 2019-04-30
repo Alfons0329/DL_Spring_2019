@@ -197,7 +197,7 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
 
         for i in range(len(classes)):
             if class_total[i] != 0:
-                print('Accuracy on %5s set of %10s class with size %d is %f' %(what, classes[i], class_total[i], float(class_correct[i]) / float(class_total[i])))
+                print('Accuracy on %5s set of %10s class with is %.3f' %(what, classes[i], float(class_correct[i]) / float(class_total[i])))
     # return the accuracy
         return float(correct) / float(total)
     else:
@@ -265,14 +265,15 @@ if __name__ == '__main__':
         print('cur_epoch %d N_LEARN_RATE %f' %(cur_epoch, N_LEARN_RATE))
         epoch_list.append(cur_epoch)
         # determine to use pretrained or not
-        # if has_pretrained == False:
-        optimizer = optim.SGD(model.parameters(), lr = N_LEARN_RATE, momentum = 0.9)
-        train(train_loader, model, criterion, optimizer, cur_epoch, device)
+        if has_pretrained == False:
+            optimizer = optim.SGD(model.parameters(), lr = N_LEARN_RATE, momentum = 0.9)
+            train(train_loader, model, criterion, optimizer, cur_epoch, device)
 
         train_acc_list.append(validate(train_loader, model, criterion, cur_epoch, device, 'train'))
-        print('-----------------------------------------------\n')
+        print('')
         cur_acc = validate(test_loader, model, criterion, cur_epoch, device, 'test')
         test_acc_list.append(cur_acc)
+        print('-----------------------------------------------\n')
 
         # save the model and corresponding accuracy if this is the final epoch with better result
         if cur_epoch == N_EPOCH_LIMIT - 1 and cur_acc > best_acc:
