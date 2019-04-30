@@ -102,7 +102,7 @@ class VGG(nn.Module):
         self.features = features
         self.avgpool = nn.AdaptiveAvgPool2d((7, 7))
         self.classifier = nn.Sequential(
-                nn.Linear(64 * 7 * 7, linear_size),
+                nn.Linear(512 * 7 * 7, linear_size),
                 nn.ReLU(True),
                 nn.Dropout(),
                 # try to save some computational resource
