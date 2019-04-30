@@ -4,7 +4,7 @@ read -p "1: All combination of batch, 2: Current best " sel
 
 if [ $sel -eq 1 ];
 then
-    for batch_size in 400
+    for batch_size in 200
     do
         for learning_rate in 0.01
         do
