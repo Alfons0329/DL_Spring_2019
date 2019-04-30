@@ -20,7 +20,7 @@ then
     rm -rf my_vgg.pt best_acc.txt
     #python3 cnn.py 0.1 100 1 --vgg_small ada
 else
-    python3 cnn_vgg16.py 0.01 100 1 --vgg_normal ada
+    python3 cnn_vgg16.py 0.01 40 1 --vgg_normal ada
 fi
 
 mkdir -p $1 #_P3
