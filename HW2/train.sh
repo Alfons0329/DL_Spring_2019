@@ -4,7 +4,7 @@ read -p "1: All combination of batch, 2: Current best " sel
 
 if [ $sel -eq 1 ];
 then
-    for batch_size in 100 400
+    for batch_size in 400 100
     do
         rm -rf my_vgg.pt best_acc.txt
         for learning_rate in 0.01

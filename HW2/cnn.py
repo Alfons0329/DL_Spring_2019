@@ -189,14 +189,14 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
                 class_total[label] += 1
 
     if total != 0:
-        print('Accuracy on %5s set of %d images is %f' %(what, total, float(correct) / float(total)))
+        print('Accuracy on %6s set of %d images is %f' %(what, total, float(correct) / float(total)))
 
         for i in range(len(classes)):
             if class_total[i] != 0:
-                print('Accuracy on %5s set of %10s class is %f' %(what, classes[i], float(class_correct[i]) / float(class_total[i])))
+                print('Accuracy on %5s set of %10s class with size %d is %f' %(what, classes[i], class_total[i], float(class_correct[i]) / float(class_total[i])))
     # return the accuracy
         return float(correct) / float(total)
-    else
+    else:
         return 0
 
 ############# DEBUG SHOW #############
@@ -266,6 +266,7 @@ if __name__ == '__main__':
         train(train_loader, model, criterion, optimizer, cur_epoch, device)
 
         train_acc_list.append(validate(train_loader, model, criterion, cur_epoch, device, 'train'))
+        print('-----------------------------------------------\n')
         cur_acc = validate(test_loader, model, criterion, cur_epoch, device, 'test')
         test_acc_list.append(cur_acc)
 
