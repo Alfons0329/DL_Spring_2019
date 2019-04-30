@@ -188,11 +188,16 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
                 class_correct[label] += class_predicted[i].item()
                 class_total[label] += 1
 
-    print('Accuracy on %5s set of %d images is %f' %(what, total, float(correct) / float(total)))
-    for i in range(len(classes)):
-        print('Accuracy on %5s set of %10s class is %f' %(what, classes[i], float(class_correct[i]) / float(class_total[i])))
+    if total != 0:
+        print('Accuracy on %5s set of %d images is %f' %(what, total, float(correct) / float(total)))
+
+        for i in range(len(classes)):
+            if class_total[i] != 0:
+                print('Accuracy on %5s set of %10s class is %f' %(what, classes[i], float(class_correct[i]) / float(class_total[i])))
     # return the accuracy
-    return float(correct) / float(total)
+        return float(correct) / float(total)
+    else
+        return 0
 
 ############# DEBUG SHOW #############
 def img_show(img):

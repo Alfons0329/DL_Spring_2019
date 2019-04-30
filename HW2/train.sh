@@ -4,10 +4,10 @@ read -p "1: All combination of batch, 2: Current best " sel
 
 if [ $sel -eq 1 ];
 then
-    for batch_size in 200
+    for batch_size in 100 400
     do
         rm -rf my_vgg.pt best_acc.txt
-        for learning_rate in 0.01 0.1
+        for learning_rate in 0.01
         do
             echo $learning_rate
             python3 cnn.py $learning_rate $batch_size 1 --vgg_small ada
