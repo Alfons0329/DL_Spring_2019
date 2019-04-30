@@ -183,10 +183,10 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
-            print('labels ', labels)
-            print('class_predicted ', class_predicted)
-            print('class_correct ', class_correct)
-            print('class_total ', class_total)
+            #print('labels ', labels)
+            #print('class_predicted ', class_predicted)
+            #print('class_correct ', class_correct)
+            #print('class_total ', class_total)
             for i in range(4):
                 label = labels[i]
                 class_correct[label] += class_predicted[i].item()
