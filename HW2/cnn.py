@@ -49,7 +49,7 @@ elif VGG_linear == '--vgg_normal':
 # train data and epoch limit
 N_TRAIN_DATA = 10000
 N_TEST_DATA = 4000
-N_EPOCH_LIMIT = 100
+N_EPOCH_LIMIT = 2
 
 # define the classes, represent in [0, 9] will be better
 classes = ('dog', 'horse', 'elephant', 'butterfly', 'chicken', 'cat', 'cow', 'sheep', 'spider', 'squirrel')
@@ -69,17 +69,6 @@ train_acc_list = []
 test_acc_list = []
 
 def make_graph():
-    # plot the learning curve
-    plt.clf()
-    title_str = 'Learning Curve, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(N_LEARN_RATE)
-    plt.title(title_str)
-    plt.xlabel('Epochs')
-    plt.ylabel('Cross Entropy')
-
-    plt.plot(epoch_list, learning_curve, color = 'blue', label = 'no norm')
-    plt.legend() # show what the line represents
-    plt.savefig(sys.argv[1] + '_' + 'LC' + '.png', dpi = 150)
-
     # plot the accuracy of training set and testing set
     plt.clf()
     title_str = 'Accuracy, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(N_LEARN_RATE)
@@ -90,7 +79,18 @@ def make_graph():
     plt.plot(epoch_list, train_acc_list, color = 'blue', label = 'train acc')
     plt.plot(epoch_list, test_acc_list, color = 'red', label = 'test acc')
     plt.legend()
-    plt.savefig(sys.argv[1] + '_' + 'ACC' + '.png', dpi = 150)
+    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + 'ACC' + '.png', dpi = 150)
+
+    # plot the learning curve
+    plt.clf()
+    title_str = 'Learning Curve, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(N_LEARN_RATE)
+    plt.title(title_str)
+    plt.xlabel('Epochs')
+    plt.ylabel('Cross Entropy')
+
+    plt.plot(epoch_list, learning_curve, color = 'blue', label = 'no norm')
+    plt.legend() # show what the line represents
+    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + 'LC' + '.png', dpi = 150)
 
 ############# NN MAIN PART ############
 class VGG(nn.Module):
@@ -164,7 +164,7 @@ def train(train_loader, model, criterion, optimizer, cur_epoch, device):
         train_loss += loss.item()
 
     learning_curve.append(float(train_loss) / float(N_BATCH_SIZE))
-    print('[Epoch %5d CE loss: %.3f' %(cur_epoch, train_loss, float(train_loss) / float(N_BATCH_SIZE)))
+    print('Epoch %5d CE loss: %.3f' %(cur_epoch, float(train_loss) / float(N_BATCH_SIZE)))
 
 ############# VALIDATE NN ##############
 def validate(val_loader, model, criterion, cur_epoch, device, what):
@@ -188,7 +188,7 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
                 class_correct[label] += class_predicted[i].item()
                 class_total[label] += 1
 
-    print('Accuracy on %5s set of %d images is %f' %(what, len(val_loader), float(correct) / float(total)))
+    print('Accuracy on %5s set of %d images is %f' %(what, total, float(correct) / float(total)))
     for i in range(len(classes)):
         print('Accuracy on %5s set of %10s class is %f' %(what, classes[i], float(class_correct[i]) / float(class_total[i])))
     # return the accuracy
@@ -205,18 +205,20 @@ def img_show(img):
 if __name__ == '__main__':
     ############# LOAD DATASET ###########
     train_loader, test_loader = pre.IO_preprocess(N_BATCH_SIZE, True) # make them together
+    print(len(train_loader), len(test_loader))
 
     ############# MODEL SELECT / LOAD ####
     has_pretrained = False
     if VGG_linear == '--vgg_small':
         model = VGG(make_layers(VGG16_arch_small))
         if os.path.isfile(model_path): # if has a self-pretrained model, just fucking load it
-            model.load_state_dict(torch.load(model_path))
-            model.eval()
-            has_pretrained = True
-            if os.paht.isfile(acc_path)
-                f = open(acc_path, 'r'):
-                best_acc = (f.read())
+            model = torch.load(model_path)
+            #model.eval()
+            if os.path.isfile(acc_path):
+                f = open(acc_path, 'r')
+                read_acc = (f.read())
+                best_acc = float(read_acc)
+                has_pretrained = True
             print('Has my own pretrained model, directly load it!')
             print('Current best acc ', best_acc)
             print(model)
@@ -253,10 +255,22 @@ if __name__ == '__main__':
 
         print('cur_epoch %d N_LEARN_RATE %f' %(cur_epoch, N_LEARN_RATE))
         epoch_list.append(cur_epoch)
+        # determine to use pretrained or not
+        # if has_pretrained == False:
         optimizer = optim.SGD(model.parameters(), lr = N_LEARN_RATE, momentum = 0.9)
         train(train_loader, model, criterion, optimizer, cur_epoch, device)
-        train_acc_list.append(float(validate(train_loader, model, criterion, cur_epoch, device, 'train'))
-        cur_acc = float(validate(test_loader, model, criterion, cur_epoch, device, 'test'))
+
+        train_acc_list.append(validate(train_loader, model, criterion, cur_epoch, device, 'train'))
+        cur_acc = validate(test_loader, model, criterion, cur_epoch, device, 'test')
         test_acc_list.append(cur_acc)
 
+        # save the model and corresponding accuracy if this is the final epoch with better result
+        if cur_epoch == N_EPOCH_LIMIT - 1 and cur_acc > best_acc:
+            print('Last epoch, better model with cur_acc %.3f over best_acc %.3f, save model and acc'%(cur_acc, best_acc))
+            torch.save(model, model_path)
+            f = open(acc_path, 'w')
+            f.write(str(cur_acc))
+            f.close()
+
+    torch.cuda.empty_cache()
     make_graph()
