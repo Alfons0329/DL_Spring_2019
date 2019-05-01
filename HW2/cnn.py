@@ -72,7 +72,7 @@ test_acc_list = []
 def make_graph():
     # plot the accuracy of training set and testing set
     plt.clf()
-    title_str = 'STRI=' + str(N_STRID_SIZE) + ' KER' + str(kernel_size) + ' Acc, BAT=' + str(N_BATCH_SIZE) + ' ETA = ' + str(N_LEARN_RATE)
+    title_str = 'STRI=' + str(N_STRID_SIZE) + ' KER' + str(N_KERNE_SIZE) + ' Acc, BAT=' + str(N_BATCH_SIZE) + ' ETA = ' + str(N_LEARN_RATE)
     plt.title(title_str)
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
@@ -80,18 +80,18 @@ def make_graph():
     plt.plot(epoch_list, train_acc_list, color = 'blue', label = 'train acc')
     plt.plot(epoch_list, test_acc_list, color = 'red', label = 'test acc')
     plt.legend()
-    plt.savefig(adaptive_lr + '_' + str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(kernel_size) + '_' + 'ACC' + '.png', dpi = 150)
+    plt.savefig(adaptive_lr + '_' + str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(N_KERNE_SIZE) + '_' + 'ACC' + '.png', dpi = 150)
 
     # plot the learning curve
     plt.clf()
-    title_str = 'STRI=' + str(N_STRID_SIZE) + ' KER' + str(kernel_size) + ' LC, BAT=' + str(N_BATCH_SIZE) + ' ETA = ' + str(N_LEARN_RATE)
+    title_str = 'STRI=' + str(N_STRID_SIZE) + ' KER' + str(N_KERNE_SIZE) + ' LC, BAT=' + str(N_BATCH_SIZE) + ' ETA = ' + str(N_LEARN_RATE)
     plt.title(title_str)
     plt.xlabel('Epochs')
     plt.ylabel('Cross Entropy')
 
     plt.plot(epoch_list, learning_curve, color = 'blue', label = 'no norm')
     plt.legend() # show what the line represents
-    plt.savefig(adaptive_lr + '_' + str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(kernel_size) + '_' + 'LC' + '.png', dpi = 150)
+    plt.savefig(adaptive_lr + '_' + str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(N_KERNE_SIZE) + '_' + 'LC' + '.png', dpi = 150)
 
 ############# NN MAIN PART ############
 class VGG(nn.Module):
@@ -277,7 +277,7 @@ if __name__ == '__main__':
 
             # 0501 changed from SGD to adam
             train(train_loader, model, criterion, optimizer, cur_epoch, device)
-            train_acc_list.append(validate(train_loader, model, criterion, cur_epoch, device, 'train'))
+        train_acc_list.append(validate(train_loader, model, criterion, cur_epoch, device, 'train'))
 
         print('')
         cur_acc = validate(test_loader, model, criterion, cur_epoch, device, 'test')

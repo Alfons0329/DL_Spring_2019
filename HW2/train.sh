@@ -5,7 +5,7 @@ read -p "1: Compare stride size, 2: Compare kernel size, 3: Current best 4: Run 
 if [ $sel -eq 1 ];
 then
     echo "Compare the effect of strid_size"
-    for batch_size in 64
+    for batch_size in 16
     do
         rm -rf my_vgg.pt best_acc.txt
         for strid_size in 1 3
@@ -16,7 +16,7 @@ then
 elif [ $sel -eq 2 ];
 then
     echo "Compare the effect of kernel_size"
-    for batch_size in 64
+    for batch_size in 16
     do
         rm -rf my_vgg.pt best_acc.txt
         for kernel_size in 3 5
