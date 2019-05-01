@@ -7,10 +7,9 @@ then
     for batch_size in 64
     do
         rm -rf my_vgg.pt best_acc.txt
-        for learning_rate in 0.01 0.1
+        for strid_size in 1 5
         do
-            echo $learning_rate
-            python3 cnn.py $learning_rate $batch_size 1 --vgg_small $2
+            python3 cnn.py 0.01 $batch_size $strid_size --vgg_small $2
         done
     done
 elif [ $sel -eq 2 ];

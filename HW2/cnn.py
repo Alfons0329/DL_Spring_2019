@@ -49,7 +49,7 @@ elif VGG_linear == '--vgg_normal':
 # train data and epoch limit
 N_TRAIN_DATA = 10000
 N_TEST_DATA = 4000
-N_EPOCH_LIMIT = 100
+N_EPOCH_LIMIT = 1
 
 # define the classes, represent in [0, 9] will be better
 classes = ('dog', 'horse', 'elephant', 'butterfly', 'chicken', 'cat', 'cow', 'sheep', 'spider', 'squirrel')
@@ -71,7 +71,7 @@ test_acc_list = []
 def make_graph():
     # plot the accuracy of training set and testing set
     plt.clf()
-    title_str = 'Accuracy, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(N_LEARN_RATE)
+    title_str ='STRIDE = ' + str(N_STRID_SIZE) + 'Accuracy, BATCH = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(N_LEARN_RATE)
     plt.title(title_str)
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
@@ -83,7 +83,7 @@ def make_graph():
 
     # plot the learning curve
     plt.clf()
-    title_str = 'Learning Curve, BATCH_SIZE = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(N_LEARN_RATE)
+    title_str ='STRIDE = ' + str(N_STRID_SIZE) + 'Learning Curve, BATCH = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(N_LEARN_RATE)
     plt.title(title_str)
     plt.xlabel('Epochs')
     plt.ylabel('Cross Entropy')
@@ -136,7 +136,7 @@ def make_layers(arch, batch_norm=False):
     in_channels = 3 # first channel lies in RGB
     for v in arch:
         if v == 'M':
-            layers += [nn.MaxPool2d(kernel_size = 2, stride = 2)]
+            layers += [nn.MaxPool2d(kernel_size = 2, stride = N_STRID_SIZE)]
         else:
             conv2d = nn.Conv2d(in_channels, v, kernel_size = 3, padding = 1)
             if batch_norm:
