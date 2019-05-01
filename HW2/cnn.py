@@ -49,7 +49,7 @@ elif VGG_linear == '--vgg_normal':
 # train data and epoch limit
 N_TRAIN_DATA = 10000
 N_TEST_DATA = 4000
-N_EPOCH_LIMIT = 1
+N_EPOCH_LIMIT = 100
 
 # define the classes, represent in [0, 9] will be better
 classes = ('dog', 'horse', 'elephant', 'butterfly', 'chicken', 'cat', 'cow', 'sheep', 'spider', 'squirrel')
@@ -269,10 +269,10 @@ if __name__ == '__main__':
         epoch_list.append(cur_epoch)
         # determine to use pretrained or not
         if has_pretrained == False:
-            if adaptive_lr == 'sgd'
+            if adaptive_lr == 'sgd':
                 optimizer = optim.SGD(model.parameters(), lr = N_LEARN_RATE, momentum = 0.9, weight_decay = 5e-4)
-            elif adaptive_lr == 'adam'
-                optimizer = optim.adam(model.parameters(), lr = N_LEARN_RATE, weight_decay = 5e-4)
+            elif adaptive_lr == 'adam':
+                optimizer = optim.Adam(model.parameters(), lr = N_LEARN_RATE, weight_decay = 5e-4)
 
             # 0501 changed from SGD to adam
             train(train_loader, model, criterion, optimizer, cur_epoch, device)
