@@ -31,7 +31,7 @@ import preprocessing_1 as pre
 # simple argument parsing
 ARGV_CNT = 6
 if len(sys.argv) != ARGV_CNT:
-    print('Error: usage: python3 cnn.py $learning_rate $batch_size $stride_size { --vgg_normal | --vgg_small } { ada | no_ada }')
+    print('Error: usage: python3 cnn.py $learning_rate $batch_size $stride_size { --vgg_normal | --vgg_small } { adam | sgd }')
     sys.exit(1)
 
 N_LEARN_RATE = float(sys.argv[1])
@@ -49,7 +49,7 @@ elif VGG_linear == '--vgg_normal':
 # train data and epoch limit
 N_TRAIN_DATA = 10000
 N_TEST_DATA = 4000
-N_EPOCH_LIMIT = 100
+N_EPOCH_LIMIT = 1
 
 # define the classes, represent in [0, 9] will be better
 classes = ('dog', 'horse', 'elephant', 'butterfly', 'chicken', 'cat', 'cow', 'sheep', 'spider', 'squirrel')
@@ -79,7 +79,7 @@ def make_graph():
     plt.plot(epoch_list, train_acc_list, color = 'blue', label = 'train acc')
     plt.plot(epoch_list, test_acc_list, color = 'red', label = 'test acc')
     plt.legend()
-    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + 'ACC' + '.png', dpi = 150)
+    plt.savefig(adaptive_lr + '_' + str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + 'ACC' + '.png', dpi = 150)
 
     # plot the learning curve
     plt.clf()
@@ -90,7 +90,7 @@ def make_graph():
 
     plt.plot(epoch_list, learning_curve, color = 'blue', label = 'no norm')
     plt.legend() # show what the line represents
-    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + 'LC' + '.png', dpi = 150)
+    plt.savefig(adaptive_lr + '_' + str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + 'LC' + '.png', dpi = 150)
 
 ############# NN MAIN PART ############
 class VGG(nn.Module):
@@ -252,6 +252,7 @@ if __name__ == '__main__':
 
     for cur_epoch in range(N_EPOCH_LIMIT):
         ############# ADA LEARN RATE ###############
+        """
         if phase_idx < len(adaptive_lr_phase) and float(cur_epoch) == float(N_EPOCH_LIMIT * adaptive_lr_phase[phase_idx]):
             if adaptive_lr == 'ada':
                 if adaptive_lr_phase[phase_idx] == 0.2:
@@ -262,14 +263,21 @@ if __name__ == '__main__':
                     N_LEARN_RATE /= 2
             phase_idx += 1
 
+        """
+
         print('cur_epoch %d N_LEARN_RATE %f' %(cur_epoch, N_LEARN_RATE))
         epoch_list.append(cur_epoch)
         # determine to use pretrained or not
         if has_pretrained == False:
-            optimizer = optim.SGD(model.parameters(), lr = N_LEARN_RATE, momentum = 0.9)
-            train(train_loader, model, criterion, optimizer, cur_epoch, device)
+            if adaptive_lr == 'sgd'
+                optimizer = optim.SGD(model.parameters(), lr = N_LEARN_RATE, momentum = 0.9, weight_decay = 5e-4)
+            elif adaptive_lr == 'adam'
+                optimizer = optim.adam(model.parameters(), lr = N_LEARN_RATE, weight_decay = 5e-4)
 
-        train_acc_list.append(validate(train_loader, model, criterion, cur_epoch, device, 'train'))
+            # 0501 changed from SGD to adam
+            train(train_loader, model, criterion, optimizer, cur_epoch, device)
+            train_acc_list.append(validate(train_loader, model, criterion, cur_epoch, device, 'train'))
+
         print('')
         cur_acc = validate(test_loader, model, criterion, cur_epoch, device, 'test')
         test_acc_list.append(cur_acc)
