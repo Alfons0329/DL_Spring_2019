@@ -7,9 +7,9 @@ then
     echo "Compare the effect of strid_size"
     for batch_size in 16
     do
-        rm -rf my_vgg.pt best_acc.txt
         for strid_size in 1 3
         do
+            rm -rf my_vgg.pt best_acc.txt
             python3 cnn.py 0.01 $batch_size $strid_size 2 --vgg_small $2
         done
     done
@@ -18,9 +18,9 @@ then
     echo "Compare the effect of kernel_size"
     for batch_size in 16
     do
-        rm -rf my_vgg.pt best_acc.txt
         for kernel_size in 3 5
         do
+            rm -rf my_vgg.pt best_acc.txt
             python3 cnn.py 0.01 $batch_size 2 $kernel_size --vgg_small $2
         done
     done
@@ -28,7 +28,7 @@ then
 elif [ $sel -eq 2 ];
 then
     rm -rf my_vgg.pt best_acc.txt
-    python3 cnn.py 0.01 64 1 --vgg_small $2
+    python3 cnn.py 0.01 64 2 2 --vgg_small $2
     #python3 cnn.py 0.01 200 1 --vgg_small $2
     #python3 cnn.py 0.1 64 1 --vgg_small $2
 else
