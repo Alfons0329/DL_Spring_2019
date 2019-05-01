@@ -29,7 +29,7 @@ import preprocessing_1 as pre
 
 ############# GLOBAL DEF #############
 # simple argument parsing
-ARGV_CNT = 6
+ARGV_CNT = 7
 if len(sys.argv) != ARGV_CNT:
     print('Error: usage: python3 cnn.py $learning_rate $batch_size $stride_size { --vgg_normal | --vgg_small } { adam | sgd }')
     sys.exit(1)
@@ -37,8 +37,9 @@ if len(sys.argv) != ARGV_CNT:
 N_LEARN_RATE = float(sys.argv[1])
 N_BATCH_SIZE = int(sys.argv[2])
 N_STRID_SIZE = int(sys.argv[3])
-VGG_linear = str(sys.argv[4])
-adaptive_lr = str(sys.argv[5])
+N_KERNE_SIZE = int(sys.argv[4])
+VGG_linear = str(sys.argv[5])
+adaptive_lr = str(sys.argv[6])
 
 linear_size = 0
 if VGG_linear == '--vgg_small':
@@ -71,7 +72,7 @@ test_acc_list = []
 def make_graph():
     # plot the accuracy of training set and testing set
     plt.clf()
-    title_str ='STRIDE = ' + str(N_STRID_SIZE) + 'Accuracy, BATCH = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(N_LEARN_RATE)
+    title_str = 'STRI=' + str(N_STRID_SIZE) + ' KER' + str(kernel_size) + ' Acc, BAT=' + str(N_BATCH_SIZE) + ' ETA = ' + str(N_LEARN_RATE)
     plt.title(title_str)
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
@@ -79,18 +80,18 @@ def make_graph():
     plt.plot(epoch_list, train_acc_list, color = 'blue', label = 'train acc')
     plt.plot(epoch_list, test_acc_list, color = 'red', label = 'test acc')
     plt.legend()
-    plt.savefig(adaptive_lr + '_' + str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + 'ACC' + '.png', dpi = 150)
+    plt.savefig(adaptive_lr + '_' + str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(kernel_size) + '_' + 'ACC' + '.png', dpi = 150)
 
     # plot the learning curve
     plt.clf()
-    title_str ='STRIDE = ' + str(N_STRID_SIZE) + 'Learning Curve, BATCH = ' + str(N_BATCH_SIZE) + ', ETA = ' + str(N_LEARN_RATE)
+    title_str = 'STRI=' + str(N_STRID_SIZE) + ' KER' + str(kernel_size) + ' LC, BAT=' + str(N_BATCH_SIZE) + ' ETA = ' + str(N_LEARN_RATE)
     plt.title(title_str)
     plt.xlabel('Epochs')
     plt.ylabel('Cross Entropy')
 
     plt.plot(epoch_list, learning_curve, color = 'blue', label = 'no norm')
     plt.legend() # show what the line represents
-    plt.savefig(adaptive_lr + '_' + str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + 'LC' + '.png', dpi = 150)
+    plt.savefig(adaptive_lr + '_' + str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(kernel_size) + '_' + 'LC' + '.png', dpi = 150)
 
 ############# NN MAIN PART ############
 class VGG(nn.Module):
@@ -136,9 +137,9 @@ def make_layers(arch, batch_norm=False):
     in_channels = 3 # first channel lies in RGB
     for v in arch:
         if v == 'M':
-            layers += [nn.MaxPool2d(kernel_size = 2, stride = N_STRID_SIZE)]
+            layers += [nn.MaxPool2d(kernel_size = N_KERNE_SIZE, stride = N_STRID_SIZE)]
         else:
-            conv2d = nn.Conv2d(in_channels, v, kernel_size = 3, padding = 1)
+            conv2d = nn.Conv2d(in_channels, v, kernel_size = N_KERNE_SIZE, padding = 1)
             if batch_norm:
                 layers += [conv2d, nn.BatchNorm2d(v), nn.ReLU(inplace = True)]
             else:
