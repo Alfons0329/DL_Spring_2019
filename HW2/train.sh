@@ -32,7 +32,9 @@ then
     #python3 cnn.py 0.01 200 1 --vgg_small $2
     #python3 cnn.py 0.1 64 1 --vgg_small $2
 else
+    rm -rf my_vgg.pt best_acc.txt
     python3 cnn_vgg16.py 0.01 32 1 --vgg_normal sgd
+    rm -rf my_vgg.pt best_acc.txt
     python3 cnn.py 0.01 32 2 2 --vgg_small sgd
 fi
 
