@@ -264,15 +264,16 @@ if __name__ == '__main__':
 
         print('cur_epoch %d N_LEARN_RATE %f' %(cur_epoch, N_LEARN_RATE))
         epoch_list.append(cur_epoch)
-        # determine to use pretrained or not
-        if has_pretrained == False:
-            optimizer = optim.SGD(model.parameters(), lr = N_LEARN_RATE, momentum = 0.9)
-            train(train_loader, model, criterion, optimizer, cur_epoch, device)
 
+        # determine to use pretrained or not
+        #if has_pretrained == False:
+        optimizer = optim.SGD(model.parameters(), lr = N_LEARN_RATE, momentum = 0.9)
+        train(train_loader, model, criterion, optimizer, cur_epoch, device)
         train_acc_list.append(validate(train_loader, model, criterion, cur_epoch, device, 'train'))
         print('')
         cur_acc = validate(test_loader, model, criterion, cur_epoch, device, 'test')
         test_acc_list.append(cur_acc)
+
         print('-----------------------------------------------\n')
 
         # save the model and corresponding accuracy if this is the final epoch with better result
