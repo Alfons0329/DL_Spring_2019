@@ -261,16 +261,6 @@ if __name__ == '__main__':
     phase_idx = 0
     cur_acc = 0.0
     for cur_epoch in range(N_EPOCH_LIMIT):
-        ############# ADA LEARN RATE ###############
-        if phase_idx < len(adaptive_lr_phase) and float(cur_epoch) == float(N_EPOCH_LIMIT * adaptive_lr_phase[phase_idx]):
-            if adaptive_lr == 'ada':
-                if adaptive_lr_phase[phase_idx] == 0.2:
-                    N_LEARN_RATE /= 10
-                elif adaptive_lr_phase[phase_idx] == 0.5:
-                    N_LEARN_RATE /= 2
-                elif adaptive_lr_phase[phase_idx] == 0.9:
-                    N_LEARN_RATE /= 2
-            phase_idx += 1
 
         print('cur_epoch %d N_LEARN_RATE %f' %(cur_epoch, N_LEARN_RATE))
         epoch_list.append(cur_epoch)

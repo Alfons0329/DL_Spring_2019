@@ -80,7 +80,7 @@ def make_graph():
     plt.plot(epoch_list, train_acc_list, color = 'blue', label = 'train acc')
     plt.plot(epoch_list, test_acc_list, color = 'red', label = 'test acc')
     plt.legend()
-    plt.savefig(adaptive_lr + '_' + str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(N_KERNE_SIZE) + '_' + 'ACC' + '.png', dpi = 150)
+    plt.savefig(adaptive_lr + '_' + str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(N_STRID_SIZE) + '_' + str(N_KERNE_SIZE) + '_' + 'LC' + '.png', dpi = 150)
 
     # plot the learning curve
     plt.clf()
@@ -91,7 +91,7 @@ def make_graph():
 
     plt.plot(epoch_list, learning_curve, color = 'blue', label = 'no norm')
     plt.legend() # show what the line represents
-    plt.savefig(adaptive_lr + '_' + str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(N_KERNE_SIZE) + '_' + 'LC' + '.png', dpi = 150)
+    plt.savefig(adaptive_lr + '_' + str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(N_STRID_SIZE) + '_' + str(N_KERNE_SIZE) + '_' + 'LC' + '.png', dpi = 150)
 
 ############# NN MAIN PART ############
 class VGG(nn.Module):
