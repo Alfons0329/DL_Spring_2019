@@ -1,0 +1,217 @@
+% Credits are indicated where needed. The general idea is based on a template by Vel (vel@LaTeXTemplates.com) and Frits Wenneker.
+
+\documentclass[11pt, a4paper]{article} % General settings in the beginning (defines the document class of your paper)
+% 11pt = is the font size
+% A4 is the paper size
+% “article” is your document class
+
+%----------------------------------------------------------------------------------------
+%	Packages
+%----------------------------------------------------------------------------------------
+
+% Necessary
+\usepackage[german,english]{babel} % English and German language 
+\usepackage{hyperref} % URL
+\usepackage{subfig} %two figure
+\usepackage{listings} % Insert code
+\usepackage{float} % figure at the correct position
+\usepackage{lipsum}
+\usepackage{mwe}
+\usepackage{booktabs} % Horizontal rules in tables 
+% For generating tables, use “LaTeX” online generator (https://www.tablesgenerator.com)
+\usepackage{comment} % Necessary to comment several paragraphs at once
+\usepackage[utf8]{inputenc} % Required for international characters
+\usepackage[T1]{fontenc} % Required for output font encoding for international characters
+
+% Might be helpful
+\usepackage{amsmath,amsfonts,amsthm} % Math packages which might be useful for equations
+\usepackage{tikz} % For tikz figures (to draw arrow diagrams, see a guide how to use them)
+\usepackage{tikz-cd}
+\usetikzlibrary{positioning,arrows} % Adding libraries for arrows
+\usetikzlibrary{decorations.pathreplacing} % Adding libraries for decorations and paths
+\usepackage{tikzsymbols} % For amazing symbols ;) https://mirror.hmc.edu/ctan/graphics/pgf/contrib/tikzsymbols/tikzsymbols.pdf 
+\usepackage{blindtext} % To add some blind text in your paper
+
+
+%---------------------------------------------------------------------------------
+% Additional settings
+%---------------------------------------------------------------------------------
+
+%---------------------------------------------------------------------------------
+% Define your margins
+\usepackage{geometry} % Necessary package for defining margins
+
+\geometry{
+	top=2cm, % Defines top margin
+	bottom=2cm, % Defines bottom margin
+	left=2.2cm, % Defines left margin
+	right=2.2cm, % Defines right margin
+	includehead, % Includes space for a header
+	%includefoot, % Includes space for a footer
+	%showframe, % Uncomment if you want to show how it looks on the page 
+}
+
+\setlength{\parindent}{15pt} % Adjust to set you indent globally 
+
+%---------------------------------------------------------------------------------
+% Define your spacing
+\usepackage{setspace} % Required for spacing
+% Two options:
+\linespread{1.5}
+%\onehalfspacing % one-half-spacing linespread
+
+%----------------------------------------------------------------------------------------
+% Define your fonts
+\usepackage[T1]{fontenc} % Output font encoding for international characters
+\usepackage[utf8]{inputenc} % Required for inputting international characters
+
+\usepackage{XCharter} % Use the XCharter font
+
+
+%---------------------------------------------------------------------------------
+% Define your headers and footers
+
+\usepackage{fancyhdr} % Package is needed to define header and footer
+\pagestyle{fancy} % Allows you to customize the headers and footers
+
+%\renewcommand{\sectionmark}[1]{\markboth{#1}{}} % Removes the section number from the header when \leftmark is used
+
+% Headers
+\lhead{} % Define left header
+\chead{\textit{}} % Define center header - e.g. add your paper title
+\rhead{} % Define right header
+
+% Footers
+\lfoot{} % Define left footer
+\cfoot{\footnotesize \thepage} % Define center footer
+\rfoot{ } % Define right footer
+
+%---------------------------------------------------------------------------------
+%	Add information on bibliography
+\usepackage{natbib} % Use natbib for citing
+\usepackage{har2nat} % Allows to use harvard package with natbib https://mirror.reismil.ch/CTAN/macros/latex/contrib/har2nat/har2nat.pdf
+
+% For citing with natbib, you may want to use this reference sheet: 
+% http://merkel.texture.rocks/Latex/natbib.php
+
+%---------------------------------------------------------------------------------
+% Add field for signature (Reference: https://tex.stackexchange.com/questions/35942/how-to-create-a-signature-date-page)
+\newcommand{\signature}[2][5cm]{%
+  \begin{tabular}{@{}p{#1}@{}}
+    #2 \\[2\normalbaselineskip] \hrule \\[0pt]
+    {\small \textit{Signature}} \\[2\normalbaselineskip] \hrule \\[0pt]
+    {\small \textit{Place, Date}}
+  \end{tabular}
+}
+%---------------------------------------------------------------------------------
+%	General information
+%---------------------------------------------------------------------------------
+\title{Deep Learning HW2 Report} % Adds your title
+%\author
+%{
+%    \name{Alfons Hwu} % Add your first and last name
+%    %\thanks{} % Adds a footnote to your title
+%    \\
+%    \institution{0416324, Dept of Computer Science NCTU} % Adds your institution
+%}
+
+
+
+%---------------------------------------------------------------------------------
+%	Define what’s in your document
+%---------------------------------------------------------------------------------
+\begin{document}
+
+
+% If you want a cover page, uncomment "\input{coverpage.tex}" and uncomment "\begin{comment}" and "\end{comment}" to comment the following lines
+\input{coverpage.tex}
+
+\date{May 2, 2019}
+\begin{comment}
+\end{comment}
+\maketitle{} %Print your title, author name and date; comment if you want a cover page 
+
+%----------------------------------------------------------------------------------------
+% Introduction
+%----------------------------------------------------------------------------------------
+\setcounter{page}{1} % Sets counter of page to 1
+
+\section{Self-designed CNN for image classification} % Add a section title
+\subsection{Preprocessing the images} % Section check OK 20190502
+In the preprocessing part, I merely resize the image to 256 x 256 and perform normalization. No gray scale transformation nor random crop and(or) rotate to form data augmentation.
+\\ Reason I only choose resize mainly due to my hardware limitation (the GPU of my machine is only GTX1070, too much data will increase my training time or causing cuda out of memory error
+\\ Second, the main core lies in resizing image to 256 x 256, since suppose we use the image of original size, the dimension of training data will explode (known as \textbf{Curse of Dimensionality}). 
+\\ Another important part is to normalize image on accounting of reducing the effect from extremity and different image scale, now all the images are fitted to the same baseline (normalized and resized).
+\\ Both of the training set and testing set are under the same transformation from pytorch for the sake of fairness
+\begin{lstlisting}[language = python]
+my_transform = transforms.Compose([transforms.Resize((256, 256)), transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]) 
+\end{lstlisting}
+
+\subsection{CNN architecture explanation and performance evaluation} % Add a subsection
+\subsubsection{Architecture}
+\\ My architecture is similar to that of famous VGG16, yet concerning the hardware limitation of my machine, I condense them into only 8 convolutional layers and two linear(normal dnn) layer in the end.    The following figure show the VGG16 architecture
+\\ \small{With original architecture layer representing in list, M represents the maxpool layer and number is the channel size.}
+\\ VGG16 = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M']
+\\ And here is my condensed version
+\\ VGG16-small = [8, 'M', 16, 'M', 32, 'M', 64, 'M']
+\\ The filter size is reduced to 1/8 in total and for each stacked layer between two maxpool layer, I extract one from them since it is enough to represent the overall architecture, larger kernel size will only increase the computational complexity. 
+\\ After that, data are fed into the classification layer, the output size of image will changed to 7 x 7 x 64. flatten to the dnn for the final classification.
+\\ The following is the architecture of classification layers, ReLU is applied here since it first prevents gradient vanishing, second it provides sparsity with an eye to preventing overfitting (and also reduce computational loading), third it bears a resemblance to \textbf{all or none law} similar to that of nature species. Drop out is used to prevent overfitting and finally the linear output of classification result.
+\begin{lstlisting}[language = python]
+self.classifier = nn.Sequential(
+                nn.Linear(64 * 7 * 7, linear_size),
+                nn.ReLU(True),
+                nn.Dropout(),
+                nn.Linear(linear_size, len(classes)),
+                )
+\end{lstlisting}
+\\ Compare my CNN with original VGG16,   
+\\ Actually, the original VGG16 did perform a bit better but both of the test acc get stuck (overfitting), hence the depth size is not the main concern and further tuning will be discussed later(Due to VRAM limitation, original vgg16 can only be fitted with 40 images/batch)
+\begin{figure}[H]
+  \centering
+  \subfloat[Original VGG16]{\includegraphics[scale = 0.1]{HW2/arch_diagram/orig.jpg}\label{fig:f1}}
+  \hfill
+  \subfloat[My own VGG]{\includegraphics[scale = 0.1]{HW2/arch_diagram/my.jpg}\label{fig:f2}}
+  \caption{VGG comparison}
+\end{figure}
+
+\subsubsection{The learning curve vs kernel and stride size}
+{\Large Experiments to check the effect of kernel and stride size on result}
+\\ First we compare the effect of kernel size, both of which use the same stride, optimizer, lr and batch size.
+We can see that the small kernel size performed slightly better than large one. In my perspective, larger convolutional kernel probably will mix more pixel around the center pixel, causing more noise in training.
+\\ Reference: \url{https://zhuanlan.zhihu.com/p/41423739}, in this link, author mentioned about "receptive" filed, that is stacked some of the small convolutional layer may not only better preserve the properties of original image(less "mixing" effect) but also cost less parameters during computation. 
+
+\begin{figure}[H]
+  \centering
+  \subfloat[Kernel size 3]{\includegraphics[scale = 0.5]{HW2/cmp_kernel/ker_3_acc.png}\label{fig:f1}}
+  \hfill
+  \subfloat[Kernel size 5]{\includegraphics[scale = 0.5]{HW2/cmp_kernel/ker_5_acc.png}\label{fig:f1}}
+  \caption{Convolutional layer kernel size comparison}
+\end{figure}
+\\ Then we compare the effect of stride size, both of which use the same kernel size, optimizer, lr and batch size.
+We can see that the small stride performed slightly better than large one. In my perspective, since I select the maxpool kernel size to be 2, stride size should be same as kernel of maxpool, or the characteristic part of image will overlapped during feature extraction. \newline \break
+\begin{figure}[H]
+  \centering
+  \subfloat[Kernel size 3]{\includegraphics[scale = 0.5]{HW2/cmp_kernel/ker_3_acc.png}\label{fig:f1}}
+  \hfill
+  \subfloat[Kernel size 5]{\includegraphics[scale = 0.5]{HW2/cmp_kernel/ker_5_acc.png}\label{fig:f1}}
+  \caption{Convolutional layer kernel size comparison}
+\end{figure}
+{\Large Conclusion}
+\\ Kernel size 3 and stride 2(no overlapping for maxpool size 2) will be enough. \newline \break
+{\Large Experiments to find the best optimizing method}
+\\ In this project, I have tried using three method to tune my model.
+\\ First, by using SGD with momentum and L2 penalty to prevent overfitting
+\\ Second, by using adam L2 penalty to prevent overfitting
+\begin{figure}[H]
+    \centering
+    \subfloat[SGD with momentum and L2 penalty]{\includegraphics[scale = 0.5]{HW2/cmp_method/sgd.png}}
+    \hfill
+    \subfloat[Adam with L2 penalty]{\includegraphics[scale = 0.5]{HW2/cmp_method/adam.png}}
+    \caption{Optimizing method comparison}
+    \label{fig:my_label}
+\end{figure}
+\\ We can see that the accuracy of testing set in SGD with momentum got stuck in about 30th epoch. Although the curve of adam kept damping, it did not stuck as servere as SGD with momentum. \newline \break 
+{\Large Conclusion}
+\\ Extend the epoch to see if one outperformed the other.
+\end{document}
