@@ -189,10 +189,13 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
 
             wrong_cnt = 0
             for each_input, each_output, each_label in zip(inputs, outputs, labels):
-                _, each_predicted = torch.max(each_output, 1)
+                print('each input ', each_input)
+                print('each output ', each_output)
+                print('each label ', each_label)
+                _, each_predicted = torch.max(each_output, 0)
                 if each_predicted != each_label:
-                    img_name = classes[each_predicted] + '_' + classes[each_label] + str(wrong_cnt)
-                    torchvision.utils.save_image(img_name)
+                    img_name = classes[each_predicted] + '_' + classes[each_label] + str(wrong_cnt) + '.png'
+                    torchvision.utils.save_image(each_input, img_name)
                     wrong_cnt += 1
 
             #print('labels ', labels)
