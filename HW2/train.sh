@@ -41,6 +41,8 @@ then
     python3 cnn.py 0.01 32 2 2 --vgg_small sgd
 else
     python3 cnn_show_result.py 0.0005 128 2 2 --vgg_small adam
+    mkdir -p wrong
+    mv *\_*\_*\_.png wrong
 fi
 
 mkdir -p $1\_$2

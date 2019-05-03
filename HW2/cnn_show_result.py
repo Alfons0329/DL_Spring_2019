@@ -50,7 +50,7 @@ elif VGG_linear == '--vgg_normal':
 # train data and epoch limit
 N_TRAIN_DATA = 10000
 N_TEST_DATA = 4000
-N_EPOCH_LIMIT = 300
+N_EPOCH_LIMIT = 10
 
 # define the classes, represent in [0, 9] will be better
 classes = ('dog', 'horse', 'elephant', 'butterfly', 'chicken', 'cat', 'cow', 'sheep', 'spider', 'squirrel')
@@ -177,8 +177,8 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
     class_correct = list(0. for i in range(len(classes)))
     class_total = list(0. for i in range(len(classes)))
 
-    mkdir = 'mkdir - p ' + what
-    os.system(mkdir)
+    #mkdir = 'mkdir - p ' + what
+    #os.system(mkdir)
     with torch.no_grad():
         for data in val_loader:
             inputs, labels = data
@@ -194,12 +194,12 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
                 _, each_predicted = torch.max(each_output, 0)
 
                 if each_predicted != each_label:
-                    print('each input ', each_input)
+                    #print('each input ', each_input)
                     print('each output ', each_output)
-                    print('each predicted ', each_predicted)
+                    #print('each predicted ', each_predicted)
                     print('each predicted class', classes[each_predicted])
                     print('each label class', classes[each_label])
-                    input()
+                    #input()
 
                     each_input = each_input / 2 + 0.5
                     img_name = what + '_' + classes[each_predicted] + '_' + classes[each_label] + str(wrong_cnt) + '.png'
