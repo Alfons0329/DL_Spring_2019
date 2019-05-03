@@ -177,6 +177,8 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
     class_correct = list(0. for i in range(len(classes)))
     class_total = list(0. for i in range(len(classes)))
 
+    mkdir = 'mkdir - p ' + what
+    os.system(mkdir)
     with torch.no_grad():
         for data in val_loader:
             inputs, labels = data
@@ -192,9 +194,10 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
                 print('each input ', each_input)
                 print('each output ', each_output)
                 print('each label ', each_label)
-                _, each_predicted = torch.max(each_output, 0)
+                _, each_predicted = torch.max(each_output, -1)
                 if each_predicted != each_label:
-                    img_name = classes[each_predicted] + '_' + classes[each_label] + str(wrong_cnt) + '.png'
+                    each_input = each_input / 2 + 0.5
+                    img_name = what + '_' + classes[each_predicted] + '_' + classes[each_label] + str(wrong_cnt) + '.png'
                     torchvision.utils.save_image(each_input, img_name)
                     wrong_cnt += 1
 
