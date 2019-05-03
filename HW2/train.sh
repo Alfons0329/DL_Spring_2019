@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-read -p "1: Compare stride size, 2: Compare kernel size, 3: Current best 4: Run full VGG16 if you have GPU better than RTX2080Ti " sel
+read -p "1: Compare stride size, 2: Compare kernel size, 3: Current best, 4: Run full VGG16 if you have GPU better than RTX2080Ti, 5: Display the result by using cnn_show_result" sel
 
 if [ $sel -eq 1 ];
 then
@@ -33,11 +33,14 @@ then
     python3 cnn.py 0.0005 128 2 2 --vgg_small adam
     #python3 cnn.py 0.01 200 1 --vgg_small $2
     #python3 cnn.py 0.1 64 1 --vgg_small $2
-else
+elif [ $sel -eq 4 ];
+then
     rm -rf my_vgg.pt best_acc.txt
     python3 cnn_vgg16.py 0.01 32 1 --vgg_normal sgd
     rm -rf my_vgg.pt best_acc.txt
     python3 cnn.py 0.01 32 2 2 --vgg_small sgd
+else
+    python3 cnn_show_result.py 0.0005 128 2 2 --vgg_small adam
 fi
 
 mkdir -p $1\_$2
