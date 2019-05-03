@@ -28,7 +28,9 @@ then
 elif [ $sel -eq 2 ];
 then
     rm -rf my_vgg.pt best_acc.txt
-    python3 cnn.py 0.01 64 2 2 --vgg_small $2
+    python3 cnn.py 0.01 64 2 2 --vgg_small sgd
+    rm -rf my_vgg.pt best_acc.txt
+    python3 cnn.py 0.01 64 2 2 --vgg_small adam
     #python3 cnn.py 0.01 200 1 --vgg_small $2
     #python3 cnn.py 0.1 64 1 --vgg_small $2
 else
