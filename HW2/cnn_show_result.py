@@ -53,7 +53,7 @@ N_TEST_DATA = 4000
 N_EPOCH_LIMIT = 10
 
 # define the classes, represent in [0, 9] will be better
-classes = ('dog', 'horse', 'elephant', 'butterfly', 'chicken', 'cat', 'cow', 'sheep', 'spider', 'squirrel')
+classes = ('butterfly', 'cat', 'chicken', 'cow', 'dog', 'elephant', 'horse', 'sheep', 'spider', 'squirrel')
 
 # define the VGG 16 layer architecture
 VGG16_arch = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M']
@@ -196,10 +196,11 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
                 if each_predicted != each_label:
                     #print('each input ', each_input)
                     #print('each output ', each_output)
-                    #print('each predicted ', each_predicted)
-                    #print('each predicted class', classes[each_predicted])
-                    #print('each label class', classes[each_label])
-                    #input()
+                    print('each predicted ', each_predicted)
+                    print('each predicted class', classes[each_predicted])
+                    print('each label class', each_label)
+                    print('each label class', classes[each_label])
+                    input()
 
                     each_input = each_input / 2 + 0.5
                     img_name = what + '_' + classes[each_predicted] + '_' + classes[each_label] + str(wrong_cnt) + '.png'

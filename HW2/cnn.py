@@ -53,7 +53,7 @@ N_TEST_DATA = 4000
 N_EPOCH_LIMIT = 200
 
 # define the classes, represent in [0, 9] will be better
-classes = ('dog', 'horse', 'elephant', 'butterfly', 'chicken', 'cat', 'cow', 'sheep', 'spider', 'squirrel')
+classes = ('butterfly', 'cat', 'chicken', 'cow', 'dog', 'elephant', 'horse', 'sheep', 'spider', 'squirrel')
 
 # define the VGG 16 layer architecture
 VGG16_arch = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M']
