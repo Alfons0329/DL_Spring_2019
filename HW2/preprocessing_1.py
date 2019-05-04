@@ -23,7 +23,7 @@ def IO_preprocess(b_size, shuffle_or_not):
     train_loader = torch.utils.data.DataLoader(train_input, batch_size = b_size, num_workers = N_CPU_THREADS, shuffle = True)
 
     test_input = torchvision.datasets.ImageFolder(root = valid_path, transform = my_transform)
-    test_loader = torch.utils.data.DataLoader(test_input, batch_size = b_size, num_workers = N_CPU_THREADS, shuffle = True)
+    test_loader = torch.utils.data.DataLoader(test_input, batch_size = b_size, num_workers = N_CPU_THREADS, shuffle = False)
     return train_loader, test_loader
 
 ########### ADD LABEL FOR DATA ##########
