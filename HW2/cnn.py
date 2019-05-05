@@ -58,6 +58,7 @@ classes = ('butterfly', 'cat', 'chicken', 'cow', 'dog', 'elephant', 'horse', 'sh
 # define the VGG 16 layer architecture
 VGG16_arch = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M']
 VGG16_arch_small = [8, 'M', 16, 'M', 32, 'M', 64, 'M'] # condense the upper 'VGG16_arch model'O
+
 # save the model
 model_path = 'my_vgg.pt'
 acc_path = 'best_acc.txt'
@@ -90,7 +91,7 @@ def make_graph():
     plt.ylabel('Cross Entropy')
 
     plt.plot(epoch_list, learning_curve, color = 'blue', label = 'no norm')
-    plt.legend() # show what the line represents
+    plt.legend()
     plt.savefig(adaptive_lr + '_' + str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(N_STRID_SIZE) + '_' + str(N_KERNE_SIZE) + '_' + 'LC' + '.png', dpi = 150)
 
 ############# NN MAIN PART ############
@@ -209,6 +210,7 @@ def img_show(img):
 
 ############# MAIN FUNCT #############
 if __name__ == '__main__':
+
     ############# LOAD DATASET ###########
     train_loader, test_loader = pre.IO_preprocess(N_BATCH_SIZE, True) # make them together
     print(len(train_loader), len(test_loader))
@@ -217,7 +219,9 @@ if __name__ == '__main__':
     has_pretrained = False
     if VGG_linear == '--vgg_small':
         model = VGG(make_layers(VGG16_arch_small))
-        if os.path.isfile(model_path): # if has a self-pretrained model, just fucking load it
+
+        # if has a self-pretrained model, just fucking load it
+        if os.path.isfile(model_path):
             model = torch.load(model_path)
             #model.eval()
             if os.path.isfile(acc_path):
@@ -264,6 +268,7 @@ if __name__ == '__main__':
 
         print('cur_epoch %d N_LEARN_RATE %f' %(cur_epoch, N_LEARN_RATE))
         epoch_list.append(cur_epoch)
+
         # determine to use pretrained or not
         if has_pretrained == False:
             if adaptive_lr == 'sgd':

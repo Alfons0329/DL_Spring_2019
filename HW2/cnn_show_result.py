@@ -50,7 +50,7 @@ elif VGG_linear == '--vgg_normal':
 # train data and epoch limit
 N_TRAIN_DATA = 10000
 N_TEST_DATA = 4000
-N_EPOCH_LIMIT = 10
+N_EPOCH_LIMIT = 3
 
 # define the classes, represent in [0, 9] will be better
 classes = ('butterfly', 'cat', 'chicken', 'cow', 'dog', 'elephant', 'horse', 'sheep', 'spider', 'squirrel')
@@ -58,6 +58,7 @@ classes = ('butterfly', 'cat', 'chicken', 'cow', 'dog', 'elephant', 'horse', 'sh
 # define the VGG 16 layer architecture
 VGG16_arch = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M']
 VGG16_arch_small = [8, 'M', 16, 'M', 32, 'M', 64, 'M'] # condense the upper 'VGG16_arch model'O
+
 # save the model
 model_path = 'my_vgg.pt'
 acc_path = 'best_acc.txt'
@@ -194,23 +195,12 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
                 _, each_predicted = torch.max(each_output, 0)
 
                 if each_predicted != each_label:
-                    #print('each input ', each_input)
-                    #print('each output ', each_output)
-                    print('each predicted ', each_predicted)
-                    print('each predicted class', classes[each_predicted])
-                    print('each label class', each_label)
-                    print('each label class', classes[each_label])
-                    input()
 
                     each_input = each_input / 2 + 0.5
-                    img_name = what + '_' + classes[each_predicted] + '_' + classes[each_label] + str(wrong_cnt) + '.png'
+                    img_name = what + '_' + classes[each_label] + '_' + classes[each_predicted] + str(wrong_cnt) + '.png'
                     torchvision.utils.save_image(each_input, img_name)
                     wrong_cnt += 1
 
-            #print('labels ', labels)
-            #print('class_predicted ', class_predicted)
-            #print('class_correct ', class_correct)
-            #print('class_total ', class_total)
             for i in range(4):
                 label = labels[i]
                 class_correct[label] += class_predicted[i].item()
@@ -227,15 +217,9 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
     else:
         return 0
 
-############# DEBUG SHOW #############
-def img_show(img):
-    img = img / 2 + 0.5 # unnormalize
-    npimg = img.numpy()
-    plt.imshow(np.transpose(npimg, (1, 2, 0)))
-    plt.show()
-
 ############# MAIN FUNCT #############
 if __name__ == '__main__':
+
     ############# LOAD DATASET ###########
     train_loader, test_loader = pre.IO_preprocess(N_BATCH_SIZE, True) # make them together
     print(len(train_loader), len(test_loader))
@@ -244,9 +228,10 @@ if __name__ == '__main__':
     has_pretrained = False
     if VGG_linear == '--vgg_small':
         model = VGG(make_layers(VGG16_arch_small))
-        if os.path.isfile(model_path): # if has a self-pretrained model, just fucking load it
+        if os.path.isfile(model_path):
             model = torch.load(model_path)
-            #model.eval()
+            model.eval()
+
             if os.path.isfile(acc_path):
                 f = open(acc_path, 'r')
                 read_acc = (f.read())
