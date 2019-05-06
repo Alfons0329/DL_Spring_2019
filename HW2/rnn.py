@@ -30,6 +30,7 @@ N_TEST_SIZE = 50
 
 word_dict = dict()
 dict_cnt = 1
+dbg_cnt = 0
 
 ############# PARSE XLSX #############
 def parse_xls(f_name):
@@ -43,6 +44,7 @@ def build_dict(data):
     for each_sentence in data:
         to_split = str(each_sentence)
         to_split = to_split.split()
+
         for each_word in to_split:
             if each_word not in word_dict:
                 global dict_cnt
@@ -50,14 +52,13 @@ def build_dict(data):
                 dict_cnt += 1
 
 def lookup(data, embeds):
-    cnt = 0
     for each_sentence in data:
         to_split = str(each_sentence)
         to_split = to_split.split()
         for each_word in to_split:
-            print(each_word, )
             lookup_tensor = torch.tensor([word_dict[each_word]], dtype = torch.long)
             word_embed = embeds(lookup_tensor)
+            #print('Word: ', each_word, 'lookup_tensor ', lookup_tensor, 'embed to ', word_embed)
 
 if __name__ == '__main__':
     train_input_acc, test_input_acc = parse_xls(F_NAME_ACCEPT)
@@ -68,13 +69,10 @@ if __name__ == '__main__':
     train_input_rej = train_input_rej.values.tolist()
     test_input_rej = test_input_rej.values.tolist()
 
-    together = [train_input_acc, train_input_rej]
 
-    for each_set in together:
+    for each_set in train_input_acc + train_input_rej:
         build_dict(each_set)
 
-    print(len(word_dict))
-    input()
-    embeds = nn.Embedding(len(word_dict), N_VEC_SIZE)
-    for each_set in together:
+    embeds = nn.Embedding(len(word_dict) + 1, N_VEC_SIZE) # padding to prevent runtime error
+    for each_set in train_input_acc + train_input_rej:
         lookup(each_set, embeds)
