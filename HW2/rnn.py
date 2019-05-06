@@ -50,14 +50,14 @@ def build_dict(data):
                 dict_cnt += 1
 
 def lookup(data, embeds):
+    cnt = 0
     for each_sentence in data:
         to_split = str(each_sentence)
         to_split = to_split.split()
         for each_word in to_split:
-            print(each_word)
+            print(each_word, )
             lookup_tensor = torch.tensor([word_dict[each_word]], dtype = torch.long)
             word_embed = embeds(lookup_tensor)
-            print(word_embed)
 
 if __name__ == '__main__':
     train_input_acc, test_input_acc = parse_xls(F_NAME_ACCEPT)
@@ -73,6 +73,8 @@ if __name__ == '__main__':
     for each_set in together:
         build_dict(each_set)
 
+    print(len(word_dict))
+    input()
     embeds = nn.Embedding(len(word_dict), N_VEC_SIZE)
     for each_set in together:
         lookup(each_set, embeds)
