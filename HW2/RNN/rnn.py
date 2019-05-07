@@ -141,14 +141,15 @@ def sentense2tensor(data):
 
             #print( word_embed, len(word_embed))
 
-        data_to_tensor.append(each_sentence_embed)
+        data_to_tensor.append(np.array(each_sentence_embed))
         print('each_sentence: ', each_sentence, ' mbed tensor: ', each_sentence_embed)
 
     # print('data_to_tensor type is ', type(data_to_tensor))
-    # print('data_to_tensor: ', data_to_tensor)
-    data_to_tensor = np.array(data_to_tensor)
-    print('size: ', len(data_to_tensor), len(data_to_tensor[0]), len(data_to_tensor[0][0][0]))
-    data_to_tensor = torch.from_numpy(np.array(data_to_tensor, dtype = np.float32))
+    data_to_tensor = np.array(data_to_tensor, dtype = np.float)
+    print('type: ', type(data_to_tensor), type(data_to_tensor[0]), type(data_to_tensor[0][0]))
+    print('data_to_tensor: ', data_to_tensor)
+    data_to_tensor = torch.from_numpy(data_to_tensor)
+    return data_to_tensor
 
 ############# NN MAIN PART ###########
 class RNN(nn.Module):
@@ -268,6 +269,7 @@ if __name__ == '__main__':
         elif adaptive_lr == 'adam':
             optimizer = optim.Adam(model.parameters(), lr = N_LEARN_RATE, weight_decay = 5e-4)
 
+        print(type(train_loader))
         train(train_loader, model, criterion, optimizer, cur_epoch, device)
         train_acc_list.append(validate(train_loader, model, criterion, cur_epoch, device, 'train'))
 
