@@ -31,10 +31,13 @@ N_RNN_STEP = 10 # 10 step for the sentence title length of 10 words
 N_EPOCH_LIMIT = 1000
 N_TEST_SIZE = 50
 
+############# WORD EMBEDDING ###########
 word_dict = dict()
 word_dict['XXX'] = 0 # padding for the empty word in fixed length sentence
 dict_cnt = 1
 dbg_cnt = 0
+longest_sentence_len = 0
+longest_sentence = []
 
 ############# FOR GRAPHING ############
 epoch_list = []
@@ -76,24 +79,33 @@ def parse_xls(f_name):
 ############# WORD MBED AND DICT #####
 def build_dict(data):
     for each_sentence in data:
-        to_split = str(each_sentence)
-        to_split = to_split.split()
-
-        for each_word in to_split:
-            if each_word not in word_dict:
-                global dict_cnt
-                word_dict[each_word] = dict_cnt
-                dict_cnt += 1
+        # print('each_sentence', each_sentence, ' len ', len(each_sentence))
+        for no_bracket_sentence in each_sentence:
+            str_sentence  = str(no_bracket_sentence)
+            no_bracket_sentence = str_sentence.split()
+            if str_sentence != 'No Title':
+                # print('has title ', str_sentence)
+                for each_word in no_bracket_sentence:
+                    # print('each_word', each_word)
+                    # input()
+                    if each_word not in word_dict:
+                        global dict_cnt
+                        word_dict[each_word] = dict_cnt
+                        dict_cnt += 1
 
 def lookup(data, embeds):
     for each_sentence in data:
-        to_split = str(each_sentence)
-        to_split = to_split.split()
-
-        for each_word in to_split:
-            lookup_tensor = torch.tensor([word_dict[each_word]], dtype = torch.long)
-            word_embed = embeds(lookup_tensor)
-            #print('Word: ', each_word, 'lookup_tensor ', lookup_tensor, 'embed to ', word_embed)
+        # print('each_sentence', each_sentence, ' len ', len(each_sentence))
+        for no_bracket_sentence in each_sentence:
+            str_sentence  = str(no_bracket_sentence)
+            no_bracket_sentence = str_sentence.split()
+            if str_sentence != 'No Title':
+                # print('has title ', str_sentence)
+                for each_word in no_bracket_sentence:
+                    if each_word in word_dict:
+                        lookup_tensor = torch.tensor([word_dict[each_word]], dtype = torch.long)
+                        word_embed = embeds(lookup_tensor)
+                        print('Word: ', each_word, 'lookup_tensor ', lookup_tensor, 'embed to ', word_embed)
 
 ############# SENTENCES 2 TENSOR #####
 """
@@ -102,27 +114,35 @@ be fed into the recurrent neural network
 """
 
 def sentense2tensor(data):
-    data_to_tensor = [[[]]]
+    data_to_tensor = list()
+
     for each_sentence in data:
-        print('sentence: ', each_sentence)
-        to_split = str(each_sentence)
-        to_split = to_split.split()
-        to_split = to_split[1: -1] # remove the bracket when converting the list into string
+        # print('each_sentence', each_sentence, ' len ', len(each_sentence))
+        each_sentence_embed = list()
+        for no_bracket_sentence in each_sentence:
+            str_sentence  = str(no_bracket_sentence)
+            no_bracket_sentence = str_sentence.split()
+            if str_sentence != 'No Title':
+                # print('has title ', str_sentence)
+                for cnt in range(N_VEC_SIZE):
+                    if cnt < len(no_bracket_sentence):
+                        if no_bracket_sentence[cnt] in word_dict:
+                            query = no_bracket_sentence[cnt]
+                        else:
+                            query = 'XXX'
+                        # print('query: ', query)
+                        lookup_tensor = torch.tensor([word_dict[query]], dtype = torch.long)
+                    else:
+                        lookup_tensor = torch.tensor([word_dict['XXX']], dtype = torch.long)
+                        # print('XXX')
 
-        each_sentence_embed = [[]]
+                    word_embed = embeds(lookup_tensor)
 
-        for cnt in range(N_VEC_SIZE):
-            if cnt < len(to_split):
-                query = to_split[cnt]
-                lookup_tensor = torch.tensor([word_dict[query]], dtype = torch.long)
-            else:
-                lookup_tensor = torch.tensor([word_dict['XXX']], dtype = torch.long)
-
-            word_embed = embeds(lookup_tensor)
-            # print(word_embed, len(word_embed))
-            each_sentence_embed.append(word_embed)
+                each_sentence_embed.append(word_embed)
+            #print( word_embed, len(word_embed))
 
         data_to_tensor.append(each_sentence_embed)
+        print('each_sentence: ', each_sentence, ' mbed tensor: ', each_sentence_embed)
 
     data_to_tensor = torch.FloatTensor(data_to_tensor)
 
@@ -206,18 +226,18 @@ if __name__ == '__main__':
 
     train_loader = train_loader_acc + train_loader_rej
     test_loader = test_loader_acc + test_loader_rej
+    print(train_loader)
+    input()
 
     ############# WORD MBED AND DICT #####
-    for each_set in train_loader:
-        build_dict(each_set)
-
+    build_dict(test_loader)
     embeds = nn.Embedding(len(word_dict) + 1, N_VEC_SIZE) # padding to prevent runtime error
-    for each_set in train_loader:
-        lookup(each_set, embeds)
+    lookup(test_loader, embeds)
 
+    #print('longest_sentence ', longest_sentence, 'longest_sentence_len ', longest_sentence_len)
+    #input()
     ############# INSTANTIATE RNN ########
     model = RNN()
-    print(model)
 
     ############# CUUUUUUUDA #############
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -233,10 +253,11 @@ if __name__ == '__main__':
     print('Start training, N_BATCH_SIZE = %4d, N_EPOCH_LIMIT = %4d, N_LEARN_RATE %f\n' %(N_BATCH_SIZE, N_EPOCH_LIMIT, N_LEARN_RATE))
     cur_acc = 0.0
 
-    #print(train_loader)
     train_loader = sentense2tensor(train_loader)
+    print(train_loader)
+    input()
     test_loader = sentense2tensor(test_loader)
-    #print(train_loader)
+    print(test_loader)
 
     for cur_epoch in range(N_EPOCH_LIMIT):
         print('cur_epoch %d N_LEARN_RATE %f' %(cur_epoch, N_LEARN_RATE))
