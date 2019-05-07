@@ -137,8 +137,8 @@ def sentense2tensor(data):
                         # print('XXX')
 
                     word_embed = embeds(lookup_tensor)
+                    each_sentence_embed.append(word_embed)
 
-                each_sentence_embed.append(word_embed)
             #print( word_embed, len(word_embed))
 
         data_to_tensor.append(each_sentence_embed)
