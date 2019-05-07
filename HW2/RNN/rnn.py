@@ -105,7 +105,7 @@ def lookup(data, embeds):
                     if each_word in word_dict:
                         lookup_tensor = torch.tensor([word_dict[each_word]], dtype = torch.long)
                         word_embed = embeds(lookup_tensor)
-                        print('Word: ', each_word, 'lookup_tensor ', lookup_tensor, 'embed to ', word_embed)
+                        # print('Word: ', each_word, 'lookup_tensor ', lookup_tensor, 'embed to ', word_embed)
 
 ############# SENTENCES 2 TENSOR #####
 """
@@ -142,9 +142,12 @@ def sentense2tensor(data):
             #print( word_embed, len(word_embed))
 
         data_to_tensor.append(each_sentence_embed)
-        print('each_sentence: ', each_sentence, ' mbed tensor: ', each_sentence_embed)
+        # print('each_sentence: ', each_sentence, ' mbed tensor: ', each_sentence_embed)
 
-    data_to_tensor = torch.FloatTensor(data_to_tensor)
+    print('data_to_tensor type is ', type(data_to_tensor))
+    #print('data_to_tensor: ', data_to_tensor)
+    print('size: ', len(data_to_tensor), len(data_to_tensor[0]), len(data_to_tensor[0][0]))
+    data_to_tensor = torch.tensor(data_to_tensor)
 
 ############# NN MAIN PART ###########
 class RNN(nn.Module):
@@ -171,7 +174,7 @@ def train(train_loader, model, criterion, optimizer, cur_epoch, device):
     train_loss = 0.0
     total = 0
 
-    train_loader = torch.FloatTensor(train_loader)
+    # train_loader = torch.FloatTensor(train_loader)
     train_loader, train_loader_label = zip(*train_loader)
 
     for inputs, labels in zip(train_loader, train_loader_label):
@@ -193,7 +196,7 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
     correct = 0
     total = 0
 
-    train_loader = torch.FloatTensor(train_loader)
+    # train_loader = torch.FloatTensor(train_loader)
     train_loader, train_loader_label = zip(*train_loader)
 
     with torch.no_grad():
@@ -226,8 +229,6 @@ if __name__ == '__main__':
 
     train_loader = train_loader_acc + train_loader_rej
     test_loader = test_loader_acc + test_loader_rej
-    print(train_loader)
-    input()
 
     ############# WORD MBED AND DICT #####
     build_dict(test_loader)
@@ -254,10 +255,7 @@ if __name__ == '__main__':
     cur_acc = 0.0
 
     train_loader = sentense2tensor(train_loader)
-    print(train_loader)
-    input()
     test_loader = sentense2tensor(test_loader)
-    print(test_loader)
 
     for cur_epoch in range(N_EPOCH_LIMIT):
         print('cur_epoch %d N_LEARN_RATE %f' %(cur_epoch, N_LEARN_RATE))
