@@ -104,22 +104,22 @@ be fed into the recurrent neural network
 def sentense2tensor(data):
     data_to_tensor = [[[]]]
     for each_sentence in data:
+        print('sentence: ', each_sentence)
         to_split = str(each_sentence)
         to_split = to_split.split()
+        to_split = to_split[1: -1] # remove the bracket when converting the list into string
 
         each_sentence_embed = [[]]
 
-        print('to_split: ', to_split)
         for cnt in range(N_VEC_SIZE):
             if cnt < len(to_split):
                 query = to_split[cnt]
-                print(query)
                 lookup_tensor = torch.tensor([word_dict[query]], dtype = torch.long)
             else:
                 lookup_tensor = torch.tensor([word_dict['XXX']], dtype = torch.long)
 
             word_embed = embeds(lookup_tensor)
-            print(word_embed, len(word_embed))
+            # print(word_embed, len(word_embed))
             each_sentence_embed.append(word_embed)
 
         data_to_tensor.append(each_sentence_embed)
@@ -233,10 +233,10 @@ if __name__ == '__main__':
     print('Start training, N_BATCH_SIZE = %4d, N_EPOCH_LIMIT = %4d, N_LEARN_RATE %f\n' %(N_BATCH_SIZE, N_EPOCH_LIMIT, N_LEARN_RATE))
     cur_acc = 0.0
 
-    print(train_loader)
-    input()
+    #print(train_loader)
     train_loader = sentense2tensor(train_loader)
-    print(train_loader)
+    test_loader = sentense2tensor(test_loader)
+    #print(train_loader)
 
     for cur_epoch in range(N_EPOCH_LIMIT):
         print('cur_epoch %d N_LEARN_RATE %f' %(cur_epoch, N_LEARN_RATE))
