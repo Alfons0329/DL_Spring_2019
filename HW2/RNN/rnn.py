@@ -137,7 +137,7 @@ def sentense2tensor(data):
                         # print('XXX')
 
                     word_embed = embeds(lookup_tensor)
-                    each_sentence_embed.append(word_embed)
+                    each_sentence_embed.append(word_embed.detach().numpy())
 
             #print( word_embed, len(word_embed))
 
@@ -146,8 +146,9 @@ def sentense2tensor(data):
 
     # print('data_to_tensor type is ', type(data_to_tensor))
     # print('data_to_tensor: ', data_to_tensor)
+    data_to_tensor = np.array(data_to_tensor)
     print('size: ', len(data_to_tensor), len(data_to_tensor[0]), len(data_to_tensor[0][0][0]))
-    data_to_tensor = torch.tensor(data_to_tensor)
+    data_to_tensor = torch.from_numpy(np.array(data_to_tensor, dtype = np.float32))
 
 ############# NN MAIN PART ###########
 class RNN(nn.Module):
