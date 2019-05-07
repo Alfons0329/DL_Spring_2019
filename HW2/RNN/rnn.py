@@ -142,11 +142,11 @@ def sentense2tensor(data):
             #print( word_embed, len(word_embed))
 
         data_to_tensor.append(each_sentence_embed)
-        # print('each_sentence: ', each_sentence, ' mbed tensor: ', each_sentence_embed)
+        print('each_sentence: ', each_sentence, ' mbed tensor: ', each_sentence_embed)
 
-    print('data_to_tensor type is ', type(data_to_tensor))
-    #print('data_to_tensor: ', data_to_tensor)
-    print('size: ', len(data_to_tensor), len(data_to_tensor[0]), len(data_to_tensor[0][0]))
+    # print('data_to_tensor type is ', type(data_to_tensor))
+    # print('data_to_tensor: ', data_to_tensor)
+    print('size: ', len(data_to_tensor), len(data_to_tensor[0]), len(data_to_tensor[0][0][0]))
     data_to_tensor = torch.tensor(data_to_tensor)
 
 ############# NN MAIN PART ###########
