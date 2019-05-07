@@ -108,9 +108,9 @@ class VGG(nn.Module):
                 nn.ReLU(True),
                 nn.Dropout(),
                 # try to save some computational resource
-                #nn.Linear(linear_size, linear_size),
-                #nn.ReLU(True),
-                #nn.Dropout(),
+                # nn.Linear(linear_size, linear_size),
+                # nn.ReLU(True),
+                # nn.Dropout(),
                 nn.Linear(linear_size, len(classes)),
                 )
         # Initialize weights

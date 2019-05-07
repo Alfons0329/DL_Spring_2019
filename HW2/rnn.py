@@ -25,6 +25,9 @@ N_BATCH_SIZE = int(sys.argv[2])
 adaptive_lr = str(sys.argv[3])
 
 N_VEC_SIZE = 10
+N_HID_SIZE = 16
+N_RNN_STEP = 10 # 10 step for the sentence title length of 10 words
+
 N_EPOCH_LIMIT = 200
 N_TEST_SIZE = 50
 
@@ -60,6 +63,27 @@ def lookup(data, embeds):
             word_embed = embeds(lookup_tensor)
             #print('Word: ', each_word, 'lookup_tensor ', lookup_tensor, 'embed to ', word_embed)
 
+############# NN MAIN PART ###########
+class RNN(nn.Module):
+    def __init__(self):
+        super(RNN, self).__init__()
+
+        # RNN layer
+        self.rnn = nn.RNN(
+                input_size = 10,
+                hidden_size = N_HID_SIZE,
+                num_layers = 1,
+                batch_first = True
+                )
+        self.out = nn.Linear(N_HID_SIZE, 2) # accepted %, rejected %
+
+        # forward dnn classifier
+        def forward(self, x):
+            x, _ = self.rnn(x, None)
+            x = self.out(x[:, -1, :])
+            return x
+
+############# MAIN FUNCT #############
 if __name__ == '__main__':
     train_input_acc, test_input_acc = parse_xls(F_NAME_ACCEPT)
     train_input_rej, test_input_rej = parse_xls(F_NAME_REJECT)
@@ -76,3 +100,6 @@ if __name__ == '__main__':
     embeds = nn.Embedding(len(word_dict) + 1, N_VEC_SIZE) # padding to prevent runtime error
     for each_set in train_input_acc + train_input_rej:
         lookup(each_set, embeds)
+
+    model = RNN()
+    print(model)
