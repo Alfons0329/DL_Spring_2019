@@ -32,6 +32,7 @@ N_EPOCH_LIMIT = 1000
 N_TEST_SIZE = 50
 
 word_dict = dict()
+word_dict['XXX'] = 0 # padding for the empty word in fixed length sentence
 dict_cnt = 1
 dbg_cnt = 0
 
@@ -88,10 +89,42 @@ def lookup(data, embeds):
     for each_sentence in data:
         to_split = str(each_sentence)
         to_split = to_split.split()
+
         for each_word in to_split:
             lookup_tensor = torch.tensor([word_dict[each_word]], dtype = torch.long)
             word_embed = embeds(lookup_tensor)
             #print('Word: ', each_word, 'lookup_tensor ', lookup_tensor, 'embed to ', word_embed)
+
+############# SENTENCES 2 TENSOR #####
+"""
+convert the training and test loader into the matrix of torch tensor to
+be fed into the recurrent neural network
+"""
+
+def sentense2tensor(data):
+    data_to_tensor = [[[]]]
+    for each_sentence in data:
+        to_split = str(each_sentence)
+        to_split = to_split.split()
+
+        each_sentence_embed = [[]]
+
+        print('to_split: ', to_split)
+        for cnt in range(N_VEC_SIZE):
+            if cnt < len(to_split):
+                query = to_split[cnt]
+                print(query)
+                lookup_tensor = torch.tensor([word_dict[query]], dtype = torch.long)
+            else:
+                lookup_tensor = torch.tensor([word_dict['XXX']], dtype = torch.long)
+
+            word_embed = embeds(lookup_tensor)
+            print(word_embed, len(word_embed))
+            each_sentence_embed.append(word_embed)
+
+        data_to_tensor.append(each_sentence_embed)
+
+    data_to_tensor = torch.FloatTensor(data_to_tensor)
 
 ############# NN MAIN PART ###########
 class RNN(nn.Module):
@@ -199,6 +232,11 @@ if __name__ == '__main__':
     ############# TRAINING ###############
     print('Start training, N_BATCH_SIZE = %4d, N_EPOCH_LIMIT = %4d, N_LEARN_RATE %f\n' %(N_BATCH_SIZE, N_EPOCH_LIMIT, N_LEARN_RATE))
     cur_acc = 0.0
+
+    print(train_loader)
+    input()
+    train_loader = sentense2tensor(train_loader)
+    print(train_loader)
 
     for cur_epoch in range(N_EPOCH_LIMIT):
         print('cur_epoch %d N_LEARN_RATE %f' %(cur_epoch, N_LEARN_RATE))
