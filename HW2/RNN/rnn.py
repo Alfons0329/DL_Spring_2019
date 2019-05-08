@@ -32,6 +32,8 @@ N_RNN_STEP = 10 # 10 step for the sentence title length of 10 words
 
 N_EPOCH_LIMIT = 1000
 N_TEST_SIZE = 50
+N_TRAIN_SIZE_ACC = 0
+N_TRAIN_SIZE_REJ = 0
 
 ############# WORD EMBEDDING ###########
 word_dict = dict()
@@ -81,15 +83,11 @@ def parse_xls(f_name):
 ############# WORD MBED AND DICT #####
 def build_dict(data):
     for each_sentence in data:
-        # print('each_sentence', each_sentence, ' len ', len(each_sentence))
         for no_bracket_sentence in each_sentence:
             str_sentence  = str(no_bracket_sentence)
             no_bracket_sentence = str_sentence.split()
             if str_sentence != 'No Title':
-                # print('has title ', str_sentence)
                 for each_word in no_bracket_sentence:
-                    # print('each_word', each_word)
-                    # input()
                     if each_word not in word_dict:
                         global dict_cnt
                         word_dict[each_word] = dict_cnt
@@ -97,17 +95,14 @@ def build_dict(data):
 
 def lookup(data, embeds):
     for each_sentence in data:
-        # print('each_sentence', each_sentence, ' len ', len(each_sentence))
         for no_bracket_sentence in each_sentence:
             str_sentence  = str(no_bracket_sentence)
             no_bracket_sentence = str_sentence.split()
             if str_sentence != 'No Title':
-                # print('has title ', str_sentence)
                 for each_word in no_bracket_sentence:
                     if each_word in word_dict:
                         lookup_tensor = torch.tensor([word_dict[each_word]], dtype = torch.long)
                         word_embed = embeds(lookup_tensor)
-                        # print('Word: ', each_word, 'lookup_tensor ', lookup_tensor, 'embed to ', word_embed)
 
 ############# SENTENCES 2 TENSOR #####
 """
@@ -154,7 +149,7 @@ def sentense2tensor(data):
 
     data_to_tensor = np.array(data_to_tensor)
     data_to_tensor = torch.tensor(data_to_tensor)
-    print('data_to_tensor', data_to_tensor)
+    # print('data_to_tensor', data_to_tensor)
     return data_to_tensor
 
 ############# NN MAIN PART ###########
@@ -183,6 +178,7 @@ def train(train_loader, model, criterion, optimizer, cur_epoch, device):
     total = 0
 
     # train_loader = torch.FloatTensor(train_loader)
+    print('trainloader size: ', train_loader.size())
     train_loader, train_loader_label = zip(*train_loader)
 
     for inputs, labels in zip(train_loader, train_loader_label):
@@ -235,6 +231,7 @@ if __name__ == '__main__':
     train_loader_rej = train_loader_rej.values.tolist()
     test_loader_rej = test_loader_rej.values.tolist()
 
+    print(len(train_loader_acc), len(train_loader_rej))
     train_loader = train_loader_acc + train_loader_rej
     test_loader = test_loader_acc + test_loader_rej
 
@@ -243,8 +240,6 @@ if __name__ == '__main__':
     embeds = nn.Embedding(len(word_dict) + 1, N_VEC_SIZE) # padding to prevent runtime error
     lookup(test_loader, embeds)
 
-    #print('longest_sentence ', longest_sentence, 'longest_sentence_len ', longest_sentence_len)
-    #input()
     ############# INSTANTIATE RNN ########
     model = RNN()
 
@@ -254,6 +249,20 @@ if __name__ == '__main__':
     if device == 'cuda':
         print('Train with CUDA ')
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+        ############# MAKE LABEL #############
+        train_loader_label_acc = torch.ones([len(train_loader_acc), 1], dtype = torch.int32)
+        train_loader_label_rej = torch.ones([len(train_loader_rej), 1], dtype = torch.int32)
+        train_loader_label = torch.cat((train_loader_label_acc, train_loader_label_rej), 0)
+
+        test_loader_label_acc = torch.ones([N_TEST_SIZE, 1], dtype = torch.int32)
+        test_loader_label_rej = torch.ones([N_TEST_SIZE, 1], dtype = torch.int32)
+        test_loader_label = torch.cat((test_loader_label_acc, test_loader_label_rej), 0)
+
+        print(len(train_loader_label), len(test_loader_label))
+        print(train_loader_label)
+
+        ############# PARALLELISM ############
         model.features = torch.nn.DataParallel(model.rnn)
         model.cuda()
         criterion = nn.CrossEntropyLoss().cuda()
@@ -275,11 +284,11 @@ if __name__ == '__main__':
         elif adaptive_lr == 'adam':
             optimizer = optim.Adam(model.parameters(), lr = N_LEARN_RATE, weight_decay = 5e-4)
 
-        train(train_loader, model, criterion, optimizer, cur_epoch, device)
-        train_acc_list.append(validate(train_loader, model, criterion, cur_epoch, device, 'train'))
+        train(zip(train_loader, train_loader_label), model, criterion, optimizer, cur_epoch, device)
+        train_acc_list.append(validate(zip(train_loader, train_loader_label), model, criterion, cur_epoch, device, 'train'))
 
         print('')
-        cur_acc = validate(test_loader, model, criterion, cur_epoch, device, 'test')
+        cur_acc = validate(zip(test_loader, test_loader_label), model, criterion, cur_epoch, device, 'test')
         test_acc_list.append(cur_acc)
         print('-----------------------------------------------\n')
 
