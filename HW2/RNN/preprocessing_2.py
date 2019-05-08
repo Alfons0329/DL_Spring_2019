@@ -97,8 +97,9 @@ class custom_dataset(Dataset):
                         each_sentence_embed.append(word_embed.detach().numpy())
 
                     # only append the sentence tensor iff the title is not 'No Title'
-                    print('each_sentence_mbed shape ', np.array(each_sentence_embed).flatten().shape, 'with value ', np.array(each_sentence_embed).flatten())
+                    # print('each_sentence_mbed shape ', np.array(each_sentence_embed).flatten().shape, 'with value ', np.array(each_sentence_embed).flatten())
                     data_to_tensor.append(np.array(each_sentence_embed).flatten())
+                    # data_to_tensor.append(np.array(each_sentence_embed))
 
                 #print( word_embed, len(word_embed))
 
@@ -113,17 +114,14 @@ class custom_dataset(Dataset):
 
 
 def load_custom_dataset(N_BATCH_SIZE):
-    
-    train_acc = custom_dataset(f_1, 0, True) 
-    test_acc = custom_dataset(f_1, 0, False) 
-    train_rej = custom_dataset(f_2, 1, True) 
-    test_rej = custom_dataset(f_2, 1, False) 
-    
+
+    train_acc = custom_dataset(f_1, 0, True)
+    test_acc = custom_dataset(f_1, 0, False)
+    train_rej = custom_dataset(f_2, 1, True)
+    test_rej = custom_dataset(f_2, 1, False)
+
     train_loader = torch.utils.data.DataLoader(train_acc + train_rej, batch_size = N_BATCH_SIZE, shuffle = True)
     test_loader = torch.utils.data.DataLoader(test_acc + test_rej, batch_size = N_BATCH_SIZE, shuffle = False)
 
-    return train_loader, test_loader 
+    return train_loader, test_loader
 
-if __name__ == '__main__':
-    w, x, y, z = load_custom_dataset(128)
-    

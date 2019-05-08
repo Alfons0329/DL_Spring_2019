@@ -79,7 +79,7 @@ class RNN(nn.Module):
                 hidden_size = N_HID_SIZE,
                 num_layers = 1,
                 dropout = 0.5,
-                batch_first = False,
+                batch_first = True,
                 bidirectional = False
                 )
         self.out = nn.Linear(N_HID_SIZE, 2) # accepted %, rejected %
