@@ -1,3 +1,4 @@
+from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 import torch
 import torch.autograd as autograd
 import torch.nn as nn
@@ -127,29 +128,25 @@ def sentense2tensor(data):
                             query = no_bracket_sentence[cnt]
                         else:
                             query = 'XXX'
-                        # print('query: ', query)
                         lookup_tensor = torch.tensor([word_dict[query]], dtype = torch.long)
                     else:
                         lookup_tensor = torch.tensor([word_dict['XXX']], dtype = torch.long)
-                        # print('XXX')
 
                     word_embed = embeds(lookup_tensor)
-                    # print('return wordembed ', word_embed.detach().numpy())
                     each_sentence_embed.append(word_embed.detach().numpy())
 
                 data_to_tensor.append(np.array(each_sentence_embed)) # only append the sentence tensor iff the title is not 'No Title'
 
             #print( word_embed, len(word_embed))
 
-        # print('each each_sentence_embed: ', np.array(each_sentence_embed))
         # print('each_sentence: ', each_sentence, ' mbed tensor: ', each_sentence_embed)
 
     # print('data_to_tensor type is ', type(data_to_tensor))
-    # print('type: ', type(data_to_tensor), type(data_to_tensor[0]), type(data_to_tensor[0][0]))
 
     data_to_tensor = np.array(data_to_tensor)
     data_to_tensor = torch.tensor(data_to_tensor)
     # print('data_to_tensor', data_to_tensor)
+    print('data_to_tensor type: ', type(data_to_tensor))
     return data_to_tensor
 
 ############# NN MAIN PART ###########
@@ -162,30 +159,34 @@ class RNN(nn.Module):
                 input_size = 10,
                 hidden_size = N_HID_SIZE,
                 num_layers = 1,
-                batch_first = True
+                dropout = 0.5,
+                batch_first = False,
+                bidirectional = False
                 )
         self.out = nn.Linear(N_HID_SIZE, 2) # accepted %, rejected %
 
         # forward dnn classifier
-        def forward(self, x):
-            x, _ = self.rnn(x, None)
-            x = self.out(x[:, -1, :])
-            return x
+    def forward(self, x):
+        x, _ = self.rnn(x)
+        print('x ', x)
+        print('after rnn x ', x[:, -1, :])
+        x = self.out(x)
+        return x
 
 ############# TRAIN NN #################
-def train(train_loader, model, criterion, optimizer, cur_epoch, device):
+def train(train_loader, train_loader_label, model, criterion, optimizer, cur_epoch, device):
     train_loss = 0.0
     total = 0
 
-    # train_loader = torch.FloatTensor(train_loader)
-    print('trainloader size: ', train_loader.size())
-    train_loader, train_loader_label = zip(*train_loader)
+    print('trainloader size: ', len(train_loader))
+    print('trainloader label size: ', len(train_loader_label))
 
     for inputs, labels in zip(train_loader, train_loader_label):
         inputs, labels = inputs.to(device), labels.to(device)
 
         optimizer.zero_grad()
         outputs = model(inputs)
+        print(outputs)
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
@@ -259,9 +260,6 @@ if __name__ == '__main__':
         test_loader_label_rej = torch.ones([N_TEST_SIZE, 1], dtype = torch.int32)
         test_loader_label = torch.cat((test_loader_label_acc, test_loader_label_rej), 0)
 
-        print(len(train_loader_label), len(test_loader_label))
-        print(train_loader_label)
-
         ############# PARALLELISM ############
         model.features = torch.nn.DataParallel(model.rnn)
         model.cuda()
@@ -284,7 +282,7 @@ if __name__ == '__main__':
         elif adaptive_lr == 'adam':
             optimizer = optim.Adam(model.parameters(), lr = N_LEARN_RATE, weight_decay = 5e-4)
 
-        train(zip(train_loader, train_loader_label), model, criterion, optimizer, cur_epoch, device)
+        train(train_loader, train_loader_label, model, criterion, optimizer, cur_epoch, device)
         train_acc_list.append(validate(zip(train_loader, train_loader_label), model, criterion, cur_epoch, device, 'train'))
 
         print('')
