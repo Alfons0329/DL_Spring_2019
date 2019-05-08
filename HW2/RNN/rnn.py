@@ -102,7 +102,7 @@ def train(train_loader, model, criterion, optimizer, cur_epoch, device):
         inputs, labels = inputs.to(device), labels.to(device)
 
         optimizer.zero_grad()
-        print('input: ', inputs.shape)
+        print('input: ', inputs.shape, 'label ', labels, 'labels shape ', labels.shape)
         outputs = model(inputs)
         loss = criterion(outputs, labels)
         loss.backward()
