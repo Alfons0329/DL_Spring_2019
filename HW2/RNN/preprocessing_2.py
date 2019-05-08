@@ -27,16 +27,21 @@ longest_sentence = []
 
 
 class custom_dataset(Dataset):
-    def __init__(self, f_name, file_cnt):
+    def __init__(self, f_name, file_cnt, train):
         self.data = pd.read_csv(f_name)
+
+        if train is True:
+            self.data = self.data[50:]
+        else:
+            self.data = self.data[: 50]
+
         self.data = np.array(self.data)
         self.data = np.delete(self.data, 0, 1) # remove the first number column
-
         self.build_dict(self.data) # build dictionary for each vocab
         self.embeds = nn.Embedding(len(word_dict) + 1, N_VEC_SIZE)
         self.data_tensor = self.sentence2tensor()
 
-        if file_cnt == 0:
+        if file_cnt == 1:
             self.labels = np.zeros((len(self.data), ), dtype=int)
         else:
             self.labels = np.ones((len(self.data), ), dtype=int)
@@ -108,12 +113,15 @@ class custom_dataset(Dataset):
 
 
 def load_custom_dataset():
-    custom_dataset_reject = custom_dataset(f_2, 0)
-    custom_dataset_accept = custom_dataset(f_1, 1)
-    for i, j, k in custom_dataset_reject:
-        print(i, j, k)
-    return 0
+    
+    train_acc = custom_dataset(f_1, 0, True) 
+    test_acc = custom_dataset(f_1, 0, False) 
+    train_rej = custom_dataset(f_2, 1, True) 
+    test_rej = custom_dataset(f_2, 1, False) 
+    
+    return train_acc, test_acc, train_rej, test_rej 
 
 
 if __name__ == '__main__':
-    load_custom_dataset()
+    w, x, y, z = load_custom_dataset()
+    print(w[-1], len(x), y[-1], len(z))
