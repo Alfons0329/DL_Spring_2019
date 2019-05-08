@@ -98,8 +98,8 @@ class custom_dataset(Dataset):
 
                     # only append the sentence tensor iff the title is not 'No Title'
                     # print('each_sentence_mbed shape ', np.array(each_sentence_embed).flatten().shape, 'with value ', np.array(each_sentence_embed).flatten())
-                    data_to_tensor.append(np.array(each_sentence_embed).flatten())
-                    # data_to_tensor.append(np.array(each_sentence_embed))
+                    # data_to_tensor.append(np.array(each_sentence_embed).flatten())
+                    data_to_tensor.append(np.array(each_sentence_embed))
 
                 #print( word_embed, len(word_embed))
 

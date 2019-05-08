@@ -32,6 +32,7 @@ adaptive_lr = str(sys.argv[3])
 
 N_HID_SIZE = 16
 N_RNN_STEP = 10 # 10 step for the sentence title length of 10 words
+N_VEC_WORD = 10 # each word is corresponding to the 10 dim 1 row matrix (word embedding)
 
 N_EPOCH_LIMIT = 1000
 N_TEST_SIZE = 50
@@ -102,7 +103,8 @@ def train(train_loader, model, criterion, optimizer, cur_epoch, device):
         inputs, labels = inputs.to(device), labels.to(device)
 
         optimizer.zero_grad()
-        print('input: ', inputs.shape, 'label ', labels, 'labels shape ', labels.shape)
+        inputs = inputs.view(N_BATCH_SIZE, N_RNN_STEP, N_VEC_WORD) # reshape
+        print('input: ', inputs, 'input shape ', inputs.shape, 'label ', labels, 'labels shape ', labels.shape)
         outputs = model(inputs)
         loss = criterion(outputs, labels)
         loss.backward()
@@ -122,6 +124,7 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
         for data in val_loader:
             inputs, labels = data
             inputs, labels = inputs.to(device), labels.to(device)
+            inputs = inputs.view(N_BATCH_SIZE, N_RNN_STEP, N_VEC_WORD) # reshape
             outputs = model(inputs)
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
