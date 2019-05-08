@@ -2,6 +2,8 @@ from torch.autograd import Variable
 from torchvision import transforms
 from torch.utils.data import Dataset, DataLoader
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
 
 import pandas as pd
 import numpy as np
@@ -28,10 +30,12 @@ class custom_dataset(Dataset):
     def __init__(self, f_name, file_cnt):
         self.data = pd.read_csv(f_name)
         self.data = np.array(self.data)
-        # remove the first number column
-        self.data = np.delete(self.data, 0, 1)
+        self.data = np.delete(self.data, 0, 1) # remove the first number column
+
+        self.build_dict(self.data) # build dictionary for each vocab
+        self.embeds = nn.Embedding(len(word_dict) + 1, N_VEC_SIZE)
         self.data_tensor = self.sentence2tensor()
-        print(self.data.shape, self.data)
+
         if file_cnt == 0:
             self.labels = np.zeros((len(self.data), ), dtype=int)
         else:
@@ -47,7 +51,21 @@ class custom_dataset(Dataset):
     def __len__(self):
         return len(self.data)
 
-    def sentence2tensor():
+    ############# WOR AND DICT #####
+
+    def build_dict(self, data):
+        for each_sentence in data:
+            for no_bracket_sentence in each_sentence:
+                str_sentence = str(no_bracket_sentence)
+                no_bracket_sentence = str_sentence.split()
+                if str_sentence is not None:
+                    for each_word in no_bracket_sentence:
+                        if each_word not in word_dict:
+                            global dict_cnt
+                            word_dict[each_word] = dict_cnt
+                            dict_cnt += 1
+
+    def sentence2tensor(self):
         data_to_tensor = list()
 
         for each_sentence in self.data:
@@ -56,7 +74,7 @@ class custom_dataset(Dataset):
             for no_bracket_sentence in each_sentence:
                 str_sentence = str(no_bracket_sentence)
                 no_bracket_sentence = str_sentence.split()
-                if str_sentence != 'No Title':
+                if str_sentence is not None:
                     # print('has title ', str_sentence)
                     for cnt in range(N_VEC_SIZE):
                         if cnt < len(no_bracket_sentence):
@@ -70,7 +88,7 @@ class custom_dataset(Dataset):
                             lookup_tensor = torch.tensor(
                                 [word_dict['XXX']], dtype=torch.long)
 
-                        word_embed = embeds(lookup_tensor)
+                        word_embed = self.embeds(lookup_tensor)
                         each_sentence_embed.append(word_embed.detach().numpy())
 
                     # only append the sentence tensor iff the title is not 'No Title'
@@ -92,8 +110,8 @@ class custom_dataset(Dataset):
 def load_custom_dataset():
     custom_dataset_reject = custom_dataset(f_2, 0)
     custom_dataset_accept = custom_dataset(f_1, 1)
-    for title, label in custom_dataset_reject:
-        print(title, label)
+    for i, j, k in custom_dataset_reject:
+        print(i, j, k)
     return 0
 
 

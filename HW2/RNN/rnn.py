@@ -29,7 +29,6 @@ N_LEARN_RATE = float(sys.argv[1])
 N_BATCH_SIZE = int(sys.argv[2])
 adaptive_lr = str(sys.argv[3])
 
-N_VEC_SIZE = 10
 N_HID_SIZE = 16
 N_RNN_STEP = 10 # 10 step for the sentence title length of 10 words
 
@@ -68,81 +67,6 @@ def make_graph():
     plt.plot(epoch_list, learning_curve, color = 'blue', label = 'no norm')
     plt.legend()
     plt.savefig(adaptive_lr + '_' + str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + 'ACC' + '.png', dpi = 150)
-
-############# PARSE XLSX #############
-def parse_xls(f_name):
-    df = pd.read_excel(f_name)
-    df = df[[0]]
-
-    return df[N_TEST_SIZE:], df[0: N_TEST_SIZE]
-
-############# WORD MBED AND DICT #####
-def build_dict(data):
-    for each_sentence in data:
-        for no_bracket_sentence in each_sentence:
-            str_sentence  = str(no_bracket_sentence)
-            no_bracket_sentence = str_sentence.split()
-            if str_sentence != 'No Title':
-                for each_word in no_bracket_sentence:
-                    if each_word not in word_dict:
-                        global dict_cnt
-                        word_dict[each_word] = dict_cnt
-                        dict_cnt += 1
-
-def lookup(data, embeds):
-    for each_sentence in data:
-        for no_bracket_sentence in each_sentence:
-            str_sentence  = str(no_bracket_sentence)
-            no_bracket_sentence = str_sentence.split()
-            if str_sentence != 'No Title':
-                for each_word in no_bracket_sentence:
-                    if each_word in word_dict:
-                        lookup_tensor = torch.tensor([word_dict[each_word]], dtype = torch.long)
-                        word_embed = embeds(lookup_tensor)
-
-############# SENTENCES 2 TENSOR #####
-"""
-convert the training and test loader into the matrix of torch tensor to
-be fed into the recurrent neural network
-"""
-
-def sentense2tensor(data):
-    data_to_tensor = list()
-
-    for each_sentence in data:
-        # print('each_sentence', each_sentence, ' len ', len(each_sentence))
-        each_sentence_embed = list()
-        for no_bracket_sentence in each_sentence:
-            str_sentence  = str(no_bracket_sentence)
-            no_bracket_sentence = str_sentence.split()
-            if str_sentence != 'No Title':
-                # print('has title ', str_sentence)
-                for cnt in range(N_VEC_SIZE):
-                    if cnt < len(no_bracket_sentence):
-                        if no_bracket_sentence[cnt] in word_dict:
-                            query = no_bracket_sentence[cnt]
-                        else:
-                            query = 'XXX'
-                        lookup_tensor = torch.tensor([word_dict[query]], dtype = torch.long)
-                    else:
-                        lookup_tensor = torch.tensor([word_dict['XXX']], dtype = torch.long)
-
-                    word_embed = embeds(lookup_tensor)
-                    each_sentence_embed.append(word_embed.detach().numpy())
-
-                data_to_tensor.append(np.array(each_sentence_embed)) # only append the sentence tensor iff the title is not 'No Title'
-
-            #print( word_embed, len(word_embed))
-
-        # print('each_sentence: ', each_sentence, ' mbed tensor: ', each_sentence_embed)
-
-    # print('data_to_tensor type is ', type(data_to_tensor))
-
-    data_to_tensor = np.array(data_to_tensor)
-    data_to_tensor = torch.tensor(data_to_tensor)
-    # print('data_to_tensor', data_to_tensor)
-    print('data_to_tensor type: ', type(data_to_tensor))
-    return data_to_tensor
 
 ############# NN MAIN PART ###########
 class RNN(nn.Module):
@@ -231,11 +155,6 @@ if __name__ == '__main__':
     train_loader = train_loader_acc + train_loader_rej
     test_loader = test_loader_acc + test_loader_rej
 
-    ############# WORD MBED AND DICT #####
-    build_dict(test_loader)
-    embeds = nn.Embedding(len(word_dict) + 1, N_VEC_SIZE) # padding to prevent runtime error
-    lookup(test_loader, embeds)
-
     ############# INSTANTIATE RNN ########
     model = RNN()
 
@@ -263,9 +182,6 @@ if __name__ == '__main__':
     ############# TRAINING ###############
     print('Start training, N_BATCH_SIZE = %4d, N_EPOCH_LIMIT = %4d, N_LEARN_RATE %f\n' %(N_BATCH_SIZE, N_EPOCH_LIMIT, N_LEARN_RATE))
     cur_acc = 0.0
-
-    train_loader = sentense2tensor(train_loader)
-    test_loader = sentense2tensor(test_loader)
 
     for cur_epoch in range(N_EPOCH_LIMIT):
         print('cur_epoch %d N_LEARN_RATE %f' %(cur_epoch, N_LEARN_RATE))
