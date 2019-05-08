@@ -7,6 +7,8 @@ import torch.optim as optim
 from pandas import DataFrame, read_csv
 import pandas as pd
 
+import matplotlib.pyplot as plt
+
 import numpy as np
 import regex as re
 import os, sys, math
@@ -48,7 +50,7 @@ test_acc_list = []
 def make_graph():
     # plot the accuracy of training set and testing set
     plt.clf()
-    title_str = 'STRI=' + str(N_STRID_SIZE) + ' KER=' + str(N_KERNE_SIZE) + ' Acc, BAT=' + str(N_BATCH_SIZE) + ' ETA = ' + str(N_LEARN_RATE)
+    title_str = 'Acc, BAT=' + str(N_BATCH_SIZE) + ' ETA = ' + str(N_LEARN_RATE)
     plt.title(title_str)
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
@@ -56,18 +58,18 @@ def make_graph():
     plt.plot(epoch_list, train_acc_list, color = 'blue', label = 'train acc')
     plt.plot(epoch_list, test_acc_list, color = 'red', label = 'test acc')
     plt.legend()
-    plt.savefig(adaptive_lr + '_' + str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(N_STRID_SIZE) + '_' + str(N_KERNE_SIZE) + '_' + 'ACC' + '.png', dpi = 150)
+    plt.savefig(adaptive_lr + '_' + str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + 'ACC' + '.png', dpi = 150)
 
     # plot the learning curve
     plt.clf()
-    title_str = 'STRI=' + str(N_STRID_SIZE) + ' KER=' + str(N_KERNE_SIZE) + ' LC, BAT=' + str(N_BATCH_SIZE) + ' ETA = ' + str(N_LEARN_RATE)
+    title_str = 'LC, BAT=' + str(N_BATCH_SIZE) + ' ETA = ' + str(N_LEARN_RATE)
     plt.title(title_str)
     plt.xlabel('Epochs')
     plt.ylabel('Cross Entropy')
 
     plt.plot(epoch_list, learning_curve, color = 'blue', label = 'no norm')
     plt.legend()
-    plt.savefig(adaptive_lr + '_' + str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(N_STRID_SIZE) + '_' + str(N_KERNE_SIZE) + '_' + 'LC' + '.png', dpi = 150)
+    plt.savefig(adaptive_lr + '_' + str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + 'ACC' + '.png', dpi = 150)
 
 ############# PARSE XLSX #############
 def parse_xls(f_name):
@@ -137,11 +139,13 @@ def sentense2tensor(data):
                         # print('XXX')
 
                     word_embed = embeds(lookup_tensor)
+                    # print('return wordembed ', word_embed.detach().numpy())
                     each_sentence_embed.append(word_embed.detach().numpy())
+
+                data_to_tensor.append(np.array(each_sentence_embed)) # only append the sentence tensor iff the title is not 'No Title'
 
             #print( word_embed, len(word_embed))
 
-        data_to_tensor.append(np.array(each_sentence_embed))
         # print('each each_sentence_embed: ', np.array(each_sentence_embed))
         # print('each_sentence: ', each_sentence, ' mbed tensor: ', each_sentence_embed)
 
@@ -149,10 +153,8 @@ def sentense2tensor(data):
     # print('type: ', type(data_to_tensor), type(data_to_tensor[0]), type(data_to_tensor[0][0]))
 
     data_to_tensor = np.array(data_to_tensor)
-    data_to_tensor = data_to_tensor.astype('float32')
-    print('data_to_tensor: ', data_to_tensor)
-    data_to_tensor = np.array(data_to_tensor)
-    data_to_tensor = torch.from_numpy(data_to_tensor)
+    data_to_tensor = torch.tensor(data_to_tensor)
+    print('data_to_tensor', data_to_tensor)
     return data_to_tensor
 
 ############# NN MAIN PART ###########
@@ -273,7 +275,6 @@ if __name__ == '__main__':
         elif adaptive_lr == 'adam':
             optimizer = optim.Adam(model.parameters(), lr = N_LEARN_RATE, weight_decay = 5e-4)
 
-        print(type(train_loader))
         train(train_loader, model, criterion, optimizer, cur_epoch, device)
         train_acc_list.append(validate(train_loader, model, criterion, cur_epoch, device, 'train'))
 
