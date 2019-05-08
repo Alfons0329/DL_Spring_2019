@@ -51,7 +51,7 @@ class custom_dataset(Dataset):
         title = self.data[index]
         title_tensor = self.data_tensor[index]
         label = self.labels[index]
-        return title, title_tensor, label
+        return title_tensor, label
 
     def __len__(self):
         return len(self.data)
@@ -118,12 +118,10 @@ def load_custom_dataset(N_BATCH_SIZE):
     train_rej = custom_dataset(f_2, 1, True) 
     test_rej = custom_dataset(f_2, 1, False) 
     
-    train_acc_loader = torch.utils.data.DataLoader(train_acc, batch_size = N_BATCH_SIZE, shuffle = True)
-    test_acc_loader = torch.utils.data.DataLoader(test_acc, batch_size = N_BATCH_SIZE, shuffle = False)
-    train_rej_loader = torch.utils.data.DataLoader(train_rej, batch_size = N_BATCH_SIZE, shuffle = True)
-    test_rej_loader = torch.utils.data.DataLoader(test_rej, batch_size = N_BATCH_SIZE, shuffle = False)
+    train_loader = torch.utils.data.DataLoader(train_acc + train_rej, batch_size = N_BATCH_SIZE, shuffle = True)
+    test_loader = torch.utils.data.DataLoader(test_acc + test_rej, batch_size = N_BATCH_SIZE, shuffle = False)
 
-    return train_acc_loader, test_acc_loader, train_rej_loader, test_rej_loader
+    return train_loader, test_loader 
 
 if __name__ == '__main__':
     w, x, y, z = load_custom_dataset(128)

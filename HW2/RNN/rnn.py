@@ -98,10 +98,11 @@ def train(train_loader, model, criterion, optimizer, cur_epoch, device):
     total = 0
 
     for i, data in enumerate(train_loader, 0):
-        titles, inputs, labels = data
+        inputs, labels = data
         inputs, labels = inputs.to(device), labels.to(device)
 
         optimizer.zero_grad()
+        print('input: ', inputs.shape)
         outputs = model(inputs)
         loss = criterion(outputs, labels)
         loss.backward()
@@ -119,7 +120,7 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
 
     with torch.no_grad():
         for data in val_loader:
-            titles, inputs, labels = data
+            inputs, labels = data
             inputs, labels = inputs.to(device), labels.to(device)
             outputs = model(inputs)
             _, predicted = torch.max(outputs.data, 1)
@@ -136,9 +137,7 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
 if __name__ == '__main__':
 
     ############# LOAD DATASET ###########
-    train_loader_acc, test_loader_acc, train_loader_rej, test_loader_rej = pre.load_custom_dataset(N_BATCH_SIZE)
-    train_loader = train_loader_acc + train_loader_rej
-    test_loader = test_loader_acc + test_loader_rej
+    train_loader, test_loader = pre.load_custom_dataset(N_BATCH_SIZE)
 
     ############# INSTANTIATE RNN ########
     model = RNN()
@@ -170,10 +169,10 @@ if __name__ == '__main__':
             optimizer = optim.Adam(model.parameters(), lr = N_LEARN_RATE, weight_decay = 5e-4)
 
         train(train_loader, model, criterion, optimizer, cur_epoch, device)
-        train_acc_list.append(train_loader, model, criterion, cur_epoch, device, 'train'))
+        train_acc_list.append(train_loader, model, criterion, cur_epoch, device, 'train')
 
         print('')
-        cur_acc = validate(, model, criterion, cur_epoch, device, 'test')
+        cur_acc = validate(test_loader, model, criterion, cur_epoch, device, 'test')
         test_acc_list.append(cur_acc)
         print('-----------------------------------------------\n')
 
