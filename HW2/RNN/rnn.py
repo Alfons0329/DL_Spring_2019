@@ -13,6 +13,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import regex as re
 import os, sys, math
+############# MY DATASET #############
+import preprocessing_2
 
 ############# GLOBAL DEF #############
 F_NAME_ACCEPT = 'ICLR_accepted.xlsx'
@@ -36,13 +38,6 @@ N_TEST_SIZE = 50
 N_TRAIN_SIZE_ACC = 0
 N_TRAIN_SIZE_REJ = 0
 
-############# WORD EMBEDDING ###########
-word_dict = dict()
-word_dict['XXX'] = 0 # padding for the empty word in fixed length sentence
-dict_cnt = 1
-dbg_cnt = 0
-longest_sentence_len = 0
-longest_sentence = []
 
 ############# FOR GRAPHING ############
 epoch_list = []
