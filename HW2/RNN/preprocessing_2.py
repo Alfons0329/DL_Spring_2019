@@ -108,20 +108,23 @@ class custom_dataset(Dataset):
         data_to_tensor = np.array(data_to_tensor)
         data_to_tensor = torch.tensor(data_to_tensor)
         # print('data_to_tensor', data_to_tensor)
-        print('data_to_tensor type: ', type(data_to_tensor))
         return data_to_tensor
 
 
-def load_custom_dataset():
+def load_custom_dataset(N_BATCH_SIZE):
     
     train_acc = custom_dataset(f_1, 0, True) 
     test_acc = custom_dataset(f_1, 0, False) 
     train_rej = custom_dataset(f_2, 1, True) 
     test_rej = custom_dataset(f_2, 1, False) 
     
-    return train_acc, test_acc, train_rej, test_rej 
+    train_acc_loader = torch.utils.data.DataLoader(train_acc, batch_size = N_BATCH_SIZE, shuffle = True)
+    test_acc_loader = torch.utils.data.DataLoader(test_acc, batch_size = N_BATCH_SIZE, shuffle = False)
+    train_rej_loader = torch.utils.data.DataLoader(train_rej, batch_size = N_BATCH_SIZE, shuffle = True)
+    test_rej_loader = torch.utils.data.DataLoader(test_rej, batch_size = N_BATCH_SIZE, shuffle = False)
 
+    return train_acc_loader, test_acc_loader, train_rej_loader, test_rej_loader
 
 if __name__ == '__main__':
-    w, x, y, z = load_custom_dataset()
-    print(w[-1], len(x), y[-1], len(z))
+    w, x, y, z = load_custom_dataset(128)
+    

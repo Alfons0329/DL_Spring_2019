@@ -13,8 +13,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import regex as re
 import os, sys, math
+
 ############# MY DATASET #############
-import preprocessing_2
+import preprocessing_2 as pre
 
 ############# GLOBAL DEF #############
 F_NAME_ACCEPT = 'ICLR_accepted.xlsx'
@@ -36,7 +37,6 @@ N_EPOCH_LIMIT = 1000
 N_TEST_SIZE = 50
 N_TRAIN_SIZE_ACC = 0
 N_TRAIN_SIZE_REJ = 0
-
 
 ############# FOR GRAPHING ############
 epoch_list = []
@@ -93,19 +93,16 @@ class RNN(nn.Module):
         return x
 
 ############# TRAIN NN #################
-def train(train_loader, train_loader_label, model, criterion, optimizer, cur_epoch, device):
+def train(train_loader, model, criterion, optimizer, cur_epoch, device):
     train_loss = 0.0
     total = 0
 
-    print('trainloader size: ', len(train_loader))
-    print('trainloader label size: ', len(train_loader_label))
-
-    for inputs, labels in zip(train_loader, train_loader_label):
+    for i, data in enumerate(train_loader, 0):
+        titles, inputs, labels = data
         inputs, labels = inputs.to(device), labels.to(device)
 
         optimizer.zero_grad()
         outputs = model(inputs)
-        print(outputs)
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
@@ -120,16 +117,12 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
     correct = 0
     total = 0
 
-    # train_loader = torch.FloatTensor(train_loader)
-    train_loader, train_loader_label = zip(*train_loader)
-
     with torch.no_grad():
-        for inputs, labels in zip(train_loader, train_loader_label):
+        for data in val_loader:
+            titles, inputs, labels = data
             inputs, labels = inputs.to(device), labels.to(device)
-
             outputs = model(inputs)
             _, predicted = torch.max(outputs.data, 1)
-            class_predicted = (predicted == labels).squeeze()
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
@@ -143,15 +136,7 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
 if __name__ == '__main__':
 
     ############# LOAD DATASET ###########
-    train_loader_acc, test_loader_acc = parse_xls(F_NAME_ACCEPT)
-    train_loader_rej, test_loader_rej = parse_xls(F_NAME_REJECT)
-
-    train_loader_acc = train_loader_acc.values.tolist()
-    test_loader_acc = test_loader_acc.values.tolist()
-    train_loader_rej = train_loader_rej.values.tolist()
-    test_loader_rej = test_loader_rej.values.tolist()
-
-    print(len(train_loader_acc), len(train_loader_rej))
+    train_loader_acc, test_loader_acc, train_loader_rej, test_loader_rej = pre.load_custom_dataset(N_BATCH_SIZE)
     train_loader = train_loader_acc + train_loader_rej
     test_loader = test_loader_acc + test_loader_rej
 
@@ -164,15 +149,6 @@ if __name__ == '__main__':
     if device == 'cuda':
         print('Train with CUDA ')
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-        ############# MAKE LABEL #############
-        train_loader_label_acc = torch.ones([len(train_loader_acc), 1], dtype = torch.int32)
-        train_loader_label_rej = torch.ones([len(train_loader_rej), 1], dtype = torch.int32)
-        train_loader_label = torch.cat((train_loader_label_acc, train_loader_label_rej), 0)
-
-        test_loader_label_acc = torch.ones([N_TEST_SIZE, 1], dtype = torch.int32)
-        test_loader_label_rej = torch.ones([N_TEST_SIZE, 1], dtype = torch.int32)
-        test_loader_label = torch.cat((test_loader_label_acc, test_loader_label_rej), 0)
 
         ############# PARALLELISM ############
         model.features = torch.nn.DataParallel(model.rnn)
@@ -193,11 +169,11 @@ if __name__ == '__main__':
         elif adaptive_lr == 'adam':
             optimizer = optim.Adam(model.parameters(), lr = N_LEARN_RATE, weight_decay = 5e-4)
 
-        train(train_loader, train_loader_label, model, criterion, optimizer, cur_epoch, device)
-        train_acc_list.append(validate(zip(train_loader, train_loader_label), model, criterion, cur_epoch, device, 'train'))
+        train(train_loader, model, criterion, optimizer, cur_epoch, device)
+        train_acc_list.append(train_loader, model, criterion, cur_epoch, device, 'train'))
 
         print('')
-        cur_acc = validate(zip(test_loader, test_loader_label), model, criterion, cur_epoch, device, 'test')
+        cur_acc = validate(, model, criterion, cur_epoch, device, 'test')
         test_acc_list.append(cur_acc)
         print('-----------------------------------------------\n')
 
