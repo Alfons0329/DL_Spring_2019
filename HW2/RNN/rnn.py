@@ -83,15 +83,16 @@ class RNN(nn.Module):
                 batch_first = True,
                 bidirectional = False
                 )
-        self.out = nn.Linear(N_HID_SIZE, 2) # accepted %, rejected %
+        self.out = nn.Linear(N_HID_SIZE, 1) # accepted %, rejected %
 
         # forward dnn classifier
     def forward(self, x):
         x, _ = self.rnn(x)
-        print('x ', x)
-        print('after rnn x ', x[:, -1, :])
+        print('after rnn x ', x)
+        print('after rnn x II', x[:, -1, :])
         x = self.out(x)
-        return x
+        print('out x ', x[:, -1])
+        return x[:, -1]
 
 ############# TRAIN NN #################
 def train(train_loader, model, criterion, optimizer, cur_epoch, device):
@@ -104,7 +105,7 @@ def train(train_loader, model, criterion, optimizer, cur_epoch, device):
 
         optimizer.zero_grad()
         inputs = inputs.view(N_BATCH_SIZE, N_RNN_STEP, N_VEC_WORD) # reshape
-        print('input: ', inputs, 'input shape ', inputs.shape, 'label ', labels, 'labels shape ', labels.shape)
+        print('labels ', labels, 'labels shape ', labels.shape)
         outputs = model(inputs)
         loss = criterion(outputs, labels)
         loss.backward()
@@ -155,7 +156,7 @@ if __name__ == '__main__':
         ############# PARALLELISM ############
         model.features = torch.nn.DataParallel(model.rnn)
         model.cuda()
-        criterion = nn.CrossEntropyLoss().cuda()
+        criterion = nn.BCELoss().cuda()
 
     ############# TRAINING ###############
     print('Start training, N_BATCH_SIZE = %4d, N_EPOCH_LIMIT = %4d, N_LEARN_RATE %f\n' %(N_BATCH_SIZE, N_EPOCH_LIMIT, N_LEARN_RATE))
