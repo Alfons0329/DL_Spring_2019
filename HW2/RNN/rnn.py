@@ -88,10 +88,10 @@ class RNN(nn.Module):
         # forward dnn classifier
     def forward(self, x):
         x, _ = self.rnn(x)
-        print('after rnn x ', x)
-        print('after rnn x II', x[:, -1, :])
+        # print('after rnn x ', x)
+        # print('after rnn x II', x[:, -1, :])
         x = self.out(x)
-        print('out x ', x[:, -1])
+        # print('out x ', x[:, -1])
         return x[:, -1]
 
 ############# TRAIN NN #################
@@ -101,12 +101,19 @@ def train(train_loader, model, criterion, optimizer, cur_epoch, device):
 
     for i, data in enumerate(train_loader, 0):
         inputs, labels = data
-        inputs, labels = inputs.to(device), labels.to(device = device, dtype = torch.int64)
+        inputs, labels = inputs.to(device), labels.to(device = device, dtype = torch.float32)
 
         optimizer.zero_grad()
         inputs = inputs.view(N_BATCH_SIZE, N_RNN_STEP, N_VEC_WORD) # reshape
         print('labels ', labels, 'labels shape ', labels.shape)
         outputs = model(inputs)
+        # assert (inputs > 0.0 & inputs < 1.0).all() # to deal with: Reduce failed to synchronize: device-side assert triggered
+        # assert(inputs.cpu().numpy().all() >= 0 and inputs.cpu().numpy().all() <= 1)
+        # print('data_to_tensor', data_to_tensor)
+        # inputs = inputs.to(device)
+        outputs = outputs.view(N_BATCH_SIZE, ) # reshape for match from [[]] to []
+        print('output for loss ', outputs)
+        print('labels for loss ', labels)
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
@@ -156,7 +163,7 @@ if __name__ == '__main__':
         ############# PARALLELISM ############
         model.features = torch.nn.DataParallel(model.rnn)
         model.cuda()
-        criterion = nn.BCELoss().cuda()
+        criterion = nn.BCEWithLogitsLoss().cuda()
 
     ############# TRAINING ###############
     print('Start training, N_BATCH_SIZE = %4d, N_EPOCH_LIMIT = %4d, N_LEARN_RATE %f\n' %(N_BATCH_SIZE, N_EPOCH_LIMIT, N_LEARN_RATE))
