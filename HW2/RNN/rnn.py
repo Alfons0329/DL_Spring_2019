@@ -105,15 +105,15 @@ def train(train_loader, model, criterion, optimizer, cur_epoch, device):
 
         optimizer.zero_grad()
         inputs = inputs.view(N_BATCH_SIZE, N_RNN_STEP, N_VEC_WORD) # reshape
-        print('labels ', labels, 'labels shape ', labels.shape)
+        # print('labels ', labels, 'labels shape ', labels.shape)
         outputs = model(inputs)
         # assert (inputs > 0.0 & inputs < 1.0).all() # to deal with: Reduce failed to synchronize: device-side assert triggered
         # assert(inputs.cpu().numpy().all() >= 0 and inputs.cpu().numpy().all() <= 1)
         # print('data_to_tensor', data_to_tensor)
         # inputs = inputs.to(device)
         outputs = outputs.view(N_BATCH_SIZE, ) # reshape for match from [[]] to []
-        print('output for loss ', outputs)
-        print('labels for loss ', labels)
+        # print('output for loss ', outputs)
+        # print('labels for loss ', labels)
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
@@ -131,7 +131,7 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
     with torch.no_grad():
         for data in val_loader:
             inputs, labels = data
-            inputs, labels = inputs.to(device), labels.to(device)
+            inputs, labels = inputs.to(device), labels.to(device = device, dtype = torch.int64)
             inputs = inputs.view(N_BATCH_SIZE, N_RNN_STEP, N_VEC_WORD) # reshape
             outputs = model(inputs)
             _, predicted = torch.max(outputs.data, 1)
@@ -179,8 +179,8 @@ if __name__ == '__main__':
         elif adaptive_lr == 'adam':
             optimizer = optim.Adam(model.parameters(), lr = N_LEARN_RATE, weight_decay = 5e-4)
 
-        train(train_loader, model, criterion, optimizer, cur_epoch, device)
-        train_acc_list.append(train_loader, model, criterion, cur_epoch, device, 'train')
+        learning_curve.append(train(train_loader, model, criterion, optimizer, cur_epoch, device))
+        train_acc_list.append(validate(train_loader, model, criterion, cur_epoch, device, 'train'))
 
         print('')
         cur_acc = validate(test_loader, model, criterion, cur_epoch, device, 'test')
