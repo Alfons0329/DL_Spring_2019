@@ -67,7 +67,7 @@ def make_graph():
 
     plt.plot(epoch_list, learning_curve, color = 'blue', label = 'no norm')
     plt.legend()
-    plt.savefig(adaptive_lr + '_' + str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + 'ACC' + '.png', dpi = 150)
+    plt.savefig(adaptive_lr + '_' + str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + 'LC' + '.png', dpi = 150)
 
 ############# NN MAIN PART ###########
 class RNN(nn.Module):
@@ -134,6 +134,7 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
             inputs, labels = inputs.to(device), labels.to(device = device, dtype = torch.int64)
             inputs = inputs.view(-1, N_RNN_STEP, N_VEC_WORD) # reshape
             outputs = model(inputs)
+            # print(what, 'output is ', outputs)
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
