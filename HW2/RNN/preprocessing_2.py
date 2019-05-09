@@ -45,7 +45,6 @@ class custom_dataset(Dataset):
             self.labels = np.zeros((len(self.data), ), dtype=int)
         else:
             self.labels = np.ones((len(self.data), ), dtype=int)
-        #print(self.labels)
 
     def __getitem__(self, index):
         title = self.data[index]
@@ -97,7 +96,6 @@ class custom_dataset(Dataset):
                         each_sentence_embed.append(word_embed.detach().numpy())
 
                     # only append the sentence tensor iff the title is not 'No Title'
-                    # print('each_sentence_mbed shape ', np.array(each_sentence_embed).flatten().shape, 'with value ', np.array(each_sentence_embed).flatten())
                     # data_to_tensor.append(np.array(each_sentence_embed).flatten())
                     data_to_tensor.append(np.array(each_sentence_embed))
 
@@ -109,7 +107,6 @@ class custom_dataset(Dataset):
 
         data_to_tensor = np.array(data_to_tensor)
         data_to_tensor = torch.tensor(data_to_tensor)
-        # print('data_to_tensor', data_to_tensor)
         return data_to_tensor
 
 

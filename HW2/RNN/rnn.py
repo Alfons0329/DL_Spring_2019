@@ -101,7 +101,7 @@ def train(train_loader, model, criterion, optimizer, cur_epoch, device):
 
     for i, data in enumerate(train_loader, 0):
         inputs, labels = data
-        inputs, labels = inputs.to(device), labels.to(device)
+        inputs, labels = inputs.to(device), labels.to(device = device, dtype = torch.int64)
 
         optimizer.zero_grad()
         inputs = inputs.view(N_BATCH_SIZE, N_RNN_STEP, N_VEC_WORD) # reshape
