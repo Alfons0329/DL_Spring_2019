@@ -31,6 +31,7 @@ N_BATCH_SIZE = int(sys.argv[2])
 adaptive_lr = str(sys.argv[3])
 
 N_HID_SIZE = 16
+N_HID_SIZE_2 = 8
 N_RNN_STEP = 10 # 10 step for the sentence title length of 10 words
 N_VEC_WORD = 10 # each word is corresponding to the 10 dim 1 row matrix (word embedding)
 
@@ -83,15 +84,21 @@ class RNN(nn.Module):
                 batch_first = True,
                 bidirectional = False
                 )
-        self.out = nn.Linear(N_HID_SIZE, 1) # accepted %, rejected %
+        self.classifier = nn.Sequential(
+                nn.Linear(N_HID_SIZE, 1),
+                # nn.Sigmoid(),
+                # nn.Dropout(),
+                # nn.Linear(N_HID_SIZE_2, 1),
+                nn.Sigmoid(),
+                )
 
         # forward dnn classifier
     def forward(self, x):
         x, _ = self.rnn(x)
         # print('after rnn x ', x)
         # print('after rnn x II', x[:, -1, :])
-        x = self.out(x)
-        # print('out x ', x[:, -1])
+        x = self.classifier(x)
+        # print('out x ', x)
         return x[:, -1]
 
 ############# TRAIN NN #################
@@ -112,8 +119,6 @@ def train(train_loader, model, criterion, optimizer, cur_epoch, device):
         # print('data_to_tensor', data_to_tensor)
         # inputs = inputs.to(device)
         outputs = outputs.view(N_BATCH_SIZE, ) # reshape for match from [[]] to []
-        # print('output for loss ', outputs)
-        # print('labels for loss ', labels)
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
@@ -121,7 +126,8 @@ def train(train_loader, model, criterion, optimizer, cur_epoch, device):
         train_loss += loss.item()
 
     learning_curve.append(float(train_loss) / float(N_BATCH_SIZE))
-    print('Epoch %5d CE loss: %.3f' %(cur_epoch, float(train_loss) / float(N_BATCH_SIZE)))
+    if cur_epoch % 50 == 0:
+        print('Epoch %5d CE loss: %f' %(cur_epoch, float(train_loss) / float(N_BATCH_SIZE)))
 
 ############# VALIDATE NN ##############
 def validate(val_loader, model, criterion, cur_epoch, device, what):
@@ -135,12 +141,23 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
             inputs = inputs.view(-1, N_RNN_STEP, N_VEC_WORD) # reshape
             outputs = model(inputs)
             # print(what, 'output is ', outputs)
-            _, predicted = torch.max(outputs.data, 1)
+            # _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
-            correct += (predicted == labels).sum().item()
+            for each_output, each_label in zip(outputs, labels):
+                # if what == 'test':
+                    # print('what ', what, 'each_output ', each_output, 'each_label ', each_label)
+                if each_output < 0.5:
+                    each_output = 0
+                else:
+                    each_output = 1
+
+                if(int(each_output) == int(each_label)):
+                    correct += 1
 
     if total != 0:
-        print('Accuracy on %6s set of %d sentences is %f' %(what, total, float(correct) / float(total)))
+        if cur_epoch % 50 == 0:
+            print('Accuracy on %5s set of %5d sentences is %f' %(what, total, float(correct) / float(total)))
+
         return float(correct) / float(total)
     else:
         return 0
@@ -171,7 +188,7 @@ if __name__ == '__main__':
     cur_acc = 0.0
 
     for cur_epoch in range(N_EPOCH_LIMIT):
-        print('cur_epoch %d N_LEARN_RATE %f' %(cur_epoch, N_LEARN_RATE))
+        #print('cur_epoch %d N_LEARN_RATE %f' %(cur_epoch, N_LEARN_RATE))
         epoch_list.append(cur_epoch)
 
         # determine the optimization method
@@ -183,10 +200,9 @@ if __name__ == '__main__':
         train(train_loader, model, criterion, optimizer, cur_epoch, device)
         train_acc_list.append(validate(train_loader, model, criterion, cur_epoch, device, 'train'))
 
-        print('')
         cur_acc = validate(test_loader, model, criterion, cur_epoch, device, 'test')
         test_acc_list.append(cur_acc)
-        print('-----------------------------------------------\n')
+        # print('-----------------------------------------------\n')
 
         # save the model and corresponding accuracy if this is the final epoch with better result
         """
