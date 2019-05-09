@@ -363,3 +363,4 @@ if __name__ == '__main__':
     net.SGD(train_input_n_all, train_expected_output, N_EPOCH_LIMIT, N_BATCH_SIZE, LEARNING_RATE, test_input_n_all, test_expected_output, 2)
     make_graph()
 
+
