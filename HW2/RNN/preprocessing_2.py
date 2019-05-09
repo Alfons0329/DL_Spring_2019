@@ -118,7 +118,7 @@ def load_custom_dataset(N_BATCH_SIZE):
     test_rej = custom_dataset(f_2, 1, False)
 
     train_loader = torch.utils.data.DataLoader(train_acc + train_rej, batch_size = N_BATCH_SIZE, shuffle = True, drop_last = True)
-    test_loader = torch.utils.data.DataLoader(test_acc + test_rej, batch_size = N_BATCH_SIZE, shuffle = False, drop_last = True)
+    test_loader = torch.utils.data.DataLoader(test_acc + test_rej, batch_size = N_BATCH_SIZE, shuffle = False)
 
     return train_loader, test_loader
 

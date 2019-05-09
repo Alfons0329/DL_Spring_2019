@@ -34,7 +34,7 @@ N_HID_SIZE = 16
 N_RNN_STEP = 10 # 10 step for the sentence title length of 10 words
 N_VEC_WORD = 10 # each word is corresponding to the 10 dim 1 row matrix (word embedding)
 
-N_EPOCH_LIMIT = 1000
+N_EPOCH_LIMIT = 1500
 N_TEST_SIZE = 50
 N_TRAIN_SIZE_ACC = 0
 N_TRAIN_SIZE_REJ = 0
@@ -104,7 +104,7 @@ def train(train_loader, model, criterion, optimizer, cur_epoch, device):
         inputs, labels = inputs.to(device), labels.to(device = device, dtype = torch.float32)
 
         optimizer.zero_grad()
-        inputs = inputs.view(N_BATCH_SIZE, N_RNN_STEP, N_VEC_WORD) # reshape
+        inputs = inputs.view(-1, N_RNN_STEP, N_VEC_WORD) # reshape
         # print('labels ', labels, 'labels shape ', labels.shape)
         outputs = model(inputs)
         # assert (inputs > 0.0 & inputs < 1.0).all() # to deal with: Reduce failed to synchronize: device-side assert triggered
@@ -132,7 +132,7 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
         for data in val_loader:
             inputs, labels = data
             inputs, labels = inputs.to(device), labels.to(device = device, dtype = torch.int64)
-            inputs = inputs.view(N_BATCH_SIZE, N_RNN_STEP, N_VEC_WORD) # reshape
+            inputs = inputs.view(-1, N_RNN_STEP, N_VEC_WORD) # reshape
             outputs = model(inputs)
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
@@ -179,7 +179,7 @@ if __name__ == '__main__':
         elif adaptive_lr == 'adam':
             optimizer = optim.Adam(model.parameters(), lr = N_LEARN_RATE, weight_decay = 5e-4)
 
-        learning_curve.append(train(train_loader, model, criterion, optimizer, cur_epoch, device))
+        train(train_loader, model, criterion, optimizer, cur_epoch, device)
         train_acc_list.append(validate(train_loader, model, criterion, cur_epoch, device, 'train'))
 
         print('')
