@@ -6,7 +6,7 @@ then
     mkdir -p RNN_result/\_$1
     for batch_size in 8 256  # small big
     do
-        for learning_rate in 0.00001 0.001 0.01
+        for learning_rate in 0.00001 0.0001 0.001 0.01
         do
             for method in adam sgd
             do
