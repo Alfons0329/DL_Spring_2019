@@ -112,6 +112,7 @@ def train(train_loader, model, criterion, optimizer, cur_epoch, device):
 
         optimizer.zero_grad()
         inputs = inputs.view(-1, N_RNN_STEP, N_VEC_WORD) # reshape
+        print('reshaped input : ', inputs)
         # print('labels ', labels, 'labels shape ', labels.shape)
         outputs = model(inputs)
         # assert (inputs > 0.0 & inputs < 1.0).all() # to deal with: Reduce failed to synchronize: device-side assert triggered
