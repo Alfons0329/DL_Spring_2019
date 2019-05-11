@@ -76,7 +76,7 @@ class RNN(nn.Module):
         super(RNN, self).__init__()
 
         # RNN layer
-        self.rnn = nn.RNN(
+        self.rnn = nn.LSTM(
                 input_size = 10,
                 hidden_size = N_HID_SIZE,
                 num_layers = 1,

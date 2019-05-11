@@ -4,14 +4,14 @@ read -p "1: RNN all combinations, 2: RNN current best, 3: LSTM all combinations 
 if [ $sel -eq 1 ];
 then
     mkdir -p RNN_result/$1
-    for batch_size in 8 256  # small big
+    for batch_size in 16 128  # small big
     do
-        for learning_rate in 0.00001 0.0001 0.001 0.01
+        for learning_rate in 0.00001 0.0001 0.001
         do
             for method in adam sgd
             do
                 python3 rnn.py $learning_rate $batch_size $method
-                mv $method*\.png RNN_result/\_$1
+                mv $method*\.png RNN_result/$1
             done
         done
     done
@@ -29,7 +29,7 @@ then
             for method in adam sgd
             do
                 python3 lstm.py $learning_rate $batch_size $method
-                mv $method*\.png LSTM_result/\_$1
+                mv $method*\.png LSTM_result/$1
             done
         done
     done
