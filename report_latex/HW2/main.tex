@@ -139,24 +139,26 @@
 \section{Self-designed CNN for image classification} % Add a section title
 \subsection{Preprocessing the images} % Section check OK 20190502
 In the preprocessing part, I merely resize the image to 256 x 256 and perform normalization. No gray scale transformation nor random crop and(or) rotate to form data augmentation.
-\\ Reason I only choose resize mainly due to my hardware limitation (the GPU of my machine is only GTX1070, too much data will increase my training time or causing cuda out of memory error
+\\ Reason I only choose resize mainly due to my \textbf{hardware limitation} (the GPU of my machine is only GTX1070, too much data will increase my training time or cause \textbf{cuda out of memory error}
 \\ Second, the main core lies in resizing image to 256 x 256, since suppose we use the image of original size, the dimension of training data will explode (known as \textbf{Curse of Dimensionality}). 
 \\ Another important part is to normalize image on accounting of reducing the effect from extremity and different image scale, now all the images are fitted to the same baseline (normalized and resized).
-\\ Both of the training set and testing set are under the same transformation from pytorch for the sake of fairness
+\\ Both of the training set and testing set are under the same transformation from pytorch for the sake of fairness.
 \begin{lstlisting}[language = python]
-my_transform = transforms.Compose([transforms.Resize((256, 256)), transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]) 
+my_transform = transforms.Compose([transforms.Resize((256, 256)), 
+transforms.ToTensor(), 
+transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]) 
 \end{lstlisting}
 
 \subsection{CNN architecture explanation and performance evaluation} % Add a subsection
 \subsubsection{Architecture}
-\\ My architecture is similar to that of famous VGG16, yet concerning the hardware limitation of my machine, I condense them into only 8 convolutional layers and two linear(normal dnn) layer in the end.    The following figure show the VGG16 architecture
+\\ Main architecture is similar to that of famous VGG16, yet concerning the hardware limitation , I condense them into only 8 convolutional layers and two linear(normal dnn) layer in the end.   The following figure show the VGG16 architecture.
 \\ \small{With original architecture layer representing in list, M represents the maxpool layer and number is the channel size.}
 \\ VGG16 = [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M']
 \\ And here is my condensed version
 \\ VGG16-small = [8, 'M', 16, 'M', 32, 'M', 64, 'M']
 \\ The filter size is reduced to 1/8 in total and for each stacked layer between two maxpool layer, I extract one from them since it is enough to represent the overall architecture, larger kernel size will only increase the computational complexity. 
 \\ After that, data are fed into the classification layer, the output size of image will changed to 7 x 7 x 64. flatten to the dnn for the final classification.
-\\ The following is the architecture of classification layers, ReLU is applied here since it first prevents gradient vanishing, second it provides sparsity with an eye to preventing overfitting (and also reduce computational loading), third it bears a resemblance to \textbf{all or none law} similar to that of nature species. Drop out is used to prevent overfitting and finally the linear output of classification result.
+\\ The following is the architecture of classification layers, ReLU is applied here since it first prevents gradient vanishing, second it provides sparsity with an eye to preventing overfitting (and also reduce computational workload), last but not least, it bears a resemblance to \textbf{all or none law} similar to that of nature species. Drop out is used to prevent overfitting and finally the linear output of classification result.
 \begin{lstlisting}[language = python]
 self.classifier = nn.Sequential(
                 nn.Linear(64 * 7 * 7, linear_size),
@@ -178,8 +180,8 @@ self.classifier = nn.Sequential(
 \subsubsection{The learning curve vs kernel and stride size}
 {\Large Experiments to check the effect of kernel and stride size on result}
 \\ First we compare the effect of kernel size, both of which use the same stride, optimizer, lr and batch size.
-We can see that the small kernel size performed slightly better than large one. In my perspective, larger convolutional kernel probably will mix more pixel around the center pixel, causing more noise in training.
-\\ Reference: \url{https://zhuanlan.zhihu.com/p/41423739}, in this link, author mentioned about "receptive" filed, that is stacked some of the small convolutional layer may not only better preserve the properties of original image(less "mixing" effect) but also cost less parameters during computation. 
+We are able to clearily see that the small kernel size performed slightly better than large one. In my perspective, larger convolutional kernel probably will mix more pixel around the center pixel, causing more noise in training.
+\\ (Reference: \url{https://zhuanlan.zhihu.com/p/41423739}), in this link, author mentioned about "receptive" filed, that is stacked some of the small convolutional layer may not only better preserve the properties of original image(less "mixing" effect) but also cost less parameters during computation. 
 
 \begin{figure}[H]
   \centering
@@ -189,13 +191,13 @@ We can see that the small kernel size performed slightly better than large one. 
   \caption{Convolutional layer kernel size comparison}
 \end{figure}
 \\ Then we compare the effect of stride size, both of which use the same kernel size, optimizer, lr and batch size.
-We can see that the small stride performed slightly better than large one. In my perspective, since I select the maxpool kernel size to be 2, stride size should be same as kernel of maxpool, or the characteristic part of image will overlapped during feature extraction. \newline \break
+We can see that the small stride performed slightly better than large one. In my perspective, the higher the stride size is, the less image detail it will be filtered out(or preserved) by the kernel. 
 \begin{figure}[H]
   \centering
-  \subfloat[Kernel size 3]{\includegraphics[scale = 0.5]{HW2/cmp_kernel/ker_3_acc.png}\label{fig:f1}}
+  \subfloat[Stride size 1]{\includegraphics[scale = 0.5]{HW2/cmp_stride/stri_1_acc.png}\label{fig:f1}}
   \hfill
-  \subfloat[Kernel size 5]{\includegraphics[scale = 0.5]{HW2/cmp_kernel/ker_5_acc.png}\label{fig:f1}}
-  \caption{Convolutional layer kernel size comparison}
+  \subfloat[Stride size 3]{\includegraphics[scale = 0.5]{HW2/cmp_stride/stri_3_acc.png}\label{fig:f1}}
+  \caption{Convolutional layer stride size comparison}
 \end{figure}
 {\Large Conclusion}
 \\ Kernel size 3 and stride 2(no overlapping for maxpool size 2) will be enough. \newline \break
@@ -211,7 +213,106 @@ We can see that the small stride performed slightly better than large one. In my
     \caption{Optimizing method comparison}
     \label{fig:my_label}
 \end{figure}
-\\ We can see that the accuracy of testing set in SGD with momentum got stuck in about 30th epoch. Although the curve of adam kept damping, it did not stuck as servere as SGD with momentum. \newline \break 
+\\ We can see that the accuracy of testing set in SGD with momentum got stuck in about 30th epoch. Although the curve of adam kept damping, it did not stuck as severe as SGD with momentum. \newline \break 
 {\Large Conclusion}
 \\ Extend the epoch to see if one outperformed the other.
+\\ Finally the \texttt{batch\_size 128, adam optimizer(initial learning rate 5e-4), stride\_size 2} performs the best and here is the overall best result. 
+\subsection{The accuracy results and related discussion}
+\begin{figure}[H]
+    \centering
+    \subfloat[Accuracy by class]{\includegraphics[scale = 0.5]{HW2/cnn_result/class_acc_1.png}}
+    \hfill
+    \subfloat[Accuracy curve]{\includegraphics[scale = 0.5]{HW2/cnn_result/acc.png}}
+    \hfill
+    \subfloat[Loss curve]{\includegraphics[scale = 0.5]{HW2/cnn_result/lc.png}}
+    \hfill
+    \caption{Overall best result}
+    \label{fig:my_label}
+\end{figure}
+%\\ Reason for class \texttt{class class class} perform well mainly lies in
+\\ Following are the example of incorrectly-classfied images {\small(the filename format are used to represent the incorrectly format: label\_predicted\_errorcount.png)}
+\begin{figure}[H]
+    \centering
+    \subfloat[Filename format]{\includegraphics[scale = 0.5]{HW2/wrong_classified/name.png}}
+    \hfill
+    \subfloat[Label chicken, predict butterfly]{\includegraphics[scale = 0.4]{HW2/wrong_classified/test_chicken_butterfly9.png}}
+    \hfill
+    \subfloat[Label cow, predict dog]{\includegraphics[scale = 0.4]{HW2/wrong_classified/test_cow_dog42.png}}
+    \hfill
+    \subfloat[Label dog, predict cat]{\includegraphics[scale = 0.4]{HW2/wrong_classified/test_dog_cat31.png}}
+    \hfill
+    \caption{Incorrectly-classified images}
+    \label{fig:my_label}
+\end{figure}
+{\Large \\ Further discussions (My deductions)}
+\\ Reason for class \texttt{chicken cow dog} perform poor mainly lies in
+\begin{itemize}
+    \item Chicken: The side-view of chicken may bear resemblance butterfly.
+    \item Cow: The side-view of cow may bear resemblance to either dog or cat. 
+    \item Dog: The front and side view of dog may bear resemblance to cat, since in Taxonomy
+    they both lie under Animalia/Mammalia/Carnivora 
+\end{itemize}
+
+\section{Self-designed RNN for NLP}
+\subsection{Conventional RNN}
+\subsubsection{Preprocessing}
+In the preprocessing part, I crop (or padding) the sentence to make each of them in the length of 10 and each word corresponding to the vector length of 10 as well.
+Finally, each sentence can be represented to the matrix size of 10x10.
+The preprocessing code is here \url{https://github.com/Alfons0329/DL_Spring_2019/blob/master/HW2/RNN/preprocessing_2.py}
+\\ For example
+\texttt{This is not an apple} in the embedding process, it will be converted to \texttt{This is not an apple XXX XXX XXX XXX XXX} since \texttt{XXX} is the 0th element in the while dictionary and thus being used for padding the sentence.
+\\ And finally \texttt{1 2 3 4 5 0 0 0 0 0} and be converted to matrix representation of size 10 x 10 by the rule of word embedding.
+\\ Reference tutorial: \url{https://pytorch.org/tutorials/beginner/nlp/word_embeddings_tutorial.html}
+\subsubsection{Architecture explanation}
+\\ The RNN architecture is as follows: The input size is a 10-dimension wordvector and time step is set as 10 as we output the binary classification result based on the sentence of length 10.
+
+\begin{lstlisting}[language = python]
+self.rnn = nn.RNN(
+                input_size = 10,
+                hidden_size = N_HID_SIZE,
+                num_layers = 1,
+                dropout = 0.5,
+                batch_first = True,
+                bidirectional = False
+                )
+self.classifier = nn.Sequential(
+                nn.Linear(N_HID_SIZE, 1),
+                nn.Sigmoid(),
+                )
+
+inputs = inputs.view(N_BATCH_SIZE, N_RNN_STEP, N_VEC_WORD) # reshape
+\end{lstlisting}
+\\subsubsection{Results}
+\begin{figure}[H]
+    \centering
+    \subfloat[Accuracy curve]{\includegraphics[scale = 0.5]{HW2/rnn_result/adam_1_acc.png}}
+    \hfill
+    \subfloat[Loss curve]{\includegraphics[scale = 0.5]{HW2/rnn_result/adam_1_lc.png}}
+    \caption{RNN results}
+    \label{fig:my_label}
+\end{figure}
+\subsubsection{LSTM results vs RNN results}
+\\ By merely changed the network from RNN to LSTM (all the rest are remain unchanged, including the optimization method).
+\\ Loss curve are about the same, let us check the difference between the accuracy curve.  
+\begin{figure}[H]
+    \centering
+    \subfloat[Accuracy curve of LSTM]{\includegraphics[scale = 0.5]{HW2/lstm_result/adam_1_acc.png}}
+    \hfill
+    \subfloat[Accuracy curve of RNN]{\includegraphics[scale = 0.5]{HW2/rnn_result/adam_1_acc.png}}
+    \caption{Accuracy comparison}
+    \label{fig:my_label}
+\end{figure}
+\\ As the figures shown, RNN may suffer from the gradient vanishing/exploding in the latter epochs during training.
+
+\subsection{Discussion: LSTM vs RNN}
+\\ Reference \url{https://colah.github.io/posts/2015-08-Understanding-LSTMs/}
+\\ In theory, RNNs are absolutely capable of handling such “long-term dependencies.” A human could carefully pick parameters for them to solve toy problems of this form. Sadly, in practice, RNNs don’t seem to be able to learn them. The problem was explored in depth by Hochreiter (1991) [German] and Bengio, et al. (1994), who found some pretty fundamental reasons why it might be difficult.
+\subsubsection{Gradient vanishing and exploding}
+\\ The back propogation is defined as: $w^{t+1} = w{t} - \eta\Delta E(w^{t})$ 
+\\ The gradients coming from the deeper layers have to go through continuous matrix multiplications because of the the chain rule, and as they approach the earlier layers, if they have small values (<1), they shrink exponentially until they vanish and make it impossible for the model to learn , this is the \textbf{vanishing gradient problem}. While on the other hand if they have large values (>1) they get larger and eventually blow up and crash the model, this is the \textbf{exploding gradient problem}
+\\
+\\
+\\
+\\ {\Large Conclusion: The advantage of LSTM}
+\\ The memory cell remembers the first input as long as the forget gate is open and the input gate is closed while output gate provides finer control to switch the output layer on or off without altering the cell contents, thus solve the gradient vanishing/exploding problem.
 \end{document}
