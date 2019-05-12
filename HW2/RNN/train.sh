@@ -4,7 +4,7 @@ read -p "1: RNN all combinations, 2: RNN current best, 3: LSTM all combinations 
 if [ $sel -eq 1 ];
 then
     mkdir -p RNN_result/$1
-    for batch_size in 16 128  # small big
+    for batch_size in 8 16 64 128 # small big
     do
         for learning_rate in 0.00001 0.0001 0.001
         do
@@ -22,7 +22,7 @@ elif [ $sel -eq 3 ];
 then
     mkdir -p LSTM_result
     mkdir -p LSTM_result/$1
-    for batch_size in 16 128  # small big
+    for batch_size in 8 16 64 128 # small big
     do
         for learning_rate in 0.00001 0.0001 0.001
         do
