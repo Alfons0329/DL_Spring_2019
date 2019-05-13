@@ -80,7 +80,6 @@ class RNN(nn.Module):
                 input_size = 10,
                 hidden_size = N_HID_SIZE,
                 num_layers = 1,
-                dropout = 0.5,
                 batch_first = True,
                 bidirectional = False
                 )

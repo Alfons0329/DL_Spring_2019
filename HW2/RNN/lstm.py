@@ -32,7 +32,7 @@ adaptive_lr = str(sys.argv[3])
 
 N_HID_SIZE = 16
 N_HID_SIZE_2 = 8
-N_RNN_STEP = 10 # 10 step for the sentence title length of 10 words
+N_LSTM_STEP = 10 # 10 step for the sentence title length of 10 words
 N_VEC_WORD = 10 # each word is corresponding to the 10 dim 1 row matrix (word embedding)
 
 N_EPOCH_LIMIT = 1500
@@ -71,16 +71,15 @@ def make_graph():
     plt.savefig(adaptive_lr + '_' + str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + 'LC' + '.png', dpi = 150)
 
 ############# NN MAIN PART ###########
-class RNN(nn.Module):
+class LSTM(nn.Module):
     def __init__(self):
-        super(RNN, self).__init__()
+        super(LSTM, self).__init__()
 
-        # RNN layer
+        # LSTM layer
         self.rnn = nn.LSTM(
                 input_size = 10,
                 hidden_size = N_HID_SIZE,
                 num_layers = 1,
-                dropout = 0.5,
                 batch_first = True,
                 bidirectional = False
                 )
@@ -111,7 +110,7 @@ def train(train_loader, model, criterion, optimizer, cur_epoch, device):
         inputs, labels = inputs.to(device), labels.to(device = device, dtype = torch.float32)
 
         optimizer.zero_grad()
-        inputs = inputs.view(N_BATCH_SIZE, N_RNN_STEP, N_VEC_WORD) # reshape
+        inputs = inputs.view(N_BATCH_SIZE, N_LSTM_STEP, N_VEC_WORD) # reshape
         # print('reshaped input : ', inputs)
         # print('labels ', labels, 'labels shape ', labels.shape)
         outputs = model(inputs)
@@ -139,7 +138,7 @@ def validate(val_loader, model, criterion, cur_epoch, device, what):
         for data in val_loader:
             inputs, labels = data
             inputs, labels = inputs.to(device), labels.to(device = device, dtype = torch.int64)
-            inputs = inputs.view(-1, N_RNN_STEP, N_VEC_WORD) # reshape
+            inputs = inputs.view(-1, N_LSTM_STEP, N_VEC_WORD) # reshape
             outputs = model(inputs)
             # print(what, 'output is ', outputs)
             # _, predicted = torch.max(outputs.data, 1)
@@ -169,8 +168,8 @@ if __name__ == '__main__':
     ############# LOAD DATASET ###########
     train_loader, test_loader = pre.load_custom_dataset(N_BATCH_SIZE)
 
-    ############# INSTANTIATE RNN ########
-    model = RNN()
+    ############# INSTANTIATE LSTM ########
+    model = LSTM()
 
     ############# CUUUUUUUDA #############
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
