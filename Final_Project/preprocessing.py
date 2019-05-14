@@ -25,19 +25,19 @@ torch.multiprocessing.set_sharing_strategy('file_system')  # prevent multithread
 
 ########### IO PREPROCESS ##########
 def IO_preprocess(shuffle_or_not):
-    # image rgb range [0, 255] -> [0.0, 1.0] and -> [-1, 1]
-    # 0430 delete random crop to see if better and force the shuffle to be true
     my_transform = transforms.Compose([transforms.Resize((256, 256)), transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]) # NOTE: The order of tr
     train_input = torchvision.datasets.ImageFolder(root = TRAIN_PATH, transform = my_transform)
     train_loader = torch.utils.data.DataLoader(train_input, batch_size = N_BATCH_SIZE, num_workers = N_CPU_THREADS, shuffle = True)
 
-    # test_input = torchvision.datasets.ImageFolder(root = valid_path, transform = my_transform)
-    # test_loader = torch.utils.data.DataLoader(test_input, batch_size = N_BATCH, num_workers = N_CPU_THREADS, shuffle = False
     return train_loader
 
 if __name__ == '__main__':
     train_loader = IO_preprocess(True)
-    train_loader = train_loader[:N_BATCH_LIMIT]
     print('len train_loader: ', len(train_loader))
+    # try solving with enumerate
+    for i, data in enumerate(train_loader, 0):
+        inputs, labels = data
+        print('len inputs ', len(inputs), 'len labels ', len(labels))
+        input()
 
 
