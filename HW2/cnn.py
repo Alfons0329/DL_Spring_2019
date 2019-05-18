@@ -240,7 +240,7 @@ if __name__ == '__main__':
 
     if device == 'cuda':
         print('Train with CUDA ')
-        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        device = torch.device('cuda:0' if torch.cuda.is_available() else "cpu")
         model.features = torch.nn.DataParallel(model.features)
         model.cuda()
         criterion = nn.CrossEntropyLoss().cuda()
