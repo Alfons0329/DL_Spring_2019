@@ -237,4 +237,13 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
     input_img.data.clamp_(0, 1)
 
     return input_img
+
 if __name__ == '__main__':
+    output = run_style_transfer(cnn, cnn_normalization_mean, cnn_normalization_std,
+                            content_img, style_img, input_img)
+
+    plt.figure()
+    imshow(output, title='Output Image')
+
+    plt.ioff()
+    plt.show() 

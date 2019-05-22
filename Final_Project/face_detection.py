@@ -1,5 +1,6 @@
 import cv2
-
+import os, sys
+path = 'style_img/' + sys.argv[1] 
 def face_detect(path):
 	img = cv2.imread(path)
 	faceCascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
@@ -7,4 +8,4 @@ def face_detect(path):
 	faces = faceCascade.detectMultiScale(gray, 1.3, 5)
 	# Draw a rectangle around the faces
 	for (x, y, w, h) in faces:
-		cv2.imwrite(path+'_face.png', img[y:y+h,x:x+w])
+		cv2.imwrite(path + '_face.png', img[y:y+h,x:x+w])
