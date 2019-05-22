@@ -2,17 +2,12 @@
 cd style_img
 
 style_cnt=$(ls | wc -l)
+style_cnt=$((style_cnt-3))
 index=1
 
-for f in *.jpg;
+for f in $(seq 1 $style_cnt);
 do
-	mv "$f" s\_$index.jpg
-	index=$((index+1))
-done
-
-for f in *.jpg;
-do
-	python3 ../face_detection.py $f
+	python3 face_detection.py s\_$f
 done
 
 cd ..
