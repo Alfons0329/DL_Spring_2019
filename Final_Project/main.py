@@ -243,11 +243,11 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
 if __name__ == '__main__':
     output = run_style_transfer(cnn, cnn_normalization_mean, cnn_normalization_std, content_img, style_img, input_img)
 
-    plt.figure()
-    imshow(output, title = 'Output Image')
+    #plt.figure()
+    #imshow(output, title = 'Output Image')
 
-    plt.ioff()
-    plt.show()
+    #plt.ioff()
+    #plt.show()
     split_s_name, _ = os.path.splitext(args.style_img)
     split_c_name, _ = os.path.splitext(args.content_img)
 

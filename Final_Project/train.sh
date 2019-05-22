@@ -6,7 +6,7 @@ then
     for f in style_img/*\_face.png;
     do
         echo "Using style: " $f
-        python3 main.py --style_img $f --content_img content_img/c_1.jpg
+        python3 main.py --style_img $f --content_img $1 --step 75
     done
 else
     for f in style_img/*.png;
