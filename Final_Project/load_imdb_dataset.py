@@ -24,7 +24,7 @@ N_CPU_THREADS = 6
 torch.multiprocessing.set_sharing_strategy('file_system')  # prevent multithread data error
 
 ########### IO PREPROCESS ##########
-def IO_preprocess(shuffle_or_not):
+def load_dataset(shuffle_or_not):
     my_transform = transforms.Compose([transforms.Resize((256, 256)), transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]) # NOTE: The order of tr
     train_input = torchvision.datasets.ImageFolder(root = TRAIN_PATH, transform = my_transform)
     train_loader = torch.utils.data.DataLoader(train_input, batch_size = N_BATCH_SIZE, num_workers = N_CPU_THREADS, shuffle = True)
