@@ -30,6 +30,9 @@ parser.add_argument('--style_weight', type = int, default = 1000000)
 parser.add_argument('--content_weight', type = int, default = 1)
 parser.add_argument('--steps', type = int, default = 300)
 
+parser.add_argument('--style_cnt', type = int, default = 1)
+parser.add_argument('--content_cnt', type = int, default = 1)
+
 # parser.add_argument('--img_num', type = int, default = 32000)
 args = parser.parse_args()
 
@@ -192,7 +195,7 @@ def get_input_optimizer(input_img):
     return optimizer
 
 def run_style_transfer(cnn, normalization_mean, normalization_std,
-                       content_img, style_img, input_img, num_steps = 300,
+                       content_img, style_img, input_img, num_steps = args.steps,
                        style_weight = args.style_weight, content_weight = args.content_weight):
 
     print('Building the style transfer model..')
@@ -225,7 +228,7 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
             loss.backward()
 
             run[0] += 1
-            if run[0] % 50 == 0:
+            if run[0] % 25 == 0:
                 print("run {}:".format(run))
                 print('Style Loss : {:4f} Content Loss: {:4f}'.format(
                     style_score.item(), content_score.item()))
@@ -248,18 +251,6 @@ if __name__ == '__main__':
 
     #plt.ioff()
     #plt.show()
-    split_s_name, _ = os.path.splitext(args.style_img)
-    split_c_name, _ = os.path.splitext(args.content_img)
-
-    style_cnt = '0'
-    content_cnt = '0'
-    for i in split_s_name:
-        if i >= '0' or i <= '9':
-            style_cnt = i
-            break
-
-    for i in split_c_name:
-        if i >= '0' or i <= '9':
-            content_cnt = i
-            break
-    imsave(output, 's' + style_cnt + '_' + 'c' + content_cnt + '.png')
+    style_cnt = str(args.style_cnt)
+    content_cnt = str(args.content_cnt)
+    imsave(output, 's' + style_cnt + '_c' + content_cnt + '.png')
