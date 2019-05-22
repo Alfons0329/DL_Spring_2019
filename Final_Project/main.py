@@ -19,14 +19,12 @@ import copy
 import argparse
 
 import sys, os
+
 ########### ARGPARSE  #############
 parser = argparse.ArgumentParser()
-parser.add_argument('--style_path', type = str, default = 'style_img/')
-parser.add_argument('--content_path', type = str, default = 'content_img/')
-parser.add_argument('--output_path', type = str, default = 'output_img/')
-parser.add_argument('--style_img', type = str, default = 's1_face.png')
-parser.add_argument('--content_img', type = str, default = 'c1.jpg')
-parser.add_argument('--output_img', type = str, default = 'o1')
+parser.add_argument('--style_img', type = str, default = 's_1_face.png')
+parser.add_argument('--content_img', type = str, default = 'c_7.jpg')
+parser.add_argument('--output_img', type = str, default = 'o_1')
 
 parser.add_argument('--style_weight', type = int, default = 1000000)
 parser.add_argument('--content_weight', type = int, default = 1)
@@ -53,8 +51,8 @@ def image_loader(image_name):
     image = loader(image).unsqueeze(0)
     return image.to(device, torch.float)
 
-style_img = image_loader(args.style_path + args.style_img)
-content_img = image_loader(args.content_path + args.content_img)
+style_img = image_loader(args.style_img)
+content_img = image_loader(args.content_img)
 #assert style_img.size() == content_img.size(), \
 #        "we need to import style and content images of the same size"
 
@@ -186,6 +184,9 @@ def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
     model = model[:(i + 1)]
 
     return model, style_losses, content_losses
+
+input_img = content_img.clone()
+
 def get_input_optimizer(input_img):
     optimizer = optim.LBFGS([input_img.requires_grad_()])
     return optimizer
@@ -240,8 +241,7 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
     return input_img
 
 if __name__ == '__main__':
-    output = run_style_transfer(cnn, cnn_normalization_mean, cnn_normalization_std,
-                            content_img, style_img, input_img)
+    output = run_style_transfer(cnn, cnn_normalization_mean, cnn_normalization_std, content_img, style_img, input_img)
 
     plt.figure()
     imshow(output, title = 'Output Image')
@@ -250,4 +250,16 @@ if __name__ == '__main__':
     plt.show()
     split_s_name, _ = os.path.splitext(args.style_img)
     split_c_name, _ = os.path.splitext(args.content_img)
-    imsave(output, title = split_s_name + split_c_name + args.output_img + '.png')
+
+    style_cnt = '0'
+    content_cnt = '0'
+    for i in split_s_name:
+        if i >= '0' or i <= '9':
+            style_cnt = i
+            break
+
+    for i in split_c_name:
+        if i >= '0' or i <= '9':
+            content_cnt = i
+            break
+    imsave(output, 's' + style_cnt + '_' + 'c' + content_cnt + '.png')
