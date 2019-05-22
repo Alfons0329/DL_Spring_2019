@@ -18,13 +18,14 @@ import torchvision.models as models
 import copy
 import argparse
 
+import sys, os
 ########### ARGPARSE  #############
 parser = argparse.ArgumentParser()
 parser.add_argument('--style_path', type = str, default = 'style_img/')
 parser.add_argument('--content_path', type = str, default = 'content_img/')
 parser.add_argument('--output_path', type = str, default = 'output_img/')
-parser.add_argument('--style_img', type = str, default = 's1')
-parser.add_argument('--content_img', type = str, default = 'c1')
+parser.add_argument('--style_img', type = str, default = 's1_face.png')
+parser.add_argument('--content_img', type = str, default = 'c1.jpg')
 parser.add_argument('--output_img', type = str, default = 'o1')
 
 parser.add_argument('--style_weight', type = int, default = 1000000)
@@ -52,8 +53,8 @@ def image_loader(image_name):
     image = loader(image).unsqueeze(0)
     return image.to(device, torch.float)
 
-style_img = image_loader(args.style_path + args.style_img + '.jpg')
-content_img = image_loader(args.content_path + args.content_img + '.jpg')
+style_img = image_loader(args.style_path + args.style_img)
+content_img = image_loader(args.content_path + args.content_img)
 #assert style_img.size() == content_img.size(), \
 #        "we need to import style and content images of the same size"
 
@@ -62,7 +63,7 @@ unloader = transforms.ToPILImage()  # reconvert into PIL image
 
 plt.ion()
 
-def imshow(tensor, title=None):
+def imshow(tensor, title = None):
     image = tensor.cpu().clone()  # we clone the tensor to not do changes on it
     image = image.squeeze(0)      # remove the fake batch dimension
     image = unloader(image)
@@ -71,7 +72,7 @@ def imshow(tensor, title=None):
         plt.title(title)
     plt.pause(0.001) # pause a bit so that plots are updated
 
-def imsave(tensor, title=None):
+def imsave(tensor, title = None):
     plt.figure()
     image = tensor.cpu().clone()  # clone clone and move to GPU
     image = image.squeeze(0)      # remove the fake batch dimension
@@ -184,7 +185,7 @@ def get_style_model_and_losses(cnn, normalization_mean, normalization_std,
 
     model = model[:(i + 1)]
 
-    return model, style_losses, content_losses 
+    return model, style_losses, content_losses
 def get_input_optimizer(input_img):
     optimizer = optim.LBFGS([input_img.requires_grad_()])
     return optimizer
@@ -243,7 +244,10 @@ if __name__ == '__main__':
                             content_img, style_img, input_img)
 
     plt.figure()
-    imshow(output, title='Output Image')
+    imshow(output, title = 'Output Image')
 
     plt.ioff()
-    plt.show() 
+    plt.show()
+    split_s_name, _ = os.path.splitext(args.style_img)
+    split_c_name, _ = os.path.splitext(args.content_img)
+    imsave(output, title = split_s_name + split_c_name + args.output_img + '.png')
