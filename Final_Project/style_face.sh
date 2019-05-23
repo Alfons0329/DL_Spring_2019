@@ -1,13 +1,24 @@
 #!/bin/bash
-cd style_img
+if [ $# -ne 1 ];
+then
+    echo "Usage: ./style_face.sh parh/to/dir/for/face/crop"
+fi
+
+cd $1
 
 style_cnt=$(ls | wc -l)
-style_cnt=$((style_cnt-3))
+style_cnt=$((style_cnt-2))
 index=1
+# todo_pattern=*{jpg,jpeg}
+# dont_pattern=*\_face\.{.png}
 
-for f in $(seq 1 $style_cnt);
+for f in *{jpg,jpeg};
 do
-	python3 face_detection.py s\_$f
+    if [ $f != *\_face\.{.png} ];
+    then
+        echo "f: " $f
+	    python3 face_detection.py $f
+    fi
 done
 
 cd ..
