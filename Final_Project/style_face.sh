@@ -1,7 +1,8 @@
 #!/bin/bash
 if [ $# -ne 1 ];
 then
-    echo "Usage: ./style_face.sh parh/to/dir/for/face/crop"
+    echo "Usage: ./style_face.sh <parh/to/dir/for/face/crop>"
+    exit
 fi
 
 cd $1

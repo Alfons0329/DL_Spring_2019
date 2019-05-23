@@ -253,4 +253,4 @@ if __name__ == '__main__':
     #plt.show()
     style_cnt = str(args.style_cnt)
     content_cnt = str(args.content_cnt)
-    imsave(output, 's' + style_cnt + '_c' + content_cnt + '.png')
+    imsave(output, 's' + style_cnt + '_c' + content_cnt + '_' + str(args.steps) + '.png')
