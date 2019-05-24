@@ -17,6 +17,10 @@ then
     for f in style_img/*\_face\.png;
     do
         echo "Using style: " $f
+        if ![ -e $f ];
+        then
+            echo "File not exist! "
+        fi
         for steps in 25 50 75 100 125;
         do
             python3 main.py --style_img $f --content_img $1 --steps $steps --style_cnt $style_cnt --content_cnt $2
