@@ -54,9 +54,9 @@ def correlation(feature_data, output_data):
     ypos = np.arange(len(features))
     plt.bar(ypos, coef, align = 'center', alpha = 0.5)
     plt.xticks(ypos, features)
-    plt.ylabel('CORRCOEF')
-    plt.title('CORRCOEF of features vs alive')
-    plt.savefig('CORRCOEF', dpi = 150)
+    plt.ylabel('corrcoef')
+    plt.title('corrcoef of features vs alive')
+    plt.savefig('corrcoef', dpi = 150)
 
 
 ################# NORMALIZE ############
@@ -77,9 +77,9 @@ def stddev(data):
     ypos = np.arange(len(features))
     plt.bar(ypos, stddev_list, align = 'center', alpha = 0.5)
     plt.xticks(ypos, features)
-    plt.ylabel('STDDEV')
-    plt.title('STDDEV of each feature')
-    plt.savefig('STDDEV', dpi = 150)
+    plt.ylabel('stddev')
+    plt.title('stddev of each feature')
+    plt.savefig('stddev', dpi = 150)
 
 def norm_col(data, col):
     data = np.array(data).astype(float)
