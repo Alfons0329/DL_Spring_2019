@@ -30,9 +30,9 @@ then
     echo "Doing the best combination "
     rm -rf my_vgg.pt best_acc.txt
     python3 cnn.py 0.0005 128 2 2 --vgg_small adam
-    mkdir -p $1\_$2
-    mv *.png $1\_$2/
-    mv *.pt best_acc.txt $1\_$2/
+    mkdir -p CNN_result/$1\_$2
+    mv *.png CNN_result/$1\_$2/
+    mv *.pt best_acc.txt CNN_result/$1\_$2/
 elif [ $sel -eq 4 ];
 then
     rm -rf my_vgg.pt best_acc.txt
