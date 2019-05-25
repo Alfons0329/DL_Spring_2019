@@ -23,7 +23,7 @@ F_NAME_REJECT = 'ICLR_rejected.xlsx'
 
 ARGV_CNT = 4
 if len(sys.argv) != ARGV_CNT:
-    print('Error: usage: python3 rnn.py $learning_rate $batch_size { adam | sgd }')
+    print('Error: usage: python3 rnn.py $learning_rate $batch_size  adam | sgd ')
     sys.exit(1)
 
 N_LEARN_RATE = float(sys.argv[1])

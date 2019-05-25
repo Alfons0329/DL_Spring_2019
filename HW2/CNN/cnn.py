@@ -31,7 +31,7 @@ import preprocessing_1 as pre
 # simple argument parsing
 ARGV_CNT = 7
 if len(sys.argv) != ARGV_CNT:
-    print('Error: usage: python3 cnn.py $learning_rate $batch_size $stride_size { --vgg_normal | --vgg_small } { adam | sgd }')
+    print('Error: usage: python3 cnn.py $learning_rate $batch_size $stride_size --vgg_normal | --vgg_small   adam | sgd ')
     sys.exit(1)
 
 N_LEARN_RATE = float(sys.argv[1])

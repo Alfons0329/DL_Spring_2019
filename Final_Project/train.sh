@@ -2,7 +2,7 @@
 
 if [ $# -ne 2 ];
 then
-    echo "Usage; ./train.sh <path/to/content_img> <id of content_img>"
+    echo "Usage; ./train.sh path/to/content_img id_of_content_img"
     echo "Example: ./train.sh content_img/c_9_face.png 9"
     exit
 fi
@@ -10,22 +10,29 @@ fi
 read -p "Style with main face part only? 1 y 2 n: " face
 if [ $face -eq 1 ];
 then
-    style_cnt=1
     # todo_pattern="style_img/.*\_face\.png"
     # for f in $todo_pattern
 
-    for f in style_img/*\_face\.png;
+    content_cnt=1
+    for content in content_img/*\.png;
     do
-        echo "Using style: " $f
-        if [ ! -e $f ];
+        if [ ! -e $content ];
         then
             echo "File not exist! "
         fi
-        for steps in 25 100;
+        style_cnt=1
+        for style in style_img/*\_face\.png;
         do
-            python3 main.py --style_img $f --content_img $1 --steps $steps --style_cnt $style_cnt --content_cnt $2
+            if [ ! -e $style ];
+            then
+                echo "File not exist! "
+            fi
+            python3 main.py --style_img $style --content_img $1 --steps $steps --style_cnt $style_cnt --content_cnt $2
+            style_cnt=$(($style_cnt+1))
         done
-        style_cnt=$(($style_cnt+1))
+        mkdir -p output_img/c$content_cnt
+        mv s*c$content_cnt*\.png output_img/c$content_cnt
+        content_cnt=$(($content_cnt+1))
     done
 else
 
@@ -43,4 +50,3 @@ else
     done
 fi
 
-mv *.png output_img/
