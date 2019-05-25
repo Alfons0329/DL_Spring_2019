@@ -14,7 +14,7 @@ then
     # for f in $todo_pattern
 
     content_cnt=1
-    for content in content_img/*\.png;
+    for content in content_img/*;
     do
         if [ ! -e $content ];
         then
