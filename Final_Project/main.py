@@ -229,10 +229,9 @@ def run_style_transfer(cnn, normalization_mean, normalization_std,
 
             run[0] += 1
             if run[0] % 25 == 0:
-                print("run {}:".format(run))
-                print('Style Loss : {:4f} Content Loss: {:4f}'.format(
-                    style_score.item(), content_score.item()))
                 print()
+                #print("run {}:".format(run))
+                #print('Style Loss : {:4f} Content Loss: {:4f}'.format(style_score.item(), content_score.item()))
 
             return style_score + content_score
 
@@ -253,4 +252,6 @@ if __name__ == '__main__':
     #plt.show()
     style_cnt = str(args.style_cnt)
     content_cnt = str(args.content_cnt)
-    imsave(output, 's' + style_cnt + '_c' + content_cnt + '_' + str(args.steps) + '.png')
+    save_name = 's' + style_cnt + '_c' + content_cnt + '_' + str(args.steps) + '.png'
+    imsave(output, save_name)
+    print('Finished all, save synthesized image as ', save_name)
