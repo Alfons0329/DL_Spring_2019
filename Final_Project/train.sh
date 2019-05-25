@@ -1,11 +1,11 @@
 #!/bin/bash
-
-if [ $# -ne 2 ];
-then
-    echo "Usage; ./train.sh path/to/content_img id_of_content_img"
-    echo "Example: ./train.sh content_img/c_9_face.png 9"
-    exit
-fi
+set -e
+#if [ $# -ne 2 ];
+#then
+#    echo "Usage; ./train.sh path/to/content_img id_of_content_img"
+#    echo "Example: ./train.sh content_img/c_9_face.png 9"
+#    exit
+#fi
 
 read -p "Style with main face part only? 1 y 2 n: " face
 if [ $face -eq 1 ];
@@ -27,7 +27,7 @@ then
             then
                 echo "File not exist! "
             fi
-            python3 main.py --style_img $style --content_img $1 --steps $steps --style_cnt $style_cnt --content_cnt $2
+            python3 main.py --style_img $style --content_img $content --steps 25 --style_cnt $style_cnt --content_cnt $content_cnt
             style_cnt=$(($style_cnt+1))
         done
         mkdir -p output_img/c$content_cnt
