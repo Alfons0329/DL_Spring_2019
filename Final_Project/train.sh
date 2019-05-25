@@ -13,8 +13,7 @@ then
     # todo_pattern="style_img/.*\_face\.png"
     # for f in $todo_pattern
 
-    content_cnt=1
-    for content in content_img/*;
+    for content in content_img/*g;
     do
         if [ ! -e $content ];
         then
@@ -27,12 +26,14 @@ then
             then
                 echo "File not exist! "
             fi
-            python3 main.py --style_img $style --content_img $content --steps 25 --style_cnt $style_cnt --content_cnt $content_cnt
+            content_id=$(echo $content | sed 's/c_//g')
+            content_id=$(echo $content_id | sed 's/.jpg//g; s/.png//g; s/.jpeg//g')
+            echo "Content: c_" $content_id " Style: "$style
+            python3 main.py --style_img $style --content_img $content --steps 25 --style_cnt $style_cnt --content_cnt $content_id
             style_cnt=$(($style_cnt+1))
         done
-        mkdir -p output_img/c$content_cnt
-        mv s*c$content_cnt*\.png output_img/c$content_cnt
-        content_cnt=$(($content_cnt+1))
+        mkdir -p output_img/c$content_id
+        mv s*c$content_id*\.png output_img/c$content_id
     done
 else
 
