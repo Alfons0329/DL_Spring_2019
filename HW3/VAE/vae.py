@@ -33,5 +33,7 @@ class VAE(nn.Module):
 
 model = VAE()
 
+def show_reconstructed():
+    return 0
 def train():
     return 0
