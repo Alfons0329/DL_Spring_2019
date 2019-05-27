@@ -35,5 +35,14 @@ model = VAE()
 
 def show_reconstructed():
     return 0
+
+def loss_function():
+    BCE = 0
+    KLD = 0
+    return BCE + KLD
+
 def train():
+    return 0
+
+def gen_img():
     return 0
