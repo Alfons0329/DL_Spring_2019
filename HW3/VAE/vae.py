@@ -97,9 +97,12 @@ def loss_function(recon_x, x, mu, logvar):
     # recon_x is the reconstructed tensor(or image)
     # sum up BCE
     # BCE = F.binary_cross_entropy(recon_x, x.view(-1, N_IMG_SIZE * N_IMG_SIZE), reduction = 'sum')
-    mse_loss = nn.MSELoss(size_average = True)
-    print(recon_x.shape)
-    print(x.shape)
+    mse_loss = nn.MSELoss(reduction = 'mean')
+    num_channel, img_dim = recon_x.shape
+    #print(num_channel, img_dim)
+    x = x.view(num_channel, img_dim)
+    #print(x.shape)
+    #print(recon_x.shape)
     MSE = mse_loss(recon_x, x)
     KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     return MSE + KLD
