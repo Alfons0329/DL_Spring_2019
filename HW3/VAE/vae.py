@@ -56,7 +56,7 @@ def make_graph():
     title_str = 'BAT=' + str(N_BATCH_SIZE) + ' ETA = ' + str(N_LEARN_RATE)
     plt.title(title_str)
     plt.xlabel('Epochs')
-    plt.ylabel('Cross Entropy')
+    plt.ylabel('Loss')
 
     plt.plot(epoch_list, learning_curve, color = 'blue', label = 'no norm')
     plt.legend()
