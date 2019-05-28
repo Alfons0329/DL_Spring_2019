@@ -58,7 +58,7 @@ def make_graph():
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
 
-    plt.plot(epoch_list, learning_curve, color = 'blue', label = 'no norm')
+    plt.plot(epoch_list, learning_curve, color = 'blue')
     plt.legend()
     plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + 'LC' + '.png', dpi = 150)
 
@@ -99,10 +99,7 @@ def loss_function(recon_x, x, mu, logvar):
     # BCE = F.binary_cross_entropy(recon_x, x.view(-1, N_IMG_SIZE * N_IMG_SIZE), reduction = 'sum')
     mse_loss = nn.MSELoss(reduction = 'mean')
     num_channel, img_dim = recon_x.shape
-    #print(num_channel, img_dim)
     x = x.view(num_channel, img_dim)
-    #print(x.shape)
-    #print(recon_x.shape)
     MSE = mse_loss(recon_x, x)
     KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     return MSE + KLD
