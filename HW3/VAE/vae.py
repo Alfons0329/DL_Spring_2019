@@ -73,6 +73,7 @@ class VAE(nn.Module):
         self.fc4 = nn.Linear(N_FC1_SIZE, N_IMG_SIZE * N_IMG_SIZE) # final output result
 
     def encode(self, x):
+        #print('x shape ', x.shape)
         h1 = F.relu(self.fc1(x))
         return self.fc21(h1), self.fc22(h1)
 
@@ -86,7 +87,9 @@ class VAE(nn.Module):
         return torch.sigmoid(self.fc4(h3))
 
     def forward(self, x):
-        mu, logvar = self.encode(x.view(-1, N_IMG_SIZE * N_IMG_SIZE))
+        mu, logvar = self.encode(x.view(N_BATCH_SIZE, 3, N_IMG_SIZE * N_IMG_SIZE))
+        #print('mu shape ', mu.shape)
+        #print('logvar shape ', logvar.shape)
         z = self.reparameterize(mu, logvar)
         return self.decode(z), mu, logvar
 
@@ -122,8 +125,9 @@ def loss_function(recon_x, x, mu, logvar):
     # sum up BCE
     # BCE = F.binary_cross_entropy(recon_x, x.view(-1, N_IMG_SIZE * N_IMG_SIZE), reduction = 'sum')
     mse_loss = nn.MSELoss(reduction = 'mean')
-    num_channel, img_dim = recon_x.shape
-    x = x.view(num_channel, img_dim) # fit the shape to be (N_BATCH_SIZE * channel, image dimension)
+    # print('recon_x shape ', recon_x.shape)
+    n_batch, n_channel, img_dim = recon_x.shape
+    x = x.view(n_batch, n_channel, img_dim) # fit the shape to be (N_BATCH_SIZE * channel, image dimension)
     MSE = mse_loss(recon_x, x)
     KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     return MSE + KLD
@@ -140,6 +144,9 @@ def train(train_loader, model, optimizer, cur_epoch, device):
 
         optimizer.zero_grad()
         recon_batch, mu, logvar = model(inputs) # return: batch reconstructed vector, mean and stdev
+        #print('input dim ', inputs.shape)
+        #print('recon_batch dim ', recon_batch.shape)
+
         loss = loss_function(recon_batch, inputs, mu, logvar) # data is the ground truth
         loss.backward()
         optimizer.step()
@@ -147,9 +154,11 @@ def train(train_loader, model, optimizer, cur_epoch, device):
 
     print('Epoch %5d loss: %.3f' %(cur_epoch, float(train_loss)))
 
-    if cur_epoch != 0 and cur_epoch % 50 == 0 and inputs is not None and recon_batch is not None:
+    if cur_epoch != 0 and cur_epoch % 3 == 0 and inputs is not None and recon_batch is not None:
         ##### RECONSTRUCTED ######
         recon_batch = recon_batch.view(N_BATCH_SIZE, 3, N_IMG_SIZE, N_IMG_SIZE)
+        print('input dim ', inputs.shape)
+        print('recon_batch dim ', recon_batch.shape)
         show_reconstructed(torchvision.utils.make_grid(recon_batch) \
                 , torchvision.utils.make_grid(inputs), cur_epoch)
 
