@@ -22,7 +22,7 @@ import preprocessing as pre
 parser = argparse.ArgumentParser()
 parser.add_argument('--lr', type = float, default = 1e-4)
 parser.add_argument('--batch_size', type = int, default = 64)
-parser.add_argument('--img_size', type = int, default = 96)
+parser.add_argument('--img_size', type = int, default = 128)
 parser.add_argument('--activate', type = int, default = 0)
 
 parser.add_argument('--train_path', type = str, default = 'cartoon/')
@@ -33,7 +33,7 @@ N_IMG_SIZE = 0
 N_FC1_SIZE = 64
 N_FC2_SIZE = 16
 
-N_EPOCH_LIMIT = 200
+N_EPOCH_LIMIT = 1000
 N_LEARN_RATE = args.lr
 N_BATCH_SIZE = args.batch_size
 N_IMG_SIZE = args.img_size
@@ -154,7 +154,7 @@ def train(train_loader, model, optimizer, cur_epoch, device):
         train_loss += loss.item()
 
     print('Epoch %5d loss: %.3f' %(cur_epoch, float(train_loss)))
-    if cur_epoch != 0 and cur_epoch % 50 == 0 and inputs is not None and recon_batch is not None:
+    if cur_epoch != 0 and cur_epoch % 2 == 0 and inputs is not None and recon_batch is not None:
         ##### RECONSTRUCTED ######
         recon_batch = recon_batch.view(N_BATCH_SIZE, 3, N_IMG_SIZE, N_IMG_SIZE)
         #print('input dim ', inputs)

@@ -2,7 +2,7 @@
 
 set -e
 
-for batch_size in 80
+for batch_size in 100
 do
     for lr in 0.00001
     do
