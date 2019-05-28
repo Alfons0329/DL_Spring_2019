@@ -113,6 +113,7 @@ def show_generated(x, cur_epoch):
     npimg_x = x.cpu().detach().numpy()
 
     plt.imshow(np.transpose(npimg_x, (1, 2, 0)))
+    plt.title('Generated')
     #plt.show()
     plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'gen' + '.png')
 
@@ -148,13 +149,15 @@ def train(train_loader, model, optimizer, cur_epoch, device):
 
     if cur_epoch != 0 and cur_epoch % 50 == 0 and inputs is not None and recon_batch is not None:
         ##### RECONSTRUCTED ######
+        recon_batch = recon_batch.view(N_BATCH_SIZE, 3, N_IMG_SIZE, N_IMG_SIZE)
         show_reconstructed(torchvision.utils.make_grid(recon_batch) \
                 , torchvision.utils.make_grid(inputs), cur_epoch)
 
         ##### RANDOM GEN ######
         randn_noise = torch.randn(N_BATCH_SIZE, 3, N_IMG_SIZE, N_IMG_SIZE)
         generated_imgs, _, _ = model(randn_noise)
-        show_generated(generated_imgs, cur_epoch)
+        generated_imgs = generated_imgs.view(N_BATCH_SIZE, 3, N_IMG_SIZE, N_IMG_SIZE)
+        show_generated(torchvision.utils.make_grid(generated_imgs), cur_epoch)
 
     return float(train_loss) / float(N_BATCH_SIZE)
 

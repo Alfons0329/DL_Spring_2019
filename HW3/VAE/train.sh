@@ -2,7 +2,7 @@
 
 set -e
 
-for batch_size in 32
+for batch_size in 80
 do
     for lr in 0.00001
     do
@@ -13,8 +13,8 @@ do
         python3 vae.py --lr $lr --batch_size $batch_size
 
         mv *LC\.png curves/$1
-        mv *\_x\.png curves/$1
-        mv *\_gen\.png curves/$1
+        mv *\_x\.png reconstructed/$1
+        mv *\_gen\.png generated/$1
 
         rm -rf *.pt best_loss.txt
     done
