@@ -22,15 +22,16 @@ import preprocessing as pre
 parser = argparse.ArgumentParser()
 parser.add_argument('--lr', type = float, default = 1e-4)
 parser.add_argument('--batch_size', type = int, default = 64)
-parser.add_argument('--img_size', type = int, default = 128)
+parser.add_argument('--img_size', type = int, default = 96)
+parser.add_argument('--activate', type = int, default = 0)
 
 parser.add_argument('--train_path', type = str, default = 'cartoon/')
 args = parser.parse_args()
 
 ########## GLOBAL DEF ###
 N_IMG_SIZE = 0
-N_FC1_SIZE = 400
-N_FC2_SIZE = 20
+N_FC1_SIZE = 64
+N_FC2_SIZE = 16
 
 N_EPOCH_LIMIT = 200
 N_LEARN_RATE = args.lr
@@ -66,11 +67,11 @@ def make_graph():
 class VAE(nn.Module):
     def __init__(self): # init the vae layers
         super(VAE, self).__init__()
-        self.fc1 = nn.Linear(N_IMG_SIZE * N_IMG_SIZE, N_FC1_SIZE)
+        self.fc1 = nn.Linear(3 * N_IMG_SIZE * N_IMG_SIZE, N_FC1_SIZE)
         self.fc21 = nn.Linear(N_FC1_SIZE, N_FC2_SIZE) # mean vector
         self.fc22 = nn.Linear(N_FC1_SIZE, N_FC2_SIZE) # standard deviation vector
         self.fc3 = nn.Linear(N_FC2_SIZE, N_FC1_SIZE) # sampled latent vector sapce
-        self.fc4 = nn.Linear(N_FC1_SIZE, N_IMG_SIZE * N_IMG_SIZE) # final output result
+        self.fc4 = nn.Linear(N_FC1_SIZE,3 * N_IMG_SIZE * N_IMG_SIZE) # final output result
 
     def encode(self, x):
         #print('x shape ', x.shape)
@@ -84,10 +85,10 @@ class VAE(nn.Module):
 
     def decode(self, z):
         h3 = F.relu(self.fc3(z))
-        return torch.sigmoid(self.fc4(h3))
+        return torch.relu(self.fc4(h3))
 
     def forward(self, x):
-        mu, logvar = self.encode(x.view(N_BATCH_SIZE, 3, N_IMG_SIZE * N_IMG_SIZE))
+        mu, logvar = self.encode(x.view(-1, 3 * N_IMG_SIZE * N_IMG_SIZE))
         #print('mu shape ', mu.shape)
         #print('logvar shape ', logvar.shape)
         z = self.reparameterize(mu, logvar)
@@ -125,9 +126,9 @@ def loss_function(recon_x, x, mu, logvar):
     # sum up BCE
     # BCE = F.binary_cross_entropy(recon_x, x.view(-1, N_IMG_SIZE * N_IMG_SIZE), reduction = 'sum')
     mse_loss = nn.MSELoss(reduction = 'mean')
-    # print('recon_x shape ', recon_x.shape)
-    n_batch, n_channel, img_dim = recon_x.shape
-    x = x.view(n_batch, n_channel, img_dim) # fit the shape to be (N_BATCH_SIZE * channel, image dimension)
+    #print('recon_x shape ', recon_x.shape)
+    n_batch, img_dim = recon_x.shape
+    x = x.view(n_batch, img_dim) # fit the shape to be (N_BATCH_SIZE * channel, image dimension)
     MSE = mse_loss(recon_x, x)
     KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     return MSE + KLD
@@ -153,12 +154,11 @@ def train(train_loader, model, optimizer, cur_epoch, device):
         train_loss += loss.item()
 
     print('Epoch %5d loss: %.3f' %(cur_epoch, float(train_loss)))
-
-    if cur_epoch != 0 and cur_epoch % 3 == 0 and inputs is not None and recon_batch is not None:
+    if cur_epoch != 0 and cur_epoch % 50 == 0 and inputs is not None and recon_batch is not None:
         ##### RECONSTRUCTED ######
         recon_batch = recon_batch.view(N_BATCH_SIZE, 3, N_IMG_SIZE, N_IMG_SIZE)
-        print('input dim ', inputs.shape)
-        print('recon_batch dim ', recon_batch.shape)
+        #print('input dim ', inputs)
+        #print('recon_batch dim ', recon_batch)
         show_reconstructed(torchvision.utils.make_grid(recon_batch) \
                 , torchvision.utils.make_grid(inputs), cur_epoch)
 
@@ -205,7 +205,7 @@ if __name__ == '__main__':
     print('Start training, N_BATCH_SIZE = %4d, N_EPOCH_LIMIT = %4d, N_LEARN_RATE %f\n' %(N_BATCH_SIZE, N_EPOCH_LIMIT, N_LEARN_RATE))
 
     ##### MAIN TRAIN #########
-    for cur_epoch in range(N_EPOCH_LIMIT):
+    for cur_epoch in range(1, N_EPOCH_LIMIT + 1):
         if has_pretrained is False:
             cur_loss = train(train_loader, model, optimizer, cur_epoch, device)
             learning_curve.append(cur_loss)
