@@ -99,12 +99,12 @@ def show_reconstructed(recon_x, x, cur_epoch):
 
     plt.imshow(np.transpose(npimg_recon_x, (1, 2, 0)))
     plt.title('Reconstructed')
-    plt.show()
+    #plt.show()
     plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'recon_x' + '.png')
 
     plt.imshow(np.transpose(npimg_x, (1, 2, 0)))
     plt.title('Ground Truth')
-    plt.show()
+    #plt.show()
     plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'x' + '.png')
 
 def show_generated(x, cur_epoch):
@@ -113,7 +113,7 @@ def show_generated(x, cur_epoch):
     npimg_x = x.cpu().detach().numpy()
 
     plt.imshow(np.transpose(npimg_x, (1, 2, 0)))
-    plt.show()
+    #plt.show()
     plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'gen' + '.png')
 
 def loss_function(recon_x, x, mu, logvar):
@@ -152,7 +152,7 @@ def train(train_loader, model, optimizer, cur_epoch, device):
                 , torchvision.utils.make_grid(inputs), cur_epoch)
 
         ##### RANDOM GEN ######
-        randn_noise = torch.randn_like(N_BATCH_SIZE, 3, N_IMG_SIZE, N_IMG_SIZE)
+        randn_noise = torch.randn(N_BATCH_SIZE, 3, N_IMG_SIZE, N_IMG_SIZE)
         generated_imgs, _, _ = model(randn_noise)
         show_generated(generated_imgs, cur_epoch)
 
