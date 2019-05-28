@@ -53,12 +53,12 @@ test_acc_list = []
 def make_graph():
     # plot the learning curve
     plt.clf()
-    title_str = 'BAT=' + str(N_BATCH_SIZE) + ' ETA = ' + str(N_LEARN_RATE)
+    title_str = 'BAT= ' + str(N_BATCH_SIZE) + ' ETA= ' + str(N_LEARN_RATE)
     plt.title(title_str)
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
 
-    plt.plot(epoch_list, learning_curve, color = 'blue')
+    plt.plot(epoch_list, learning_curve, color = 'blue', label = 'norm 0.5')
     plt.legend()
     plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + 'LC' + '.png', dpi = 150)
 
@@ -90,8 +90,31 @@ class VAE(nn.Module):
         z = self.reparameterize(mu, logvar)
         return self.decode(z), mu, logvar
 
-def show_reconstructed():
-    return 0
+def show_reconstructed(recon_x, x, cur_epoch):
+    recon_x = recon_x / 2 + 0.5
+    x = x / 2 + 0.5
+
+    npimg_recon_x = recon_x.cpu().detach().numpy()
+    npimg_x = x.cpu().detach().numpy()
+
+    plt.imshow(np.transpose(npimg_recon_x, (1, 2, 0)))
+    plt.title('Reconstructed')
+    plt.show()
+    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'recon_x' + '.png')
+
+    plt.imshow(np.transpose(npimg_x, (1, 2, 0)))
+    plt.title('Ground Truth')
+    plt.show()
+    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'x' + '.png')
+
+def show_generated(x, cur_epoch):
+    x = x / 2 + 0.5
+
+    npimg_x = x.cpu().detach().numpy()
+
+    plt.imshow(np.transpose(npimg_x, (1, 2, 0)))
+    plt.show()
+    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'gen' + '.png')
 
 def loss_function(recon_x, x, mu, logvar):
     # recon_x is the reconstructed tensor(or image)
@@ -99,7 +122,7 @@ def loss_function(recon_x, x, mu, logvar):
     # BCE = F.binary_cross_entropy(recon_x, x.view(-1, N_IMG_SIZE * N_IMG_SIZE), reduction = 'sum')
     mse_loss = nn.MSELoss(reduction = 'mean')
     num_channel, img_dim = recon_x.shape
-    x = x.view(num_channel, img_dim)
+    x = x.view(num_channel, img_dim) # fit the shape to be (N_BATCH_SIZE * channel, image dimension)
     MSE = mse_loss(recon_x, x)
     KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     return MSE + KLD
@@ -107,6 +130,8 @@ def loss_function(recon_x, x, mu, logvar):
 def train(train_loader, model, optimizer, cur_epoch, device):
     model.train()
     train_loss = 0
+    inputs = None
+    recon_batch = None
 
     for i, data in enumerate(train_loader, 0):
         inputs, labels = data
@@ -120,23 +145,31 @@ def train(train_loader, model, optimizer, cur_epoch, device):
         train_loss += loss.item()
 
     print('Epoch %5d loss: %.3f' %(cur_epoch, float(train_loss)))
-    return float(train_loss) / float(N_BATCH_SIZE)
 
-def gen_img():
-    return 0
+    if cur_epoch != 0 and cur_epoch % 50 == 0 and inputs is not None and recon_batch is not None:
+        ##### RECONSTRUCTED ######
+        show_reconstructed(torchvision.utils.make_grid(recon_batch) \
+                , torchvision.utils.make_grid(inputs), cur_epoch)
+
+        ##### RANDOM GEN ######
+        randn_noise = torch.randn_like(N_BATCH_SIZE, 3, N_IMG_SIZE, N_IMG_SIZE)
+        generated_imgs, _, _ = model(randn_noise)
+        show_generated(generated_imgs, cur_epoch)
+
+    return float(train_loss) / float(N_BATCH_SIZE)
 
 ########## MAIN #########
 if __name__ == '__main__':
 
     ##### LOAD DATASET ######
-    train_loader = pre.load_dataset(True, N_BATCH_SIZE, N_IMG_SIZE, TRAIN_PATH) # make them together
+    train_loader = pre.load_dataset(True, N_BATCH_SIZE, N_IMG_SIZE, TRAIN_PATH)
     print('Train loader type %s with length %d ' %(type(train_loader), len(train_loader)))
 
     ##### LOAD PRETRAINED ###
     has_pretrained = False
-    if os.path.isfile(model_path) and os.path.isfile(acc_path):
+    if os.path.isfile(model_path) and os.path.isfile(loss_path):
         model = torch.load(model_path)
-        f = open(acc_path, 'r')
+        f = open(loss_path, 'r')
         best_loss = float(f.read())
         has_pretrained = True
         print('Has my own pretrained model, directly load it!')
@@ -146,20 +179,22 @@ if __name__ == '__main__':
         print('No my own pretrained model')
         model = VAE()
 
-    optimizer = optim.Adam(model.parameters(), lr = N_LEARN_RATE, weight_decay = 1e-4)
+    ##### OPTIMIZER #########
+    optimizer = optim.Adam(model.parameters(), lr = N_LEARN_RATE, weight_decay = 8e-4)
 
     ##### CUDA ##############
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     if device == 'cuda':
         print('Train with CUDA ')
-        device = torch.device('cuda:0' if torch.cuda.is_available() else "cpu")
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         model = torch.nn.DataParallel(model)
         model.cuda()
 
     print('Start training, N_BATCH_SIZE = %4d, N_EPOCH_LIMIT = %4d, N_LEARN_RATE %f\n' %(N_BATCH_SIZE, N_EPOCH_LIMIT, N_LEARN_RATE))
 
+    ##### MAIN TRAIN #########
     for cur_epoch in range(N_EPOCH_LIMIT):
-        if has_pretrained == False:
+        if has_pretrained is False:
             cur_loss = train(train_loader, model, optimizer, cur_epoch, device)
             learning_curve.append(cur_loss)
 
@@ -168,8 +203,8 @@ if __name__ == '__main__':
         if cur_epoch == N_EPOCH_LIMIT - 1 and cur_loss < best_loss:
             print('Last epoch, better model with cur_loss %.3f over best_loss %.3f, save model and acc'%(cur_acc, best_acc))
             torch.save(model, model_path)
-            f = open(acc_path, 'w')
-            f.write(str(cur_acc))
+            f = open(loss_path, 'w')
+            f.write(str(cur_loss))
             f.close()
 
     torch.cuda.empty_cache()
