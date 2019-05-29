@@ -2,9 +2,9 @@
 
 set -e
 
-for batch_size in 100
+for batch_size in 80
 do
-    for lr in 0.00001
+    for lr in 0.0001
     do
         mkdir -p curves/$1
         mkdir -p reconstructed/$1

@@ -22,7 +22,7 @@ import preprocessing as pre
 parser = argparse.ArgumentParser()
 parser.add_argument('--lr', type = float, default = 1e-4)
 parser.add_argument('--batch_size', type = int, default = 64)
-parser.add_argument('--img_size', type = int, default = 128)
+parser.add_argument('--img_size', type = int, default = 64)
 parser.add_argument('--activate', type = int, default = 0)
 
 parser.add_argument('--train_path', type = str, default = 'cartoon/')
@@ -95,7 +95,7 @@ class VAE(nn.Module):
         return self.decode(z), mu, logvar
 
 def show_reconstructed(recon_x, x, cur_epoch):
-    recon_x = recon_x / 2 + 0.5
+    recon_x = recon_x / 2 + 0.6
     x = x / 2 + 0.5
 
     npimg_recon_x = recon_x.cpu().detach().numpy()
@@ -104,22 +104,22 @@ def show_reconstructed(recon_x, x, cur_epoch):
     plt.imshow(np.transpose(npimg_recon_x, (1, 2, 0)))
     plt.title('Reconstructed')
     #plt.show()
-    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'recon_x' + '.png')
+    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'recon_x' + '.png', dpi = 400)
 
     plt.imshow(np.transpose(npimg_x, (1, 2, 0)))
     plt.title('Ground Truth')
     #plt.show()
-    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'x' + '.png')
+    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'x' + '.png', dpi = 400)
 
 def show_generated(x, cur_epoch):
-    x = x / 2 + 0.5
+    x = x / 2 + 0.6
 
     npimg_x = x.cpu().detach().numpy()
 
     plt.imshow(np.transpose(npimg_x, (1, 2, 0)))
     plt.title('Generated')
     #plt.show()
-    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'gen' + '.png')
+    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'gen' + '.png', dpi = 400)
 
 def loss_function(recon_x, x, mu, logvar):
     # recon_x is the reconstructed tensor(or image)
