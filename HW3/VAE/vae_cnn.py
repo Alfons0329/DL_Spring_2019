@@ -64,35 +64,65 @@ def make_graph():
     plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + 'LC' + '.png', dpi = 150)
 
 ########## VAE ##########
+class flatten(nn.Module):
+    def forward(self, input):
+        return input.view(input.size(0), -1)
+
+
+class unflatten(nn.Module):
+    def forward(self, input, size=1024):
+        return input.view(input.size(0), size, 1, 1)
+
 class VAE(nn.Module):
-    def __init__(self): # init the vae layers
+    def __init__(self, image_channels = 3, h_dim = 1024, z_dim = 32):
         super(VAE, self).__init__()
-        self.fc1 = nn.Linear(3 * N_IMG_SIZE * N_IMG_SIZE, N_FC1_SIZE)
-        self.fc21 = nn.Linear(N_FC1_SIZE, N_FC2_SIZE) # mean vector
-        self.fc22 = nn.Linear(N_FC1_SIZE, N_FC2_SIZE) # standard deviation vector
-        self.fc3 = nn.Linear(N_FC2_SIZE, N_FC1_SIZE) # sampled latent vector sapce
-        self.fc4 = nn.Linear(N_FC1_SIZE,3 * N_IMG_SIZE * N_IMG_SIZE) # final output result
-
-    def encode(self, x):
-        #print('x shape ', x.shape)
-        h1 = F.relu(self.fc1(x))
-        return self.fc21(h1), self.fc22(h1)
-
+        self.encoder = nn.Sequential(
+            nn.Conv2d(image_channels, 32, kernel_size = 4, stride = 2),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, kernel_size = 4, stride = 2),
+            nn.ReLU(),
+            nn.Conv2d(64, 128, kernel_size = 4, stride = 2),
+            nn.ReLU(),
+            nn.Conv2d(128, 256, kernel_size = 4, stride = 2),
+            nn.ReLU(),
+            flatten()
+        )
+        
+        self.fc1 = nn.Linear(h_dim, z_dim)
+        self.fc2 = nn.Linear(h_dim, z_dim)
+        self.fc3 = nn.Linear(z_dim, h_dim)
+        
+        self.decoder = nn.Sequential(
+            unflatten(),
+            nn.ConvTranspose2d(h_dim, 128, kernel_size = 5, stride = 2),
+            nn.ReLU(),
+            nn.ConvTranspose2d(128, 64, kernel_size = 5, stride = 2),
+            nn.ReLU(),
+            nn.ConvTranspose2d(64, 32, kernel_size = 6, stride = 2),
+            nn.ReLU(),
+            nn.ConvTranspose2d(32, image_channels, kernel_size = 6, stride = 2),
+            nn.Sigmoid(),
+        )
+        
     def reparameterize(self, mu, logvar):
         std = torch.exp(0.5 * logvar)
         eps = torch.randn_like(std)
-        return mu + eps * std
-
-    def decode(self, z):
-        h3 = F.relu(self.fc3(z))
-        return torch.relu(self.fc4(h3))
+        z = mu + std * eps
+        return z
+    
+    def bottleneck(self, h):
+        mu, logvar = self.fc1(h), self.fc2(h)
+        z = self.reparameterize(mu, logvar)
+        return z, mu, logvar
+        
+    def representation(self, x):
+        return self.bottleneck(self.encoder(x))[0]
 
     def forward(self, x):
-        mu, logvar = self.encode(x.view(-1, 3 * N_IMG_SIZE * N_IMG_SIZE))
-        #print('mu shape ', mu.shape)
-        #print('logvar shape ', logvar.shape)
-        z = self.reparameterize(mu, logvar)
-        return self.decode(z), mu, logvar
+        h = self.encoder(x)
+        z, mu, logvar = self.bottleneck(h)
+        z = self.fc3(z)
+        return self.decoder(z), mu, logvar
 
 def show_reconstructed(recon_x, x, cur_epoch):
     recon_x = recon_x / 2 + 0.6
@@ -134,6 +164,7 @@ def loss_function(recon_x, x, mu, logvar):
     return MSE + KLD
 
 def train(train_loader, model, optimizer, cur_epoch, device):
+    model = model.to(device)
     model.train()
     train_loss = 0
     inputs = None
@@ -199,8 +230,9 @@ if __name__ == '__main__':
     if device == 'cuda':
         print('Train with CUDA ')
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        model = model.to(device)
+        model = model.cuda()
         model = torch.nn.DataParallel(model)
-        model.cuda()
 
     print('Start training, N_BATCH_SIZE = %4d, N_EPOCH_LIMIT = %4d, N_LEARN_RATE %f\n' %(N_BATCH_SIZE, N_EPOCH_LIMIT, N_LEARN_RATE))
 

@@ -16,6 +16,5 @@ do
         mv *\_x\.png reconstructed/$1
         mv *\_gen\.png generated/$1
 
-        rm -rf *.pt best_loss.txt
     done
 done
