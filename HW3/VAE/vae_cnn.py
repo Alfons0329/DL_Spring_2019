@@ -101,7 +101,7 @@ class VAE(nn.Module):
             nn.ConvTranspose2d(64, 32, kernel_size = 6, stride = 2),
             nn.ReLU(),
             nn.ConvTranspose2d(32, image_channels, kernel_size = 6, stride = 2),
-            nn.Sigmoid(),
+            nn.ReLU(),
         )
         
     def reparameterize(self, mu, logvar):
@@ -157,8 +157,7 @@ def loss_function(recon_x, x, mu, logvar):
     # BCE = F.binary_cross_entropy(recon_x, x.view(-1, N_IMG_SIZE * N_IMG_SIZE), reduction = 'sum')
     mse_loss = nn.MSELoss(reduction = 'mean')
     #print('recon_x shape ', recon_x.shape)
-    n_batch, img_dim = recon_x.shape
-    x = x.view(n_batch, img_dim) # fit the shape to be (N_BATCH_SIZE * channel, image dimension)
+    #print('x shape ', x.shape)
     MSE = mse_loss(recon_x, x)
     KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     return MSE + KLD
@@ -185,7 +184,7 @@ def train(train_loader, model, optimizer, cur_epoch, device):
         train_loss += loss.item()
 
     print('Epoch %5d loss: %.3f' %(cur_epoch, float(train_loss)))
-    if cur_epoch != 0 and cur_epoch % 50 == 0 and inputs is not None and recon_batch is not None:
+    if cur_epoch != 0 and cur_epoch % 5 == 0 and inputs is not None and recon_batch is not None:
         ##### RECONSTRUCTED ######
         recon_batch = recon_batch.view(N_BATCH_SIZE, 3, N_IMG_SIZE, N_IMG_SIZE)
         #print('input dim ', inputs)
