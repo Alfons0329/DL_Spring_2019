@@ -196,16 +196,16 @@ def train(train_loader, model, optimizer, cur_epoch, device):
         optimizer.step()
 
     print('Epoch %5d loss: %.3f' %(cur_epoch, float(train_loss)))
-    if cur_epoch != 0 and cur_epoch % 20 == 0 and inputs is not None and recon_batch is not None:
+    if cur_epoch != 0 and cur_epoch % 10 == 0 and inputs is not None and recon_batch is not None:
         ##### RECONSTRUCTED ######
-        for param in model.parameters():
-            print(param)
         torchvision.utils.save_image(inputs, str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'x' + '.png')
         torchvision.utils.save_image(recon_batch, str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'recon_x' + '.png')
 
         ##### RANDOM GEN ######
-        randn_noise = torch.randn(N_BATCH_SIZE, 3, N_IMG_SIZE, N_IMG_SIZE)
-        generated_imgs, _, _ = model(randn_noise)
+        randn_noise = torch.randn(N_BATCH_SIZE, 128, 32, 32)
+        randn_noise = randn_noise.to(device)
+        generated_imgs = model.module.decode(z = randn_noise)
+        #generated_imgs, _, _ = model(randn_noise)
         torchvision.utils.save_image(generated_imgs, str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'gen' + '.png')
         #show_generated(torchvision.utils.make_grid(generated_imgs), cur_epoch)
 
@@ -215,7 +215,7 @@ def train(train_loader, model, optimizer, cur_epoch, device):
 if __name__ == '__main__':
 
     ##### LOAD DATASET ######
-    train_loader = pre.load_dataset(True, N_BATCH_SIZE, N_IMG_SIZE, TRAIN_PATH)
+    train_loader = pre.load_dataset(False, N_BATCH_SIZE, N_IMG_SIZE, TRAIN_PATH)
     print('Train loader type %s with length %d ' %(type(train_loader), len(train_loader)))
 
     ##### LOAD PRETRAINED ###
