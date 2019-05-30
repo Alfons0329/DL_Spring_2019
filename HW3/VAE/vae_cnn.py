@@ -117,8 +117,12 @@ class VAE(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
     def reparameterize(self, mu, logvar):
+
         std = torch.exp(0.5 * logvar)
         eps = torch.randn_like(std)
+
+        #std = logvar.mul(0.5).exp_()
+        #eps = torch.randn(*mu.size())
         z = mu + std * eps
         return z
 
@@ -127,14 +131,20 @@ class VAE(nn.Module):
         z = self.reparameterize(mu, logvar)
         return z, mu, logvar
 
-    def representation(self, x):
-        return self.bottleneck(self.encoder(x))[0]
-
-    def forward(self, x):
+    def encode(self, x):
         h = self.encoder(x)
         z, mu, logvar = self.bottleneck(h)
+        return z, mu, logvar
+
+    def decode(self, z):
         z = self.fc3(z)
-        return self.decoder(z), mu, logvar
+        z = self.decoder(z)
+        return z
+
+    def forward(self, x):
+        z, mu, logvar = self.encode(x)
+        z = self.decode(z)
+        return z, mu, logvar
 
 def show_reconstructed(recon_x, x, cur_epoch):
     recon_x = recon_x / 2 + 0.5
@@ -167,7 +177,7 @@ def loss_function(recon_x, x, mu, logvar):
     mse_loss = nn.MSELoss(reduction = 'mean')
     MSE = mse_loss(recon_x, x)
     KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-    return MSE + KLD
+    return MSE + KLD, MSE, KLD
 
 def train(train_loader, model, optimizer, cur_epoch, device):
     train_loss = 0
@@ -175,21 +185,21 @@ def train(train_loader, model, optimizer, cur_epoch, device):
     recon_batch = None
 
     for i, data in enumerate(train_loader, 0):
-        inputs = Variable(inputs)
         inputs, labels = data
         inputs = inputs.to(device)
 
-        optimizer.zero_grad()
         recon_batch, mu, logvar = model(inputs) # return: batch reconstructed vector, mean and stdev
-        loss = loss_function(recon_batch, inputs, mu, logvar) # data is the ground truth
+        loss, mse, kld = loss_function(recon_batch, inputs, mu, logvar) # data is the ground truth
+        optimizer.zero_grad()
         loss.backward()
         train_loss += loss.item()
         optimizer.step()
 
     print('Epoch %5d loss: %.3f' %(cur_epoch, float(train_loss)))
-    if cur_epoch != 0 and cur_epoch % 2 == 0 and inputs is not None and recon_batch is not None:
+    if cur_epoch != 0 and cur_epoch % 20 == 0 and inputs is not None and recon_batch is not None:
         ##### RECONSTRUCTED ######
-
+        for param in model.parameters():
+            print(param)
         torchvision.utils.save_image(inputs, str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'x' + '.png')
         torchvision.utils.save_image(recon_batch, str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'recon_x' + '.png')
 
@@ -229,7 +239,7 @@ if __name__ == '__main__':
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     if device == 'cuda':
         print('Train with CUDA ')
-        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         model = model.to(device)
         model = torch.nn.DataParallel(model)
 

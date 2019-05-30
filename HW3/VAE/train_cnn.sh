@@ -4,7 +4,7 @@ set -e
 
 for batch_size in 80
 do
-    for lr in 0.0001 0.01
+    for lr in 0.0001
     do
         mkdir -p curves/cnn_$1
         mkdir -p reconstructed/cnn_$1
