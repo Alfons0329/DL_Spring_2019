@@ -33,7 +33,7 @@ N_IMG_SIZE = 0
 N_FC1_SIZE = 64
 N_FC2_SIZE = 16
 
-N_EPOCH_LIMIT = 200
+N_EPOCH_LIMIT = 3000
 N_LEARN_RATE = args.lr
 N_BATCH_SIZE = args.batch_size
 N_IMG_SIZE = args.img_size
@@ -95,7 +95,7 @@ class VAE(nn.Module):
         return self.decode(z), mu, logvar
 
 def show_reconstructed(recon_x, x, cur_epoch):
-    recon_x = recon_x / 2 + 0.6
+    recon_x = recon_x / 2 + 0.5
     x = x / 2 + 0.5
 
     npimg_recon_x = recon_x.cpu().detach().numpy()
@@ -112,7 +112,7 @@ def show_reconstructed(recon_x, x, cur_epoch):
     plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'x' + '.png', dpi = 400)
 
 def show_generated(x, cur_epoch):
-    x = x / 2 + 0.6
+    x = x / 2 + 0.5
 
     npimg_x = x.cpu().detach().numpy()
 
@@ -144,7 +144,6 @@ def train(train_loader, model, optimizer, cur_epoch, device):
         inputs = inputs.to(device)
 
         optimizer.zero_grad()
-        print('inputs shape', inputs.shape)
         recon_batch, mu, logvar = model(inputs) # return: batch reconstructed vector, mean and stdev
         #print('input dim ', inputs.shape)
         #print('recon_batch dim ', recon_batch.shape)
@@ -155,7 +154,7 @@ def train(train_loader, model, optimizer, cur_epoch, device):
         train_loss += loss.item()
 
     print('Epoch %5d loss: %.3f' %(cur_epoch, float(train_loss)))
-    if cur_epoch != 0 and cur_epoch % 50 == 0 and inputs is not None and recon_batch is not None:
+    if cur_epoch != 0 and cur_epoch % 500 == 0 and inputs is not None and recon_batch is not None:
         ##### RECONSTRUCTED ######
         recon_batch = recon_batch.view(N_BATCH_SIZE, 3, N_IMG_SIZE, N_IMG_SIZE)
         #print('input dim ', inputs)
@@ -169,7 +168,7 @@ def train(train_loader, model, optimizer, cur_epoch, device):
         generated_imgs = generated_imgs.view(N_BATCH_SIZE, 3, N_IMG_SIZE, N_IMG_SIZE)
         show_generated(torchvision.utils.make_grid(generated_imgs), cur_epoch)
 
-    return float(train_loss) / float(N_BATCH_SIZE)
+    return float(train_loss)
 
 ########## MAIN #########
 if __name__ == '__main__':

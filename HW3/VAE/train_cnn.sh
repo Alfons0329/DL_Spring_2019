@@ -12,9 +12,9 @@ do
 
         python3 vae_cnn.py --lr $lr --batch_size $batch_size
 
-        mv *LC\.png curves/cnn_$1
-        mv *\_x\.png reconstructed/cnn_$1
-        mv *\_gen\.png generated/cnn_$1
+        mv *LC_cnn\.png curves/cnn_$1
+        mv *\_x_cnn\.png reconstructed/cnn_$1
+        mv *\_gen_cnn\.png generated/cnn_$1
 
     done
 done

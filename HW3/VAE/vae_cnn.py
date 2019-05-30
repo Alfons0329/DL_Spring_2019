@@ -33,7 +33,7 @@ N_IMG_SIZE = 0
 N_FC1_SIZE = 64
 N_FC2_SIZE = 16
 
-N_EPOCH_LIMIT = 1000
+N_EPOCH_LIMIT = 3000
 N_LEARN_RATE = args.lr
 N_BATCH_SIZE = args.batch_size
 N_IMG_SIZE = args.img_size
@@ -61,7 +61,7 @@ def make_graph():
 
     plt.plot(epoch_list, learning_curve, color = 'blue', label = 'norm 0.5')
     plt.legend()
-    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + 'LC' + '.png', dpi = 150)
+    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + 'LC_cnn' + '.png', dpi = 150)
 
 ########## VAE ##########
 class flatten(nn.Module):
@@ -167,17 +167,17 @@ def train(train_loader, model, optimizer, cur_epoch, device):
         optimizer.step()
 
     print('Epoch %5d loss: %.3f' %(cur_epoch, float(train_loss)))
-    if cur_epoch != 0 and cur_epoch % 50 == 0 and inputs is not None and recon_batch is not None:
+    if cur_epoch != 0 and cur_epoch % 500 == 0 and inputs is not None and recon_batch is not None:
         ##### RECONSTRUCTED ######
-        torchvision.utils.save_image(inputs, str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'x' + '.png')
-        torchvision.utils.save_image(recon_batch.cpu(), str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'recon_x' + '.png')
+        torchvision.utils.save_image(inputs, str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'x_cnn' + '.png')
+        torchvision.utils.save_image(recon_batch.cpu(), str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'recon_x_cnn' + '.png')
 
         ##### RANDOM GEN ######
         randn_noise = torch.randn(N_BATCH_SIZE, 1, 32)
         randn_noise = randn_noise.to(device)
         generated_imgs = model.module.decode(z = randn_noise)
         #generated_imgs, _, _ = model(randn_noise)
-        torchvision.utils.save_image(generated_imgs.cpu(), str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'gen' + '.png')
+        torchvision.utils.save_image(generated_imgs.cpu(), str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'gen_cnn' + '.png')
         #show_generated(torchvision.utils.make_grid(generated_imgs), cur_epoch)
 
     return float(train_loss)
