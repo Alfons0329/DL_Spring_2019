@@ -22,7 +22,7 @@ import preprocessing as pre
 parser = argparse.ArgumentParser()
 parser.add_argument('--lr', type = float, default = 1e-4)
 parser.add_argument('--batch_size', type = int, default = 64)
-parser.add_argument('--img_size', type = int, default = 64)
+parser.add_argument('--img_size', type = int, default = 128)
 parser.add_argument('--activate', type = int, default = 0)
 
 parser.add_argument('--train_path', type = str, default = 'cartoon/')
@@ -144,6 +144,7 @@ def train(train_loader, model, optimizer, cur_epoch, device):
         inputs = inputs.to(device)
 
         optimizer.zero_grad()
+        print('inputs shape', inputs.shape)
         recon_batch, mu, logvar = model(inputs) # return: batch reconstructed vector, mean and stdev
         #print('input dim ', inputs.shape)
         #print('recon_batch dim ', recon_batch.shape)

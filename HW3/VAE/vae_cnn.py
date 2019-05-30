@@ -68,9 +68,8 @@ class flatten(nn.Module):
     def forward(self, input):
         return input.view(input.size(0), -1)
 
-
 class unflatten(nn.Module):
-    def forward(self, input, size=1024):
+    def forward(self, input, size = 1024):
         return input.view(input.size(0), size, 1, 1)
 
 class VAE(nn.Module):
@@ -101,11 +100,11 @@ class VAE(nn.Module):
             nn.ConvTranspose2d(64, 32, kernel_size = 6, stride = 2),
             nn.ReLU(),
             nn.ConvTranspose2d(32, image_channels, kernel_size = 6, stride = 2),
-            nn.Sigmoid()
+            nn.ReLU()
         )
 
         for m in self.modules():
-            if isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d): # if m is the convolutional layer, init it
+            if isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
                 nn.init.kaiming_normal_(m.weight, mode = 'fan_out', nonlinearity = 'relu')
                 if m.bias is not None:
                     nn.init.constant_(m.bias, 0)
@@ -117,7 +116,6 @@ class VAE(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
     def reparameterize(self, mu, logvar):
-
         std = torch.exp(0.5 * logvar)
         eps = torch.randn_like(std)
 
@@ -146,33 +144,6 @@ class VAE(nn.Module):
         z = self.decode(z)
         return z, mu, logvar
 
-def show_reconstructed(recon_x, x, cur_epoch):
-    recon_x = recon_x / 2 + 0.5
-    x = x / 2 + 0.5
-
-    npimg_recon_x = recon_x.cpu().detach().numpy()
-    npimg_x = x.cpu().detach().numpy()
-
-    plt.imshow(np.transpose(npimg_recon_x, (1, 2, 0)))
-    plt.title('Reconstructed')
-    #plt.show()
-    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'recon_x' + '.png', dpi = 300)
-
-    plt.imshow(np.transpose(npimg_x, (1, 2, 0)))
-    plt.title('Ground Truth')
-    #plt.show()
-    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'x' + '.png', dpi = 300)
-
-def show_generated(x, cur_epoch):
-    x = x / 2 + 0.5
-
-    npimg_x = x.cpu().detach().numpy()
-
-    plt.imshow(np.transpose(npimg_x, (1, 2, 0)))
-    plt.title('Generated')
-    #plt.show()
-    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'gen' + '.png', dpi = 300)
-
 def loss_function(recon_x, x, mu, logvar):
     mse_loss = nn.MSELoss(reduction = 'mean')
     MSE = mse_loss(recon_x, x)
@@ -196,17 +167,17 @@ def train(train_loader, model, optimizer, cur_epoch, device):
         optimizer.step()
 
     print('Epoch %5d loss: %.3f' %(cur_epoch, float(train_loss)))
-    if cur_epoch != 0 and cur_epoch % 10 == 0 and inputs is not None and recon_batch is not None:
+    if cur_epoch != 0 and cur_epoch % 50 == 0 and inputs is not None and recon_batch is not None:
         ##### RECONSTRUCTED ######
         torchvision.utils.save_image(inputs, str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'x' + '.png')
-        torchvision.utils.save_image(recon_batch, str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'recon_x' + '.png')
+        torchvision.utils.save_image(recon_batch.cpu(), str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'recon_x' + '.png')
 
         ##### RANDOM GEN ######
-        randn_noise = torch.randn(N_BATCH_SIZE, 128, 32, 32)
+        randn_noise = torch.randn(N_BATCH_SIZE, 1, 32)
         randn_noise = randn_noise.to(device)
         generated_imgs = model.module.decode(z = randn_noise)
         #generated_imgs, _, _ = model(randn_noise)
-        torchvision.utils.save_image(generated_imgs, str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'gen' + '.png')
+        torchvision.utils.save_image(generated_imgs.cpu(), str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'gen' + '.png')
         #show_generated(torchvision.utils.make_grid(generated_imgs), cur_epoch)
 
     return float(train_loss)
@@ -262,3 +233,36 @@ if __name__ == '__main__':
 
     torch.cuda.empty_cache()
     make_graph()
+
+
+
+
+'''
+def show_reconstructed(recon_x, x, cur_epoch):
+    recon_x = recon_x / 2 + 0.5
+    x = x / 2 + 0.5
+
+    npimg_recon_x = recon_x.cpu().detach().numpy()
+    npimg_x = x.cpu().detach().numpy()
+
+    plt.imshow(np.transpose(npimg_recon_x, (1, 2, 0)))
+    plt.title('Reconstructed')
+    #plt.show()
+    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'recon_x' + '.png', dpi = 300)
+
+    plt.imshow(np.transpose(npimg_x, (1, 2, 0)))
+    plt.title('Ground Truth')
+    #plt.show()
+    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'x' + '.png', dpi = 300)
+
+def show_generated(x, cur_epoch):
+    x = x / 2 + 0.5
+
+    npimg_x = x.cpu().detach().numpy()
+
+    plt.imshow(np.transpose(npimg_x, (1, 2, 0)))
+    plt.title('Generated')
+    #plt.show()
+    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'gen' + '.png', dpi = 300)
+
+'''
