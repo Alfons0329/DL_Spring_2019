@@ -18,7 +18,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--lr', type = float, default = 1e-4)
 parser.add_argument('--batch_size', type = int, default = 64)
 parser.add_argument('--img_size', type = int, default = 64)
-parser.add_argument('--epochs', type = int, default = 200)
+parser.add_argument('--epochs', type = int, default = 10)
 parser.add_argument('--activate', type = int, default = 0)
 
 parser.add_argument('--train_path', type = str, default = './cartoon')
@@ -171,9 +171,8 @@ for epoch in range(args.epochs):
 
             learning_curve.append(train_loss)
             epoch_list.append(epoch)
-
-    gen_img = model.decode(zzz)
-    save_image(gen_img.data.cpu(), '%d_%f_%d_gen_cnn.png' %(args.batch_size, args.lr, epoch + 1))
+            gen_img = model.decode(zzz)
+            save_image(gen_img.data.cpu(), '%d_%f_%d_gen_cnn.png' %(args.batch_size, args.lr, epoch + 1))
     torch.save(model.state_dict(), 'dict')
 
 make_graph()
