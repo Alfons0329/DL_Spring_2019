@@ -113,7 +113,7 @@ def loss_fn(recon_x, x, mu, logvar, kla):
     BCE = F.binary_cross_entropy(recon_x, x, size_average=False)
     KLD = -0.5 * torch.mean(1 + logvar - mu.pow(2) - logvar.exp())
 
-    return BCE + KLD*kla, BCE, KLD*kla
+    return BCE + KLD * kla, BCE, KLD * kla
 
 ##### LOAD DATASET #######
 dataset = datasets.ImageFolder(root='./cartoon', transform=transforms.Compose([
@@ -121,11 +121,11 @@ dataset = datasets.ImageFolder(root='./cartoon', transform=transforms.Compose([
     transforms.ToTensor(),
 ]))
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size, shuffle=True)
-print("Image count = %d, Batch count = %d" % (len(dataset.imgs), len(dataloader)))
+print("Image count: %d, Batch count: %d" % (len(dataset.imgs), len(dataloader)))
 
 # Check if the shape is correct
 fixed_x, _ = next(iter(dataloader))
-print("Batch shape:{}".format(fixed_x.shape))
+print("Batch shape: {}".format(fixed_x.shape))
 
 image_channels = fixed_x.size(1)
 
@@ -144,6 +144,7 @@ kla_t = 200
 kla_i = 0
 
 ##### TRAINING ##########
+print('Start training, lr: ' %(args.lr))
 for epoch in range(args.epochs):
     train_loss = 0.0
     for idx, (img, _) in enumerate(dataloader):
