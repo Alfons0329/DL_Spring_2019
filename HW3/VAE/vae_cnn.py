@@ -44,6 +44,7 @@ def make_graph():
     plt.plot(epoch_list, learning_curve, color = 'blue', label = 'VAE')
     plt.legend()
     plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + 'LC_cnn' + '.png', dpi = 150)
+
 class Flatten(nn.Module):
     def forward(self, input):
         return input.view(input.size(0), -1)
@@ -145,7 +146,8 @@ kla_t = 200
 kla_i = 0
 
 ##### TRAINING ##########
-print('Start training, lr: ' %(args.lr))
+
+print('Start training, lr: %f' %(args.lr))
 for epoch in range(args.epochs):
     train_loss = 0.0
     for idx, (img, _) in enumerate(dataloader):
