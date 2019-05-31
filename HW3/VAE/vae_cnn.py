@@ -7,6 +7,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.nn.init as init
 from torch.autograd import Variable
+from torchvision.utils import save_image
 import matplotlib.pyplot as plt
 
 import numpy as np
@@ -25,7 +26,7 @@ parser.add_argument('--batch_size', type = int, default = 64)
 parser.add_argument('--img_size', type = int, default = 64)
 parser.add_argument('--activate', type = int, default = 0)
 
-parser.add_argument('--train_path', type = str, default = 'cartoon/')
+parser.add_argument('--train_path', type = str, default = './cartoon')
 args = parser.parse_args()
 
 ########## GLOBAL DEF ###
@@ -33,7 +34,7 @@ N_IMG_SIZE = 0
 N_FC1_SIZE = 64
 N_FC2_SIZE = 16
 
-N_EPOCH_LIMIT = 3000
+N_EPOCH_LIMIT = 6000
 N_LEARN_RATE = args.lr
 N_BATCH_SIZE = args.batch_size
 N_IMG_SIZE = args.img_size
@@ -44,6 +45,11 @@ TRAIN_PATH = args.train_path
 model_path = 'my_vae.pt'
 loss_path = 'best_loss.txt'
 best_loss = 0.0
+
+############# USE CUDA ################
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+if device == 'cuda':
+    print('Train with CUDA ')
 
 ############# FOR GRAPHING ############
 epoch_list = []
@@ -76,32 +82,32 @@ class VAE(nn.Module):
     def __init__(self, image_channels = 3, h_dim = 1024, z_dim = 32):
         super(VAE, self).__init__()
         self.encoder = nn.Sequential(
-            nn.Conv2d(image_channels, 32, kernel_size = 4, stride = 2),
-            nn.ReLU(),
-            nn.Conv2d(32, 64, kernel_size = 4, stride = 2),
-            nn.ReLU(),
-            nn.Conv2d(64, 128, kernel_size = 4, stride = 2),
-            nn.ReLU(),
-            nn.Conv2d(128, 256, kernel_size = 4, stride = 2),
-            nn.ReLU(),
-            flatten()
-        )
+                nn.Conv2d(image_channels, 32, kernel_size = 4, stride = 2),
+                nn.ReLU(),
+                nn.Conv2d(32, 64, kernel_size = 4, stride = 2),
+                nn.ReLU(),
+                nn.Conv2d(64, 128, kernel_size = 4, stride = 2),
+                nn.ReLU(),
+                nn.Conv2d(128, 256, kernel_size = 4, stride = 2),
+                nn.ReLU(),
+                flatten()
+                )
 
         self.fc1 = nn.Linear(h_dim, z_dim)
         self.fc2 = nn.Linear(h_dim, z_dim)
         self.fc3 = nn.Linear(z_dim, h_dim)
 
         self.decoder = nn.Sequential(
-            unflatten(),
-            nn.ConvTranspose2d(h_dim, 128, kernel_size = 5, stride = 2),
-            nn.ReLU(),
-            nn.ConvTranspose2d(128, 64, kernel_size = 5, stride = 2),
-            nn.ReLU(),
-            nn.ConvTranspose2d(64, 32, kernel_size = 6, stride = 2),
-            nn.ReLU(),
-            nn.ConvTranspose2d(32, image_channels, kernel_size = 6, stride = 2),
-            nn.ReLU()
-        )
+                unflatten(),
+                nn.ConvTranspose2d(h_dim, 128, kernel_size = 5, stride = 2),
+                nn.ReLU(),
+                nn.ConvTranspose2d(128, 64, kernel_size = 5, stride = 2),
+                nn.ReLU(),
+                nn.ConvTranspose2d(64, 32, kernel_size = 6, stride = 2),
+                nn.ReLU(),
+                nn.ConvTranspose2d(32, image_channels, kernel_size = 6, stride = 2),
+                nn.ReLU()
+                )
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d) or isinstance(m, nn.ConvTranspose2d):
@@ -116,11 +122,8 @@ class VAE(nn.Module):
                 nn.init.constant_(m.bias, 0)
 
     def reparameterize(self, mu, logvar):
-        std = torch.exp(0.5 * logvar)
-        eps = torch.randn_like(std)
-
-        #std = logvar.mul(0.5).exp_()
-        #eps = torch.randn(*mu.size())
+        std = logvar.mul(0.5).exp_()
+        eps = torch.randn(*mu.size()).to(device)
         z = mu + std * eps
         return z
 
@@ -145,40 +148,37 @@ class VAE(nn.Module):
         return z, mu, logvar
 
 def loss_function(recon_x, x, mu, logvar):
-    mse_loss = nn.MSELoss(reduction = 'mean')
-    MSE = mse_loss(recon_x, x)
+    BCE = F.binary_cross_entropy_with_logits(recon_x, x, reduce = 'sum')
     KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
-    return MSE + KLD, MSE, KLD
+    return BCE + KLD, BCE, KLD
 
-def train(train_loader, model, optimizer, cur_epoch, device):
+def train(train_loader, model, optimizer, cur_epoch):
     train_loss = 0
     inputs = None
-    recon_batch = None
+    recon_imgs = None
 
-    for i, data in enumerate(train_loader, 0):
-        inputs, labels = data
-        inputs = inputs.to(device)
+    for i, (imgs, _) in enumerate(train_loader):
+        x = Variable(imgs).to(device)
+        recon_imgs, mu, logvar = model(x) # return: batch reconstructed vector, mean and stdev
 
-        recon_batch, mu, logvar = model(inputs) # return: batch reconstructed vector, mean and stdev
-        loss, mse, kld = loss_function(recon_batch, inputs, mu, logvar) # data is the ground truth
+        loss, mse, kld = loss_function(recon_imgs, x, mu, logvar) # data is the ground truth
         optimizer.zero_grad()
         loss.backward()
         train_loss += loss.item()
         optimizer.step()
 
     print('Epoch %5d loss: %.3f' %(cur_epoch, float(train_loss)))
-    if cur_epoch != 0 and cur_epoch % 500 == 0 and inputs is not None and recon_batch is not None:
-        ##### RECONSTRUCTED ######
-        torchvision.utils.save_image(inputs, str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'x_cnn' + '.png')
-        torchvision.utils.save_image(recon_batch.cpu(), str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'recon_x_cnn' + '.png')
+    if cur_epoch != 0 and cur_epoch % 5 == 0 and recon_imgs is not None:
+        ##### RECONSTRUCT #####
+        #save_image(inputs.cpu(), str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'x_cnn' + '.png')
+        #save_image(recon_batch.cpu(), str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'recon_x_cnn' + '.png')
 
         ##### RANDOM GEN ######
-        randn_noise = torch.randn(N_BATCH_SIZE, 1, 32)
-        randn_noise = randn_noise.to(device)
-        generated_imgs = model.module.decode(z = randn_noise)
-        #generated_imgs, _, _ = model(randn_noise)
-        torchvision.utils.save_image(generated_imgs.cpu(), str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'gen_cnn' + '.png')
-        #show_generated(torchvision.utils.make_grid(generated_imgs), cur_epoch)
+        randn_noise = torch.zeros([32, 32]).to(device)
+        randn_noise.normal_()
+        generated_imgs = model.decode(randn_noise)
+        print('zzz_my ', randn_noise)
+        save_image(generated_imgs.cpu(), str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'gen_cnn' + '.png')
 
     return float(train_loss)
 
@@ -207,19 +207,14 @@ if __name__ == '__main__':
     optimizer = optim.Adam(model.parameters(), lr = N_LEARN_RATE, weight_decay = 8e-4)
 
     ##### CUDA ##############
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    if device == 'cuda':
-        print('Train with CUDA ')
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        model = model.to(device)
-        model = torch.nn.DataParallel(model)
+    model = model.to(device)
 
     print('Start training, N_BATCH_SIZE = %4d, N_EPOCH_LIMIT = %4d, N_LEARN_RATE %f\n' %(N_BATCH_SIZE, N_EPOCH_LIMIT, N_LEARN_RATE))
 
     ##### MAIN TRAIN #########
     for cur_epoch in range(1, N_EPOCH_LIMIT + 1):
         if has_pretrained is False:
-            cur_loss = train(train_loader, model, optimizer, cur_epoch, device)
+            cur_loss = train(train_loader, model, optimizer, cur_epoch)
             learning_curve.append(cur_loss)
 
         epoch_list.append(cur_epoch)
@@ -234,35 +229,3 @@ if __name__ == '__main__':
     torch.cuda.empty_cache()
     make_graph()
 
-
-
-
-'''
-def show_reconstructed(recon_x, x, cur_epoch):
-    recon_x = recon_x / 2 + 0.5
-    x = x / 2 + 0.5
-
-    npimg_recon_x = recon_x.cpu().detach().numpy()
-    npimg_x = x.cpu().detach().numpy()
-
-    plt.imshow(np.transpose(npimg_recon_x, (1, 2, 0)))
-    plt.title('Reconstructed')
-    #plt.show()
-    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'recon_x' + '.png', dpi = 300)
-
-    plt.imshow(np.transpose(npimg_x, (1, 2, 0)))
-    plt.title('Ground Truth')
-    #plt.show()
-    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'x' + '.png', dpi = 300)
-
-def show_generated(x, cur_epoch):
-    x = x / 2 + 0.5
-
-    npimg_x = x.cpu().detach().numpy()
-
-    plt.imshow(np.transpose(npimg_x, (1, 2, 0)))
-    plt.title('Generated')
-    #plt.show()
-    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + str(cur_epoch) + '_' + 'gen' + '.png', dpi = 300)
-
-'''
