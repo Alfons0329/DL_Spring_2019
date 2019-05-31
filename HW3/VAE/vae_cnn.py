@@ -36,14 +36,14 @@ learning_curve = []
 def make_graph():
     # plot the learning curve
     plt.clf()
-    title_str = 'BAT= ' + str(N_BATCH_SIZE) + ' ETA= ' + str(N_LEARN_RATE)
+    title_str = 'BAT= ' + str(args.batch_size) + ' ETA= ' + str(args.lr)
     plt.title(title_str)
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
 
     plt.plot(epoch_list, learning_curve, color = 'blue', label = 'VAE')
     plt.legend()
-    plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + 'LC_cnn' + '.png', dpi = 150)
+    plt.savefig(str(args.lr) + '_' + str(args.batch_size) + '_' + 'LC_cnn' + '.png', dpi = 150)
 
 class Flatten(nn.Module):
     def forward(self, input):
@@ -135,7 +135,7 @@ image_channels = fixed_x.size(1)
 model = VAE(image_channels=image_channels).to(device)
 
 ##### OPTIMIZER #########
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 
 ##### RANDOM NOISE ######
 zzz = torch.zeros([32, 32]).to(device)
@@ -146,8 +146,7 @@ kla_t = 200
 kla_i = 0
 
 ##### TRAINING ##########
-
-print('Start training, lr: %f' %(args.lr))
+print('Start training, lr: %s' %(args.lr))
 for epoch in range(args.epochs):
     train_loss = 0.0
     for idx, (img, _) in enumerate(dataloader):
@@ -163,7 +162,7 @@ for epoch in range(args.epochs):
         optimizer.step()
         train_loss += loss.item()
 
-        if idx == len(dataloader) - 1:
+        if idx == len(dataloader) - 1 and epoch != 0 and epoch % 5 == 0:
             to_print = "Epoch[{}/{}] Idx: {} Loss: {:.3f} BCE: {:.3f} KLD: {:.3f} kla: {}".format(epoch + 1,args.epochs,idx, loss.item()/args.batch_size, bce.item()/args.batch_size, kld.item()/args.batch_size, kla)
             print(to_print)
 

@@ -1,7 +1,4 @@
 #!/bin/bash
-
-set -e
-
 for batch_size in 100
 do
     for lr in 0.0001
