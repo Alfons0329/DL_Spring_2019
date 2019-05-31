@@ -188,7 +188,7 @@ def train(train_loader, model, optimizer, cur_epoch, device):
 if __name__ == '__main__':
 
     ##### LOAD DATASET ######
-    train_loader = pre.load_dataset(True, N_BATCH_SIZE, N_IMG_SIZE, TRAIN_PATH)
+    train_loader = pre.load_dataset(False, N_BATCH_SIZE, N_IMG_SIZE, TRAIN_PATH)
     print('Train loader type %s with length %d ' %(type(train_loader), len(train_loader)))
 
     ##### LOAD PRETRAINED ###
