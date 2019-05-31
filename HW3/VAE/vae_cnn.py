@@ -11,6 +11,7 @@ from torchvision.utils import save_image
 from torch.autograd import Variable
 
 import argparse, os, sys, numpy
+import matplotlib.pyplot as plt
 
 ########## ARGS #########
 parser = argparse.ArgumentParser()
@@ -40,7 +41,7 @@ def make_graph():
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
 
-    plt.plot(epoch_list, learning_curve, color = 'blue', label = 'norm 0.5')
+    plt.plot(epoch_list, learning_curve, color = 'blue', label = 'VAE')
     plt.legend()
     plt.savefig(str(N_LEARN_RATE) + '_' + str(N_BATCH_SIZE) + '_' + 'LC_cnn' + '.png', dpi = 150)
 class Flatten(nn.Module):
@@ -173,4 +174,6 @@ for epoch in range(args.epochs):
     gen_img = model.decode(zzz)
     save_image(gen_img.data.cpu(), '%d_%f_%d_gen_cnn.png' %(args.batch_size, args.lr, epoch + 1))
     torch.save(model.state_dict(), 'dict')
+
+make_graph()
 
