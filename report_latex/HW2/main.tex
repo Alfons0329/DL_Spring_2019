@@ -106,7 +106,7 @@
 %---------------------------------------------------------------------------------
 %	General information
 %---------------------------------------------------------------------------------
-\title{Deep Learning HW2 Report} % Adds your title
+\title{Deep Learning Report} % Adds your title
 %\author
 %{
 %    \name{Alfons Hwu} % Add your first and last name
@@ -126,7 +126,7 @@
 % If you want a cover page, uncomment "\input{coverpage.tex}" and uncomment "\begin{comment}" and "\end{comment}" to comment the following lines
 \input{coverpage.tex}
 
-\date{May 2, 2019}
+\date{May 31, 2019}
 \begin{comment}
 \end{comment}
 \maketitle{} %Print your title, author name and date; comment if you want a cover page 
@@ -136,17 +136,44 @@
 %----------------------------------------------------------------------------------------
 \setcounter{page}{1} % Sets counter of page to 1
 
-\section{Self-designed CNN for image classification} % Add a section title
-\subsection{Preprocessing the images} % Section check OK 20190502
-In the preprocessing part, I merely resize the image to 256 x 256 and perform normalization. No gray scale transformation nor random crop and(or) rotate to form data augmentation.
-\\ Reason I only choose resize mainly due to my \textbf{hardware limitation} (the GPU of my machine is only GTX1070, too much data will increase my training time or cause \textbf{cuda out of memory error}
-\\ Second, the main core lies in resizing image to 256 x 256, since suppose we use the image of original size, the dimension of training data will explode (known as \textbf{Curse of Dimensionality}). 
-\\ Another important part is to normalize image on accounting of reducing the effect from extremity and different image scale, now all the images are fitted to the same baseline (normalized and resized).
-\\ Both of the training set and testing set are under the same transformation from pytorch for the sake of fairness.
+\section{Self-designed VAE for unsupervised learning} % Add a section title
+\subsection{Preprocessing and architecture} % Section check OK 20190502
+In the preprocessing part, I merely resize the image to 64 x 64 . No gray scale transformation nor random crop and(or) rotate to form data augmentation.
+\\ For the architecture, I choose CNN for VAE rather than DNN since it fits better for image processing.
+(In DNN, the network was not able to process the color channels separately, resulting in an average RGB scale of a grey image)
+\\ Use some convolution layer to extracting the image characteristics, then DNN to calculate the mean and variance and finally reparameterize by shifting the  $N~(0, 1)$ to approach $N~(\mu \epsilon)$
+\\ Referencing to \url{}
 \begin{lstlisting}[language = python]
-my_transform = transforms.Compose([transforms.Resize((256, 256)), 
-transforms.ToTensor(), 
-transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]) 
+class VAE(nn.Module):
+    def __init__(self, image_channels = 3, h_dim = 1024, z_dim = 32):
+        super(VAE, self).__init__()
+        self.encoder = nn.Sequential(
+            nn.Conv2d(image_channels, 32, kernel_size = 4, stride = 2),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, kernel_size = 4, stride = 2),
+            nn.ReLU(),
+            nn.Conv2d(64, 128, kernel_size = 4, stride = 2),
+            nn.ReLU(),
+            nn.Conv2d(128, 256, kernel_size = 4, stride = 2),
+            nn.ReLU(),
+            flatten()
+        )
+
+        self.fc1 = nn.Linear(h_dim, z_dim)
+        self.fc2 = nn.Linear(h_dim, z_dim)
+        self.fc3 = nn.Linear(z_dim, h_dim)
+
+        self.decoder = nn.Sequential(
+            unflatten(),
+            nn.ConvTranspose2d(h_dim, 128, kernel_size = 5, stride = 2),
+            nn.ReLU(),
+            nn.ConvTranspose2d(128, 64, kernel_size = 5, stride = 2),
+            nn.ReLU(),
+            nn.ConvTranspose2d(64, 32, kernel_size = 6, stride = 2),
+            nn.ReLU(),
+            nn.ConvTranspose2d(32, image_channels, kernel_size = 6, stride = 2),
+            nn.ReLU()
+        )
 \end{lstlisting}
 
 \subsection{CNN architecture explanation and performance evaluation} % Add a subsection
@@ -280,35 +307,52 @@ self.classifier = nn.Sequential(
                 nn.Sigmoid(),
                 )
 
-inputs = inputs.view(N_BATCH_SIZE, N_RNN_STEP, N_VEC_WORD) # reshape
+inputs = inputs.view(N_BATCH_SIZE, N_RNN_STEP, N_VEC_WORD) \# reshape
 \end{lstlisting}
-\\subsubsection{Results}
+
+\subsubsection{Results }
+
 \begin{figure}[H]
     \centering
-    \subfloat[Accuracy curve]{\includegraphics[scale = 0.5]{HW2/rnn_result/adam_1_acc.png}}
+    \subfloat[Accuracy curve(adam)]{\includegraphics[scale = 0.5]{HW2/rnn_result/adam_1_acc.png}}
     \hfill
-    \subfloat[Loss curve]{\includegraphics[scale = 0.5]{HW2/rnn_result/adam_1_lc.png}}
+    \subfloat[Loss curve(adam)]{\includegraphics[scale = 0.5]{HW2/rnn_result/adam_1_lc.png}}
+    \hfill
+    \subfloat[Accuracy curve(adam)]{\includegraphics[scale = 0.5]{HW2/rnn_result/adam_2_acc.png}}
+    \hfill
+    \subfloat[Loss curve(adam)]{\includegraphics[scale = 0.5]{HW2/rnn_result/adam_2_lc.png}}
+    \hfill
+    \subfloat[Accuracy curve(sgd)]{\includegraphics[scale = 0.5]{HW2/rnn_result/sgd_1_acc.png}}
+    \hfill
+    \subfloat[Loss curve(sgd)]{\includegraphics[scale = 0.5]{HW2/rnn_result/sgd_1_lc.png}}
     \caption{RNN results}
     \label{fig:my_label}
 \end{figure}
 \subsubsection{LSTM results vs RNN results}
-\\ By merely changed the network from RNN to LSTM (all the rest are remain unchanged, including the optimization method).
-\\ Loss curve are about the same, let us check the difference between the accuracy curve.  
 \begin{figure}[H]
     \centering
-    \subfloat[Accuracy curve of LSTM]{\includegraphics[scale = 0.5]{HW2/lstm_result/adam_1_acc.png}}
+    \subfloat[Accuracy curve of LSTM(adam)]{\includegraphics[scale = 0.5]{HW2/lstm_result/adam_1_acc.png}}
     \hfill
-    \subfloat[Accuracy curve of RNN]{\includegraphics[scale = 0.5]{HW2/rnn_result/adam_1_acc.png}}
+    \subfloat[Accuracy curve of RNN(adam)]{\includegraphics[scale = 0.5]{HW2/rnn_result/adam_1_acc.png}}
+    \hfill
+    \subfloat[Accuracy curve of LSTM(adam)]{\includegraphics[scale = 0.5]{HW2/lstm_result/adam_2_acc.png}}
+    \hfill
+    \subfloat[Accuracy curve of RNN(adam)]{\includegraphics[scale = 0.5]{HW2/rnn_result/adam_2_acc.png}}
+    \hfill
+    \subfloat[Accuracy curve of LSTM(sgd)]{\includegraphics[scale = 0.5]{HW2/lstm_result/sgd_1_acc.png}}
+    \hfill
+    \subfloat[Accuracy curve of RNN(sgd)]{\includegraphics[scale = 0.5]{HW2/rnn_result/sgd_1_acc.png}}
     \caption{Accuracy comparison}
     \label{fig:my_label}
 \end{figure}
+\\ By merely changed the network from RNN to LSTM (all the rest are remain unchanged, including the optimization method).
 \\ As the figures shown, RNN may suffer from the gradient vanishing/exploding in the latter epochs during training.
 
 \subsection{Discussion: LSTM vs RNN}
 \\ Reference \url{https://colah.github.io/posts/2015-08-Understanding-LSTMs/}
 \\ In theory, RNNs are absolutely capable of handling such “long-term dependencies.” A human could carefully pick parameters for them to solve toy problems of this form. Sadly, in practice, RNNs don’t seem to be able to learn them. The problem was explored in depth by Hochreiter (1991) [German] and Bengio, et al. (1994), who found some pretty fundamental reasons why it might be difficult.
 \subsubsection{Gradient vanishing and exploding}
-\\ The back propogation is defined as: $w^{t+1} = w{t} - \eta\Delta E(w^{t})$ 
+\\ The back propogation is defined as: $w^{t+1} = w^{t} - \eta\Delta E(w^{t})$ 
 \\ The gradients coming from the deeper layers have to go through continuous matrix multiplications because of the the chain rule, and as they approach the earlier layers, if they have small values (<1), they shrink exponentially until they vanish and make it impossible for the model to learn , this is the \textbf{vanishing gradient problem}. While on the other hand if they have large values (>1) they get larger and eventually blow up and crash the model, this is the \textbf{exploding gradient problem}
 \\
 \\

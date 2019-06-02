@@ -1,0 +1,190 @@
+% Credits are indicated where needed. The general idea is based on a template by Vel (vel@LaTeXTemplates.com) and Frits Wenneker.
+
+\documentclass[11pt, a4paper]{article} % General settings in the beginning (defines the document class of your paper)
+% 11pt = is the font size
+% A4 is the paper size
+% “article” is your document class
+
+%----------------------------------------------------------------------------------------
+%	Packages
+%----------------------------------------------------------------------------------------
+
+% Necessary
+\usepackage[german,english]{babel} % English and German language 
+\usepackage{hyperref} % URL
+\usepackage{subfig} %two figure
+\usepackage{listings} % Insert code
+\usepackage{float} % figure at the correct position
+\usepackage{lipsum}
+\usepackage{mwe}
+\usepackage{booktabs} % Horizontal rules in tables 
+% For generating tables, use “LaTeX” online generator (https://www.tablesgenerator.com)
+\usepackage{comment} % Necessary to comment several paragraphs at once
+\usepackage[utf8]{inputenc} % Required for international characters
+\usepackage[T1]{fontenc} % Required for output font encoding for international characters
+
+% Might be helpful
+\usepackage{amsmath,amsfonts,amsthm} % Math packages which might be useful for equations
+\usepackage{tikz} % For tikz figures (to draw arrow diagrams, see a guide how to use them)
+\usepackage{tikz-cd}
+\usetikzlibrary{positioning,arrows} % Adding libraries for arrows
+\usetikzlibrary{decorations.pathreplacing} % Adding libraries for decorations and paths
+\usepackage{tikzsymbols} % For amazing symbols ;) https://mirror.hmc.edu/ctan/graphics/pgf/contrib/tikzsymbols/tikzsymbols.pdf 
+\usepackage{blindtext} % To add some blind text in your paper
+
+
+%---------------------------------------------------------------------------------
+% Additional settings
+%---------------------------------------------------------------------------------
+
+%---------------------------------------------------------------------------------
+% Define your margins
+\usepackage{geometry} % Necessary package for defining margins
+
+\geometry{
+	top=2cm, % Defines top margin
+	bottom=2cm, % Defines bottom margin
+	left=2.2cm, % Defines left margin
+	right=2.2cm, % Defines right margin
+	includehead, % Includes space for a header
+	%includefoot, % Includes space for a footer
+	%showframe, % Uncomment if you want to show how it looks on the page 
+}
+
+\setlength{\parindent}{15pt} % Adjust to set you indent globally 
+
+%---------------------------------------------------------------------------------
+% Define your spacing
+\usepackage{setspace} % Required for spacing
+% Two options:
+\linespread{1.5}
+%\onehalfspacing % one-half-spacing linespread
+
+%----------------------------------------------------------------------------------------
+% Define your fonts
+\usepackage[T1]{fontenc} % Output font encoding for international characters
+\usepackage[utf8]{inputenc} % Required for inputting international characters
+
+\usepackage{XCharter} % Use the XCharter font
+
+
+%---------------------------------------------------------------------------------
+% Define your headers and footers
+
+\usepackage{fancyhdr} % Package is needed to define header and footer
+\pagestyle{fancy} % Allows you to customize the headers and footers
+
+%\renewcommand{\sectionmark}[1]{\markboth{#1}{}} % Removes the section number from the header when \leftmark is used
+
+% Headers
+\lhead{} % Define left header
+\chead{\textit{}} % Define center header - e.g. add your paper title
+\rhead{} % Define right header
+
+% Footers
+\lfoot{} % Define left footer
+\cfoot{\footnotesize \thepage} % Define center footer
+\rfoot{ } % Define right footer
+
+%---------------------------------------------------------------------------------
+%	Add information on bibliography
+\usepackage{natbib} % Use natbib for citing
+\usepackage{har2nat} % Allows to use harvard package with natbib https://mirror.reismil.ch/CTAN/macros/latex/contrib/har2nat/har2nat.pdf
+
+% For citing with natbib, you may want to use this reference sheet: 
+% http://merkel.texture.rocks/Latex/natbib.php
+
+%---------------------------------------------------------------------------------
+% Add field for signature (Reference: https://tex.stackexchange.com/questions/35942/how-to-create-a-signature-date-page)
+\newcommand{\signature}[2][5cm]{%
+  \begin{tabular}{@{}p{#1}@{}}
+    #2 \\[2\normalbaselineskip] \hrule \\[0pt]
+    {\small \textit{Signature}} \\[2\normalbaselineskip] \hrule \\[0pt]
+    {\small \textit{Place, Date}}
+  \end{tabular}
+}
+%---------------------------------------------------------------------------------
+%	General information
+%---------------------------------------------------------------------------------
+\title{Deep Learning HW3 Report} % Adds your title
+%\author
+%{
+%    \name{Alfons Hwu} % Add your first and last name
+%    %\thanks{} % Adds a footnote to your title
+%    \\
+%    \institution{0416324, Dept of Computer Science NCTU} % Adds your institution
+%}
+
+
+
+%---------------------------------------------------------------------------------
+%	Define what’s in your document
+%---------------------------------------------------------------------------------
+\begin{document}
+
+
+% If you want a cover page, uncomment "\input{coverpage.tex}" and uncomment "\begin{comment}" and "\end{comment}" to comment the following lines
+\input{coverpage.tex}
+
+\date{May 31, 2019}
+\begin{comment}
+\end{comment}
+\maketitle{} %Print your title, author name and date; comment if you want a cover page 
+
+%----------------------------------------------------------------------------------------
+% Introduction
+%----------------------------------------------------------------------------------------
+\setcounter{page}{1} % Sets counter of page to 1
+
+\section{Self-designed VAE for image reconstruction and generating(unsupervised learning)} % Add a section title
+\subsection{Preprocessing the images} % Section check OK 20190502
+In the preprocessing part, I merely resize the image to 64 x 64 and without normalization. 
+\\ If normalization is used, the reconstructed / randomly generated image will look very dark and black.
+\\ CNN is used in this problem since it \textbf{fits better for image processing} while DNN falls short in this part because it processes 3 color channels at the same time, causing the result image somehow looked grey(The value of R G B are similar)
+\\ The CNN layers are used in the feature extraction and reconstruction part as the following code shows.
+\begin{lstlisting}[language = python]
+def __init__(self, image_channels = 3, h_dim = 1024, z_dim = 32):
+        super(VAE, self).__init__()
+        self.encoder = nn.Sequential(
+            nn.Conv2d(image_channels, 32, kernel_size = 4, stride = 2),
+            nn.ReLU(),
+            nn.Conv2d(32, 64, kernel_size = 4, stride = 2),
+            nn.ReLU(),
+            nn.Conv2d(64, 128, kernel_size = 4, stride = 2),
+            nn.ReLU(),
+            nn.Conv2d(128, 256, kernel_size = 4, stride = 2),
+            nn.ReLU(),
+            flatten()
+        )
+        self.fc1 = nn.Linear(h_dim, z_dim)
+        self.fc2 = nn.Linear(h_dim, z_dim)
+        self.fc3 = nn.Linear(z_dim, h_dim)
+        # The code of decoder part is just deconvolution, i.e. nn.ConvTranspose2d with reverse order and I/O dimension
+        )
+\end{lstlisting}
+\\ Between the feature extraction and image reconstruction lies the reparameterization part, that is by multiplying $\sigma$ and shifting $\mu$, making $N~(0, 1)$ to approximate $N~(\mu, \sigma^2)$
+\begin{figure}[H]
+  \centering
+  \subfloat[VAE ovaerall architecture]{\includegraphics[scale = 0.3]{HW3/vae/vae_arch.jpg}\label{fig:f1}}
+  \hfill
+  \subfloat[Reparameterization to approximate $N~(0, 1)$]{\includegraphics[scale = 0.3]{HW3/vae/reparam.jpg}\label{fig:f2}}
+  \hfill
+  \subfloat[Mathematical explanation]{\includegraphics[scale = 0.2]{HW3/vae/vae_idea.jpg}\label{fig:f2}}
+  \hfill
+  \caption{VAE explanation}
+\end{figure}
+\\ Image source credit to \url{https://zhuanlan.zhihu.com/p/34998569}
+
+\subsection{Learning curve and reconstructed images}
+\begin{figure}[H]
+    \centering
+    \subfloat[Learning curve]{\includegraphics[scale = 0.9]{HW3/vae_result/lc.png}\label{fig:f1}}
+    \hfill
+    \subfloat[Reconstructed image]{\includegraphics[scale = 0.3]{HW3/vae_result/re.png}\label{fig:f2}}
+    \hfill
+    \subfloat[Ground truth]{\includegraphics[scale = 0.3]{HW3/vae_result/gt.png}\label{fig:f2}}
+    \hfill
+    \caption{VAE result evaluation}
+\end{figure}
+\section{Self-designed cGAN for style transformation(unsupervised learning)}
+\end{document}
