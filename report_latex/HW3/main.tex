@@ -186,5 +186,24 @@ def __init__(self, image_channels = 3, h_dim = 1024, z_dim = 32):
     \hfill
     \caption{VAE result evaluation}
 \end{figure}
+\\ \textbf{KL annealing} is used in this model to improve learning different characteristics from different faces, since without it, KL Divergence and Loss will be quite small, and with small error value, NN will be hard to implement self-learning, causing the whole reconstructed image to be all the same.
+\\ KL annealing reference to \url{http://www.sohu.com/a/216987798_297288}
+\begin{figure}[H]
+    \centering
+    \subfloat[Without KL annealing]{\includegraphics[scale = 0.4]{HW3/vae_result/re_no.png}\label{fig:f1}}
+    \hfill
+    \subfloat[With KL annealing]{\includegraphics[scale = 0.4]{HW3/vae_result/re.png}\label{fig:f2}}
+    \hfill
+    \caption{Comparison}
+\end{figure}
+\subsection{Randomly generated images}
+\begin{figure}[H]
+    \centering
+    \subfloat[Generated 1]{\includegraphics[scale = 0.4]{HW3/vae_result/gen_1.png}\label{fig:f1}}
+    \hfill
+    \subfloat[Generated 2]{\includegraphics[scale = 0.4]{HW3/vae_result/gen_2.png}\label{fig:f2}}
+    \hfill
+    \caption{Generated images}
+\end{figure}
 \section{Self-designed cGAN for style transformation(unsupervised learning)}
 \end{document}
