@@ -36,8 +36,8 @@ netG_B2A.eval()
 
 # Dataset loader
 transform = transforms.Compose([transforms.Resize((32, 32)), transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-animation_set = torchvision.datasets.ImageFolder(animation_root, transform) 
-cartoon_set = torchvision.datasets.ImageFolder(cartoon_root, transform) 
+animation_set = torchvision.datasets.ImageFolder(animation_root, transform)
+cartoon_set = torchvision.datasets.ImageFolder(cartoon_root, transform)
 animation_loader = torch.utils.data.DataLoader(dataset=animation_set,batch_size=batchsize,shuffle=True)
 cartoon_loader = torch.utils.data.DataLoader(dataset=cartoon_set,batch_size=batchsize,shuffle=True)
 
