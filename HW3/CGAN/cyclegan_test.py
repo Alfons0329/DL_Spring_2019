@@ -47,7 +47,7 @@ if not os.path.exists('output/animation'):
 if not os.path.exists('output/cartoon'):
     os.makedirs('output/cartoon')
 
-i=0
+i = 0 # iteration count
 for batch in zip(animation_loader, cartoon_loader):
     # Set model input
     A = torch.FloatTensor(batch[0][0])
@@ -67,7 +67,7 @@ for batch in zip(animation_loader, cartoon_loader):
 
     sys.stdout.write('\rGenerated images %04d' % (i+1))
     i = i+1
-    if (i==10):
+    if (i == 10):
         break
 
 sys.stdout.write('\n')

@@ -26,7 +26,7 @@ parser.add_argument('--img_size', type = int, default = 64)
 parser.add_argument('--activate', type = int, default = 0)
 
 parser.add_argument('--train_path', type = str, default = 'cartoon/')
-args = parser.parse_args()
+opt = parser.parse_opt()
 
 ########## GLOBAL DEF ###
 N_IMG_SIZE = 0
@@ -34,11 +34,11 @@ N_FC1_SIZE = 64
 N_FC2_SIZE = 16
 
 N_EPOCH_LIMIT = 300
-N_LEARN_RATE = args.lr
-N_BATCH_SIZE = args.batch_size
-N_IMG_SIZE = args.img_size
+N_LEARN_RATE = opt.lr
+N_BATCH_SIZE = opt.batch_size
+N_IMG_SIZE = opt.img_size
 
-TRAIN_PATH = args.train_path
+TRAIN_PATH = opt.train_path
 
 # save the model
 model_path = 'my_vae.pt'
