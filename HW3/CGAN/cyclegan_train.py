@@ -27,8 +27,8 @@ if not os.path.exists('ckpt'):
 parser = argparse.ArgumentParser()
 parser.add_argument('--epochs', type=int, default=200, help='number of epochs of training')
 parser.add_argument('--batch_size', type=int, default=1, help='size of the batches')
-parser.add_argument('--animation_root', type=str, default='', help='root directory of the dataset')
-parser.add_argument('--cartoon_dataroot', type=str, default='', help='root directory of the dataset')
+parser.add_argument('--animation_root', type=str, default='animation/', help='root directory of the dataset')
+parser.add_argument('--cartoon_root', type=str, default='cartoon/', help='root directory of the dataset')
 parser.add_argument('--lr', type=float, default=0.0002, help='initial learning rate')
 parser.add_argument('--decay_epoch', type=int, default=100, help='epoch to start linearly decaying the learning rate to 0')
 parser.add_argument('--img_size', type=int, default=64, help='size of the data crop (squared assumed)')
@@ -82,7 +82,7 @@ fake_A_buffer = ReplayBuffer()
 fake_B_buffer = ReplayBuffer()
 
 # Dataset loader
-transform = transforms.Compose([transforms.Resize((32, 32)), transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+transform = transforms.Compose([transforms.Resize((opt.img_size, opt.img_size)), transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 animation_set = torchvision.datasets.ImageFolder(opt.animation_root, transform)
 cartoon_set = torchvision.datasets.ImageFolder(opt.cartoon_root, transform)
 animation_loader = torch.utils.data.DataLoader(dataset=animation_set,batch_size=opt.batch_size,shuffle=True)
@@ -96,9 +96,9 @@ DB_loss  = []
 epoch_list = []
 
 def make_graph():
-    # plot the loss of both discriminators 
+    # plot the loss of both discriminators
     plt.clf()
-    title_str = 'LR= ' + str(opt.lr) + 'BAT= ' + str(opt.batch_size) 
+    title_str = 'LR= ' + str(opt.lr) + 'BAT= ' + str(opt.batch_size)
     plt.title(title_str)
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
@@ -106,21 +106,21 @@ def make_graph():
     plt.plot(epoch_list, DA_loss, color = 'blue', label = 'Discriminator A loss')
     plt.plot(epoch_list, DB_loss, color = 'red', label = 'Discriminator B loss')
     plt.legend()
-    plt.savefig(str(opt.lr) + '_' + str(opt.batch_size) + '_dis')
+    plt.savefig(str(opt.lr) + '_' + str(opt.batch_size) + '_dis.png')
 
-    # plot the loss of the generator 
+    # plot the loss of the generator
     plt.clf()
-    title_str = 'LR= ' + str(opt.lr) + 'BAT= ' + str(opt.batch_size) 
+    title_str = 'LR= ' + str(opt.lr) + 'BAT= ' + str(opt.batch_size)
     plt.title(title_str)
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
 
     plt.plot(epoch_list, G_loss, color = 'blue', label = 'Generator loss')
     plt.legend()
-    plt.savefig(str(opt.lr) + '_' + str(opt.batch_size) + '_gen')
+    plt.savefig(str(opt.lr) + '_' + str(opt.batch_size) + '_gen.png')
 
 ###### Training ######
-for epoch in range(1, epochs):
+for epoch in range(1, opt.epochs):
     i = 1 # index
     print('epoch %5d'%(epoch))
 
@@ -192,7 +192,7 @@ for epoch in range(1, epochs):
         # Real loss
         pred_real = netD_B(real_B)
         loss_D_real = criterion_GAN(pred_real, target_real)
-        
+
         # Fake loss
         fake_B = fake_B_buffer.push_and_pop(fake_B)
         pred_fake = netD_B(fake_B.detach())
@@ -204,9 +204,9 @@ for epoch in range(1, epochs):
         optimizer_D_B.step()
 
         ###################################
-        G_loss.append(loss_G.data[0])
-        DA_loss.append(loss_D_A.data[0])
-        DB_loss.append(loss_D_B.data.data[0])
+        G_loss.append(loss_G.item())
+        DA_loss.append(loss_D_A.item())
+        DB_loss.append(loss_D_B.item())
 
         # Progress report
         if i % 100 == 0:
