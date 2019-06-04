@@ -1,5 +1,17 @@
 #!/bin/bash
-gen_lc=$1
-dis_lc=$2
+set -ex
+read -p "1: Train, 2: Test " what
 
-python3 cyclegan_train.py --cuda
+if [ $what -eq 1 ];
+then
+	for lr in 0.0002
+	do
+		python3 cyclegan_train.py --cuda --lr $lr 
+	done
+else
+	for lr in 0.0002
+	do
+		python3 cyclegan_test.py --cuda --lr $lr 
+	done
+then
+fi

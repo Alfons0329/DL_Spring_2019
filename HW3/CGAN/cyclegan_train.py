@@ -15,13 +15,14 @@ from utils import ReplayBuffer
 from utils import weights_init_normal
 
 import time
-
 import os, sys
+import matplotlib.pyplot as plt
 start_time = time.time()
 
 if not os.path.exists('ckpt'):
     os.makedirs('output/animation')
 
+###### Argparse option ######
 # parameters
 parser = argparse.ArgumentParser()
 parser.add_argument('--epochs', type=int, default=200, help='number of epochs of training')
@@ -78,7 +79,7 @@ target_real = Variable(Tensor(opt.batch_size).fill_(1.0), requires_grad=False)
 target_fake = Variable(Tensor(opt.batch_size).fill_(0.0), requires_grad=False)
 
 fake_A_buffer = ReplayBuffer()
-fake_B_buffer ReplayBuffer()
+fake_B_buffer = ReplayBuffer()
 
 # Dataset loader
 transform = transforms.Compose([transforms.Resize((32, 32)), transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
@@ -86,14 +87,43 @@ animation_set = torchvision.datasets.ImageFolder(opt.animation_root, transform)
 cartoon_set = torchvision.datasets.ImageFolder(opt.cartoon_root, transform)
 animation_loader = torch.utils.data.DataLoader(dataset=animation_set,batch_size=opt.batch_size,shuffle=True)
 cartoon_loader = torch.utils.data.DataLoader(dataset=cartoon_set,batch_size=opt.batch_size,shuffle=True)
+
 ###################################
+# List to be used for collecting number for graphing
 G_loss  = []
 DA_loss  = []
 DB_loss  = []
+epoch_list = []
+
+def make_graph():
+    # plot the loss of both discriminators 
+    plt.clf()
+    title_str = 'LR= ' + str(opt.lr) + 'BAT= ' + str(opt.batch_size) 
+    plt.title(title_str)
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+
+    plt.plot(epoch_list, DA_loss, color = 'blue', label = 'Discriminator A loss')
+    plt.plot(epoch_list, DB_loss, color = 'red', label = 'Discriminator B loss')
+    plt.legend()
+    plt.savefig(str(opt.lr) + '_' + str(opt.batch_size) + '_dis')
+
+    # plot the loss of the generator 
+    plt.clf()
+    title_str = 'LR= ' + str(opt.lr) + 'BAT= ' + str(opt.batch_size) 
+    plt.title(title_str)
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+
+    plt.plot(epoch_list, G_loss, color = 'blue', label = 'Generator loss')
+    plt.legend()
+    plt.savefig(str(opt.lr) + '_' + str(opt.batch_size) + '_gen')
+
 ###### Training ######
 for epoch in range(1, epochs):
     i = 1 # index
     print('epoch %5d'%(epoch))
+
     for batch in zip(animation_loader, cartoon_loader):
         # Set model input
         A = torch.FloatTensor(batch[0][0])
@@ -104,47 +134,86 @@ for epoch in range(1, epochs):
         ###### Generators A2B and B2A ######
         optimizer_G.zero_grad()
 
+        # TODO : calculate the loss for the generators, and assign to loss_G
         # Identity loss
         # Referencing to: https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix/issues/322
         # G_A2B(B) should equal B if real B is fed
-        # TODO : calculate the loss for the generators, and assign to loss_G
         same_B = netG_A2B(real_B)
         loss_identity_B = criterion_identity(same_B, real_B) * 5.0
         # G_B2A(B) should equal A if real A is fed
         same_A = netG_B2A(real_A)
-        loss_identity_B = criterion_identity(same_B, real_B) * 5.0
-        loss_G = 1 + 1
+        loss_identity_A = criterion_identity(same_A, real_A) * 5.0
+
+        # GAN loss
+        fake_B = netG_A2B(real_A)
+        pred_fake = netD_B(fake_B)
+        loss_GAN_A2B = criterion_GAN(pred_fake, target_real)
+
+        fake_A = netG_B2A(real_B)
+        pred_fake = netD_A(fake_A)
+        loss_GAN_B2A = criterion_GAN(pred_fake, target_real)
+
+        # Cycle loss
+        recovered_A = netG_B2A(fake_B)
+        loss_cycle_ABA = criterion_cycle(recovered_A, real_A) * 10.0
+
+        recovered_B = netG_A2B(fake_A)
+        loss_cycle_BAB = criterion_cycle(recovered_B, real_B) * 10.0
+
+        # Total loss
+        loss_G = loss_identity_A + loss_identity_B + loss_GAN_A2B + loss_GAN_B2A + loss_cycle_ABA + loss_cycle_BAB
         loss_G.backward()
-
         optimizer_G.step()
-        ###################################
 
+        ###################################
+        # TODO : calculate the loss for a discriminator, and assign to loss_D_A
         ###### Discriminator A ######
         optimizer_D_A.zero_grad()
 
-        # TODO : calculate the loss for a discriminator, and assign to loss_D_A
+        # Real loss
+        pred_real = netD_A(real_A)
+        loss_D_real = criterion_GAN(pred_real, target_real)
+
+        # Fake loss
+        fake_A = fake_A_buffer.push_and_pop(fake_A)
+        pred_fake = netD_A(fake_A.detach())
+        loss_D_fake = criterion_GAN(pred_fake, target_fake)
+
+        # Total loss
+        loss_D_A = (loss_D_real + loss_D_fake) * 0.5
         loss_D_A.backward()
-
         optimizer_D_A.step()
-        ###################################
 
+        ###################################
+        # TODO : calculate the loss for the other discriminator, and assign to loss_D_B
         ###### Discriminator B ######
         optimizer_D_B.zero_grad()
 
-        # TODO : calculate the loss for the other discriminator, and assign to loss_D_B
+        # Real loss
+        pred_real = netD_B(real_B)
+        loss_D_real = criterion_GAN(pred_real, target_real)
+        
+        # Fake loss
+        fake_B = fake_B_buffer.push_and_pop(fake_B)
+        pred_fake = netD_B(fake_B.detach())
+        loss_D_fake = criterion_GAN(pred_fake, target_fake)
+
+        # Total loss
+        loss_D_B = (loss_D_real + loss_D_fake) * 0.5
         loss_D_B.backward()
-
         optimizer_D_B.step()
-        ###################################
 
+        ###################################
         G_loss.append(loss_G.data[0])
         DA_loss.append(loss_D_A.data[0])
         DB_loss.append(loss_D_B.data.data[0])
+
         # Progress report
         if i % 100 == 0:
-            print("loss_G : ", loss_G.data.cpu().numpy() ,",loss_D:", (loss_D_A.data.cpu().numpy() + loss_D_B.data.cpu().numpy()))
+            print("loss_G: ", loss_G.data.cpu().numpy() ,",loss_D: ", (loss_D_A.data.cpu().numpy() + loss_D_B.data.cpu().numpy()))
             i = 0
         i = i + 1
+
     # Save models checkpoints
     torch.save(netG_A2B.state_dict(), 'ckpt/netG_A2B.pth')
     torch.save(netG_B2A.state_dict(), 'ckpt/netG_B2A.pth')
@@ -152,6 +221,7 @@ for epoch in range(1, epochs):
     torch.save(netD_B.state_dict(), 'ckpt/netD_B.pth')
 
 end_time = time.time()
-print('Total cost time',time.strftime("%H hr %M min %S sec", time.gmtime(end_time - start_time)))
+print('Total cost time: ',time.strftime("%H hr %M min %S sec", time.gmtime(end_time - start_time)))
 
 # TODO : plot the figure
+make_graph()

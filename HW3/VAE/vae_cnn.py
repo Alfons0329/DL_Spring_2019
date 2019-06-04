@@ -26,7 +26,7 @@ parser.add_argument('--img_size', type = int, default = 64)
 parser.add_argument('--activate', type = int, default = 0)
 
 parser.add_argument('--train_path', type = str, default = 'cartoon/')
-opt = parser.parse_opt()
+opt = parser.parse_args()
 
 ########## GLOBAL DEF ###
 N_IMG_SIZE = 0
