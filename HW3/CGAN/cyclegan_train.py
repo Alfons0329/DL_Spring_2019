@@ -210,7 +210,7 @@ for epoch in range(1, opt.epochs):
 
         # Progress report
         if i % 100 == 0:
-            print("loss_G: ", loss_G.data.cpu().numpy() ,",loss_D: ", (loss_D_A.data.cpu().numpy() + loss_D_B.data.cpu().numpy()))
+            print('Batch %4d' %(i), "loss_G: ", loss_G.data.cpu().numpy() ,", loss_D: ", (loss_D_A.data.cpu().numpy() + loss_D_B.data.cpu().numpy()))
             i = 0
         i = i + 1
 
