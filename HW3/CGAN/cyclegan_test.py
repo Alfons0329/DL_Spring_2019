@@ -19,9 +19,27 @@ from utils import weights_init_normal
 ###### Definition of variables ######
 # TODO : assign input_nc and output_nc
 
+# parameters
+parser = argparse.ArgumentParser()
+parser.add_argument('--epochs', type=int, default=200, help='number of epochs of training')
+parser.add_argument('--batch_size', type=int, default=1, help='size of the batches')
+parser.add_argument('--animation_root', type=str, default='', help='root directory of the dataset')
+parser.add_argument('--cartoon_dataroot', type=str, default='', help='root directory of the dataset')
+parser.add_argument('--lr', type=float, default=0.0002, help='initial learning rate')
+parser.add_argument('--decay_epoch', type=int, default=100, help='epoch to start linearly decaying the learning rate to 0')
+parser.add_argument('--img_size', type=int, default=64, help='size of the data crop (squared assumed)')
+parser.add_argument('--input_nc', type=int, default=3, help='number of channels of input data')
+parser.add_argument('--output_nc', type=int, default=3, help='number of channels of output data')
+parser.add_argument('--cuda', action='store_true', help='use GPU computation')
+parser.add_argument('--n_cpu', type=int, default=8, help='number of cpu threads to use during batch generation')
+opt = parser.parse_args()
+
+print(opt)
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 # Networks
-netG_A2B = Generator(input_nc, output_nc)
-netG_B2A = Generator(output_nc, input_nc)
+netG_A2B = Generator(opt.input_nc, opt.output_nc)
+netG_B2A = Generator(opt.output_nc, opt.input_nc)
 
 # Load state dicts
 netG_A2B.load_state_dict(torch.load('ckpt/netG_A2B.pth'))

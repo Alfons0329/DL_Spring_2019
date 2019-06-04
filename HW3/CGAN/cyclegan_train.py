@@ -68,6 +68,8 @@ optimizer_G = torch.optim.Adam(itertools.chain(netG_A2B.parameters(), netG_B2A.p
 optimizer_D_A = torch.optim.Adam(netD_A.parameters(), lr=opt.lr, betas=(0.5, 0.999))
 optimizer_D_B = torch.optim.Adam(netD_B.parameters(), lr=opt.lr, betas=(0.5, 0.999))
 
+# TODO: Lr sheduler if needed (tuning after the whole architecture is finished)
+
 # Inputs & targets memory allocation
 Tensor = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.Tensor
 input_A = Tensor(opt.batch_size, opt.input_nc, opt.img_size, opt.img_size)
@@ -76,7 +78,7 @@ target_real = Variable(Tensor(opt.batch_size).fill_(1.0), requires_grad=False)
 target_fake = Variable(Tensor(opt.batch_size).fill_(0.0), requires_grad=False)
 
 fake_A_buffer = ReplayBuffer()
-fake_B_buffer = ReplayBuffer()
+fake_B_buffer ReplayBuffer()
 
 # Dataset loader
 transform = transforms.Compose([transforms.Resize((32, 32)), transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
@@ -103,8 +105,15 @@ for epoch in range(1, epochs):
         optimizer_G.zero_grad()
 
         # Identity loss
+        # Referencing to: https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix/issues/322
         # G_A2B(B) should equal B if real B is fed
         # TODO : calculate the loss for the generators, and assign to loss_G
+        same_B = netG_A2B(real_B)
+        loss_identity_B = criterion_identity(same_B, real_B) * 5.0
+        # G_B2A(B) should equal A if real A is fed
+        same_A = netG_B2A(real_A)
+        loss_identity_B = criterion_identity(same_B, real_B) * 5.0
+        loss_G = 1 + 1
         loss_G.backward()
 
         optimizer_G.step()
