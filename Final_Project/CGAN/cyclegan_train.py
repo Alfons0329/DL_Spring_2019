@@ -20,7 +20,10 @@ import matplotlib.pyplot as plt
 start_time = time.time()
 
 if not os.path.exists('ckpt'):
+    os.makedirs('ckpt')
     os.makedirs('output/animation')
+    os.makedirs('output/cartoon')
+    print('Done mkdir of output/animation output/cartoon ckpt')
 
 ###### Argparse option ######
 # parameters
@@ -31,7 +34,7 @@ parser.add_argument('--animation_root', type=str, default='animation/', help='ro
 parser.add_argument('--cartoon_root', type=str, default='cartoon/', help='root directory of the dataset')
 parser.add_argument('--lr', type=float, default=0.0002, help='initial learning rate')
 parser.add_argument('--decay_epoch', type=int, default=100, help='epoch to start linearly decaying the learning rate to 0')
-parser.add_argument('--img_size', type=int, default=64, help='size of the data crop (squared assumed)')
+parser.add_argument('--img_size', type=int, default=32, help='size of the data crop (squared assumed)')
 parser.add_argument('--input_nc', type=int, default=3, help='number of channels of input data')
 parser.add_argument('--output_nc', type=int, default=3, help='number of channels of output data')
 parser.add_argument('--cuda', action='store_true', help='use GPU computation')
@@ -85,8 +88,8 @@ fake_B_buffer = ReplayBuffer()
 transform = transforms.Compose([transforms.Resize((opt.img_size, opt.img_size)), transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 animation_set = torchvision.datasets.ImageFolder(opt.animation_root, transform)
 cartoon_set = torchvision.datasets.ImageFolder(opt.cartoon_root, transform)
-animation_loader = torch.utils.data.DataLoader(dataset=animation_set,batch_size=opt.batch_size,shuffle=True)
-cartoon_loader = torch.utils.data.DataLoader(dataset=cartoon_set,batch_size=opt.batch_size,shuffle=True)
+animation_loader = torch.utils.data.DataLoader(dataset=animation_set,batch_size=opt.batch_size,shuffle=True, num_workers=opt.n_cpu)
+cartoon_loader = torch.utils.data.DataLoader(dataset=cartoon_set,batch_size=opt.batch_size,shuffle=True, num_workers=opt.n_cpu)
 
 ###################################
 # List to be used for collecting number for graphing
@@ -121,9 +124,12 @@ def make_graph():
 
 ###### Training ######
 for epoch in range(1, opt.epochs):
-    i = 1 # index
-    print('epoch %5d'%(epoch))
+    i = 1 # batch_index
+    print('Epoch %5d'%(epoch))
 
+    batch_loss_G = 0.0
+    batch_loss_DA = 0.0
+    batch_loss_DB = 0.0
     for batch in zip(animation_loader, cartoon_loader):
         # Set model input
         A = torch.FloatTensor(batch[0][0])
@@ -166,7 +172,7 @@ for epoch in range(1, opt.epochs):
         optimizer_G.step()
 
         ###################################
-        # TODO : calculate the loss for a discriminator, and assign to loss_D_A
+        # TODO : calculate the loss for a discriminator, and assign to loss_DA
         ###### Discriminator A ######
         optimizer_D_A.zero_grad()
 
@@ -180,12 +186,12 @@ for epoch in range(1, opt.epochs):
         loss_D_fake = criterion_GAN(pred_fake, target_fake)
 
         # Total loss
-        loss_D_A = (loss_D_real + loss_D_fake) * 0.5
-        loss_D_A.backward()
+        loss_DA = (loss_D_real + loss_D_fake) * 0.5
+        loss_DA.backward()
         optimizer_D_A.step()
 
         ###################################
-        # TODO : calculate the loss for the other discriminator, and assign to loss_D_B
+        # TODO : calculate the loss for the other discriminator, and assign to loss_DB
         ###### Discriminator B ######
         optimizer_D_B.zero_grad()
 
@@ -199,19 +205,23 @@ for epoch in range(1, opt.epochs):
         loss_D_fake = criterion_GAN(pred_fake, target_fake)
 
         # Total loss
-        loss_D_B = (loss_D_real + loss_D_fake) * 0.5
-        loss_D_B.backward()
+        loss_DB = (loss_D_real + loss_D_fake) * 0.5
+        loss_DB.backward()
         optimizer_D_B.step()
 
         ###################################
+        ''' Graphing method 1
         G_loss.append(loss_G.item())
-        DA_loss.append(loss_D_A.item())
-        DB_loss.append(loss_D_B.item())
+        DA_loss.append(loss_DA.item())
+        DB_loss.append(loss_DB.item())
+        '''
+        batch_loss_G += loss_G.item()
+        batch_loss_DA += loss_DA.item()
+        batch_loss_DB += loss_DB.item()
 
-        # Progress report
+        # Progress report for every 100 batches
         if i % 100 == 0:
-            print('Batch %4d' %(i), "loss_G: ", loss_G.data.cpu().numpy() ,", loss_D: ", (loss_D_A.data.cpu().numpy() + loss_D_B.data.cpu().numpy()))
-            i = 0
+            print('Batch %4d' %(i), " loss_G: ", loss_G.data.cpu().numpy() ,", loss_D: ", (loss_DA.data.cpu().numpy() + loss_DB.data.cpu().numpy()))
         i = i + 1
 
     # Save models checkpoints
@@ -219,6 +229,11 @@ for epoch in range(1, opt.epochs):
     torch.save(netG_B2A.state_dict(), 'ckpt/netG_B2A.pth')
     torch.save(netD_A.state_dict(), 'ckpt/netD_A.pth')
     torch.save(netD_B.state_dict(), 'ckpt/netD_B.pth')
+
+    G_loss.append(loss_G)
+    DA_loss.append(loss_DA)
+    DB_loss.append(loss_DB)
+    epoch_list.append(epoch)
 
 end_time = time.time()
 print('Total cost time: ',time.strftime("%H hr %M min %S sec", time.gmtime(end_time - start_time)))

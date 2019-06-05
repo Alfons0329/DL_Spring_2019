@@ -20,7 +20,7 @@ then
 		python3 cyclegan_train.py --cuda --lr $lr --epochs $2 --batch_size $3
         mv *\_dis\.png graph/$1
         mv *\_gen\.png graph/$1
-		python3 cyclegan_test.py --cuda --lr $lr --batch_size 10 --output_imgs 10
+		python3 cyclegan_test.py --cuda --lr $lr --batch_size 5 --output_imgs 20
     done
 else
 	for lr in 0.0002
