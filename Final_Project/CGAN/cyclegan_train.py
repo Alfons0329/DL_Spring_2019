@@ -69,8 +69,11 @@ criterion_identity = torch.nn.L1Loss()
 # Optimizers
 optimizer_G = torch.optim.Adam(itertools.chain(netG_A2B.parameters(), netG_B2A.parameters()),
                                 lr=opt.lr, betas=(0.5, 0.999))
-optimizer_D_A = torch.optim.Adam(netD_A.parameters(), lr=opt.lr, betas=(0.5, 0.999))
-optimizer_D_B = torch.optim.Adam(netD_B.parameters(), lr=opt.lr, betas=(0.5, 0.999))
+optimizer_D_A = torch.optim.Adam(netD_A.parameters(), lr=opt.lr * 0.5, betas=(0.5, 0.999))
+optimizer_D_B = torch.optim.Adam(netD_B.parameters(), lr=opt.lr * 0.5, betas=(0.5, 0.999))
+print('optimizer_G: ', optimizer_G)
+print('optimizer_D_A: ', optimizer_D_A)
+print('optimizer_D_B: ', optimizer_D_B)
 
 # TODO: Lr sheduler if needed (tuning after the whole architecture is finished)
 
