@@ -21,17 +21,17 @@ start_time = time.time()
 
 if not os.path.exists('ckpt'):
     os.makedirs('ckpt')
-    os.makedirs('output/animation')
-    os.makedirs('output/cartoon')
-    print('Done mkdir of output/animation output/cartoon ckpt')
+    os.makedirs('output/old')
+    os.makedirs('output/young')
+    print('Done mkdir of output/old output/young ckpt')
 
 ###### Argparse option ######
 # parameters
 parser = argparse.ArgumentParser()
 parser.add_argument('--epochs', type=int, default=200, help='number of epochs of training')
 parser.add_argument('--batch_size', type=int, default=1, help='size of the batches')
-parser.add_argument('--animation_root', type=str, default='animation/', help='root directory of the dataset')
-parser.add_argument('--cartoon_root', type=str, default='cartoon/', help='root directory of the dataset')
+parser.add_argument('--old_root', type=str, default='old/', help='root directory of the dataset')
+parser.add_argument('--young_root', type=str, default='young/', help='root directory of the dataset')
 parser.add_argument('--lr', type=float, default=0.0002, help='initial learning rate')
 parser.add_argument('--decay_epoch', type=int, default=100, help='epoch to start linearly decaying the learning rate to 0')
 parser.add_argument('--img_size', type=int, default=32, help='size of the data crop (squared assumed)')
@@ -89,10 +89,10 @@ fake_B_buffer = ReplayBuffer()
 
 # Dataset loader
 transform = transforms.Compose([transforms.Resize((opt.img_size, opt.img_size)), transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-animation_set = torchvision.datasets.ImageFolder(opt.animation_root, transform)
-cartoon_set = torchvision.datasets.ImageFolder(opt.cartoon_root, transform)
-animation_loader = torch.utils.data.DataLoader(dataset=animation_set,batch_size=opt.batch_size,shuffle=True, num_workers=opt.n_cpu)
-cartoon_loader = torch.utils.data.DataLoader(dataset=cartoon_set,batch_size=opt.batch_size,shuffle=True, num_workers=opt.n_cpu)
+old_set = torchvision.datasets.ImageFolder(opt.old_root, transform)
+young_set = torchvision.datasets.ImageFolder(opt.young_root, transform)
+old_loader = torch.utils.data.DataLoader(dataset=old_set,batch_size=opt.batch_size,shuffle=True, num_workers=opt.n_cpu)
+young_loader = torch.utils.data.DataLoader(dataset=young_set,batch_size=opt.batch_size,shuffle=True, num_workers=opt.n_cpu)
 
 ###################################
 # List to be used for collecting number for graphing
@@ -133,7 +133,7 @@ for epoch in range(1, opt.epochs):
     batch_loss_G = 0.0
     batch_loss_DA = 0.0
     batch_loss_DB = 0.0
-    for batch in zip(animation_loader, cartoon_loader):
+    for batch in zip(old_loader, young_loader):
         # Set model input
         A = torch.FloatTensor(batch[0][0])
         B = torch.FloatTensor(batch[1][0])
