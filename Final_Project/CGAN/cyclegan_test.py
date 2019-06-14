@@ -85,8 +85,8 @@ for batch in zip(old_loader, young_loader):
     fake_A = 0.5*(netG_B2A(real_B).data + 1.0)
 
     # Save image files
-    save_image(real_A, 'output/old/real%04d.png' % (i+1))
-    save_image(real_B, 'output/young/real%04d.png' % (i+1))
+    save_image(real_A / 2 + 0.5, 'output/old/real%04d.png' % (i+1))
+    save_image(real_B / 2 + 0.5, 'output/young/real%04d.png' % (i+1))
     save_image(fake_A, 'output/old/fake%04d.png' % (i+1))
     save_image(fake_B, 'output/young/fake%04d.png' % (i+1))
 

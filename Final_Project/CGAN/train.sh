@@ -22,11 +22,11 @@ then
         mv *\_dis\.png graph/$1
         mv *\_gen\.png graph/$1
 		#python3 cyclegan_test.py --cuda --lr $lr --batch_size 5 --output_imgs 20
-		python3 cyclegan_test.py --cuda --lr $lr --batch_size 5 --output_imgs 20 --old_root ../alfons/DL_Final_Train_Data/old_face --young_root ../alfons/DL_Final_Train_Data/young_face
+		python3 cyclegan_test.py --cuda --lr $lr --batch_size 5 --output_imgs 5 --img_size 256 --old_root ../alfons/DL_Final_Train_Data/old_face --young_root ../alfons/DL_Final_Train_Data/young_face
     done
 else
 	for lr in 0.0002
 	do
-		python3 cyclegan_test.py --cuda --lr $lr --batch_size 5 --output_imgs 20 --old_root ../alfons/DL_Final_Train_Data/old_face --young_root ../alfons/DL_Final_Train_Data/young_face
+		python3 cyclegan_test.py --cuda --lr $lr --batch_size 5 --output_imgs 5 --img_size 256 --old_root ../alfons/DL_Final_Train_Data/old_face --young_root ../alfons/DL_Final_Train_Data/young_face
 	done
 fi
