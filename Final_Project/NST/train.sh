@@ -19,7 +19,6 @@ then
         then
             echo "File not exist! "
         fi
-        style_cnt=1
         for style in style_img/*\_face\.png;
         do
             if [ ! -e $style ];
@@ -28,14 +27,19 @@ then
             fi
             content_id=$(echo $content | sed 's/content_img\/c_//g')
             content_id=$(echo $content_id | sed 's/.jpg//g; s/.png//g; s/.jpeg//g')
-            echo "Content: " $content " with id " $content_id " Style: "$style
+
+            style_id=$(echo $style | sed 's/style_img\/s_//g')
+            style_id=$(echo $style_id | sed 's/\_face//g')
+            style_id=$(echo $style_id | sed 's/.jpg//g; s/.png//g; s/.jpeg//g')
+
+            echo "Content: " $content " with id " $content_id " Style: " $style " with id " $style_id
             if [[ $content != *$content_id* ]];
             then
                 echo "ID and content image mismatch, plese fix this shell script"
                 exit
             fi
-            python3 main.py --style_img $style --content_img $content --steps 25 --style_cnt $style_cnt --content_cnt $content_id
-            style_cnt=$(($style_cnt+1))
+            python3 main.py --style_img $style --content_img $content --steps 25 --style_cnt $style_id --content_cnt $content_id
+            style_id=$(($style_id+1))
         done
         mkdir -p output_img/c$content_id
         mv s*c$content_id*\.png output_img/c$content_id
