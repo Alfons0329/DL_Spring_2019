@@ -146,8 +146,8 @@ algorithm for the creation of artistic images.
 \\ The architecture is simple, we have three images, S represents the style image, C represents the content image and G represent the synthesized image to be generated.
 \begin{figure}[H]
     \centering
-    \subfloat[Model architecture]{\includegraphics[scale = 0.3]{Final_Project/arch.png}\label{fig:f1}}
-    \caption{Model}
+    \subfloat{\includegraphics[scale = 0.3]{Final_Project/arch.png}\label{fig:f1}}
+    \caption{Model architecture}
 \end{figure}
 \\ The CNN model used is the pretrained VGG-19 network, which is a convolutional neural network that is trained on more than a million images from the ImageNet database. The network is 19 layers deep and trained on millions of images. Because of which it is able to detect high-level features in an image. 
 \\ During the convolution procedure, features in images can be filtered out and they are called "feature maps". We may calculate the content loss and style loss respectively with $p$ being the content image, $a$ being the art style image, $x$ being the generated, synthesized image. 
@@ -180,7 +180,7 @@ Gram matrix $G_{l} \in R^{N_l \times N_l}$
 \\ 
 \begin{figure}[H]
     \centering
-    \subfloat[Reply]{\includegraphics[scale = 0.3]{Final_Project/zhihu.png}\label{fig:f1}}
+    \subfloat{\includegraphics[scale = 0.3]{Final_Project/zhihu.png}\label{fig:f1}}
     \caption{Zhihu reply for understanding the gram matrix}
 \end{figure}
 \\ Based on the reply from \url{https://www.zhihu.com/question/49805962}
@@ -190,10 +190,40 @@ Gram matrix $G_{l} \in R^{N_l \times N_l}$
 \\ By adjusting the weight of $\alpha$ and $\beta$, we may either emphasize the style or content for the generated image.
 
 \section{Dataset Description}
-\\ We have collected some of the young face as the style image and old face as content image hoping to rejuvenile the old face. 
+\\ We have collected some of the young face as the style image and old face as content image hoping to rejuvenile the old face.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale = 0.06]{Final_Project/images.png}
+    \caption{Dataset images}
+    \label{fig:my_label}
+\end{figure}
 \section{Dataset Preprocessing}
 \section{Result Evaluation}
+\\ Following are some schemes that we evaluate as overall optimal in our project for report and demo.
+\begin{figure}[H]
+    \centering
+    \subfloat[Old face image(content)]{\includegraphics[scale = 0.15]{Final_Project/c_17.jpeg}\label{fig:f1}}
+    \hfill
+    \subfloat[Young face image(style)]{\includegraphics[scale = 0.75]{Final_Project/s_1_face.png}\label{fig:f1}}
+    \hfill
+    \subfloat[Neuron style transferred image]{\includegraphics[scale = 0.5]{Final_Project/s1_c17_25.png}\label{fig:f1}}
+    \hfill
+    \caption{Style transfer (make photo younger) scheme 1}
+\end{figure}
+\\
+\begin{figure}[H]
+    \centering
+    \subfloat[Old face image(content)]{\includegraphics[scale = 0.15]{Final_Project/c_8.jpg}\label{fig:f1}}
+    \hfill
+    \subfloat[Young face image(style)]{\includegraphics[scale = 0.75]{Final_Project/s_1_face.png}\label{fig:f1}}
+    \hfill
+    \subfloat[Neuron style transferred image]{\includegraphics[scale = 0.5]{Final_Project/s1_c8_25.png}\label{fig:f1}}
+    \hfill
+    \caption{Style transfer (make photo younger) scheme 2}
+\end{figure}
 \section{Group Work Distribution}
+
+\\
 \\ 0416324: NN architecture, testing, shell scripting to automatically organize and train data / IO, writing this LaTeX report.
 \\ 0416033: Organize data, checking output result and feedback to 0416324 and 0416045 to revise.
 \\ 0416045: NN architecture, testing and ppt.
