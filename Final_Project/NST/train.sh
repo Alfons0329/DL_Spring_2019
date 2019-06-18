@@ -13,6 +13,7 @@ then
     # todo_pattern="style_img/.*\_face\.png"
     # for f in $todo_pattern
 
+    rm -rf output_img/*
     for content in content_img/*g;
     do
         if [ ! -e $content ];
