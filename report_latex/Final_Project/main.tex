@@ -141,15 +141,15 @@
 artificial system based on a Convolutional Neural Network that creates artistic images
 of high perceptual quality. The system uses neural representations to separate and recombine content and style of arbitrary images, providing a neural
 algorithm for the creation of artistic images. 
-\\ In this project, we hope to "translate" the image from "young face" to "old face" and vice versa by using the "Neuron Style Transfer" mentioned in \url{https://arxiv.org/abs/1508.06576} with vgg network and some self-designed model.
+\\ In this project, we hope to "translate" the image from "old face" to "young face" by using the "Neuron Style Transfer" mentioned in \url{https://arxiv.org/abs/1508.06576} with vgg network and some self-designed model.
 \section{Model Architecture}
-\\ The architecture is simple, we have three images, S represents the style image, C represents the content image and G represent the synthesized image to be generated.
+\\ The architecture is simple, we have three images, S represents the style image, C represents the content image and G represent the style transferred image to be generated.
 \begin{figure}[H]
     \centering
     \subfloat{\includegraphics[scale = 0.3]{Final_Project/arch.png}\label{fig:f1}}
     \caption{Model architecture}
 \end{figure}
-\\ The CNN model used is the pretrained VGG-19 network, which is a convolutional neural network that is trained on more than a million images from the ImageNet database. The network is 19 layers deep and trained on millions of images. Because of which it is able to detect high-level features in an image. 
+\\ The CNN model used is pretrained VGG-19 network, which is a convolutional neural network trained on more than a million images from the ImageNet database. The network is 19 layers deep and trained on millions of images. Because of which it is able to detect high-level features in an image. 
 \\ During the convolution procedure, features in images can be filtered out and they are called "feature maps". We may calculate the content loss and style loss respectively with $p$ being the content image, $a$ being the art style image, $x$ being the generated, synthesized image. 
 \\ Hence, overall loss to be {\Large $$L_{total}(p, a, x) = \alpha L_{content}(p, x) + \beta L_{style}(a, x)$$}
 \section{Understand the math behind the loss}
@@ -159,22 +159,23 @@ algorithm for the creation of artistic images.
 , where $M_{l}$ is the height times the width of the feature map (magnitude).
 \\ So the responses in a layer $l$ can be stored in a matrix $F_{l} \in R^{N_l \times M_l}$ where $F^{l}_{ij}$ is the activation of the $i^{th}$ filter at position $j$ in layer $l$ and the same is true for $P^l_{ij}$ 
 \\ Let $p$ and $x$ be be the original image and the image that is generated. $P^{l}$, $F^{l}$ being their respective feature representation in layer $l$ after extracted by convolutional filter.
-\\ We may thus use the mean square error to compare the original content image and generated image \textbf{pixel-wisely.}
+\\ We may thus use the \textbf{mean square error} to compare the original content image and generated image \textbf{pixel-wisely.}
 \\ {\Large $$L_{content}(p, x, l) = \frac{1}{2} \sum_{i, j}(F^{l}_{ij} - P^l_{ij})^2$$}
 
 \subsection{The loss of style}
 \\ On top of the CNN responses in each layer of the network we built a style representation
 that computes the correlations between the different filter responses, where the expectation is
 taken over the spatial extend of the input image. These feature correlations are given by the
-Gram matrix $G_{l} \in R^{N_l \times N_l}$
-, where $G{l}_{ij}$ is the inner product between the vectorised feature map $i$ and $j$ in layer $l$:
+Gram matrix $G^{l} \in R^{N_l \times N_l}$
+, where $G^{l}_{ij}$ is the inner product between the vectorised feature map $i$ and $j$ in layer $l$:
 \\ {\Large $$G^{l}_{ij} = \sum_{k}(F^{l}_{ik} - F^l_{jk})$$}
-\\ Finally we use gradient descent to minimize the difference between original style image $a$ and generated image $x$ and $A^l$ and $G^l$ being their respective style representations in layer $l$
+\\ Finally we use \textbf{gradient descent} to minimize the difference between original style image $a$ and generated image $x$ and $A^l$ and $G^l$ being their respective style representations in layer $l$
 \\ Total loss of style will be
 \\ {\Large $$E_{l} = \frac{1}{4N^{2}_{l}M^2_{l}} \sum_{i, j}(G^{l}_{ij} - A^l_{ij})^2$$}
 \\ {\Large Why does it work?, especially in the style loss.}
 \\ First, try to optimize the content difference is quite in intuitive.
-\\ Yet concerning the style loss,in order to capture the style of an image we would calculate how “correlated” these filters are to each other meaning how similar are these feature maps.
+\\
+\\ Yet concerning the style loss, in order to capture the style of an image we would calculate how “correlated” these filters are to each other meaning how similar are these feature maps.
 \\ Here the \textbf{Gram matrix} helps solve this problem, since it is defined as a set of vectors in an inner product space, which is the \textbf{Hermitian matrix} of inner products, whose entries are given by $G_{ij} = \langle V_{i}, V_{j}\rangle$
 \\ If the dot-product across the activation of two filters is large then two channels are said to be correlated and if it is small then the images are un-correlated.
 \\ 
@@ -184,20 +185,20 @@ Gram matrix $G_{l} \in R^{N_l \times N_l}$
     \caption{Zhihu reply for understanding the gram matrix}
 \end{figure}
 \\ Based on the reply from \url{https://www.zhihu.com/question/49805962}
-\\ $G^{l}_{ij} = \sum_{k}(F^{l}_{ik} - F^l_{jk})$ will go through each combination of inner-producted feature maps, either in the original image or generated image, consequently all the all vital features of images are represented.
-\\ Cost function between style and generated image is the \textbf{square of difference between the Gram Matrix of the style Image with the Gram Matrix of generated Image.} $E_{l} = \frac{1}{4N^{2}_{l}M^2_{l}} \sum_{i, j}(G^{l}_{ij} - A^l_{ij})^2$
-\\ Finally we will derive the total loss function $L_{total}(p, a, x) = \alpha L_{content}(p, x) + \beta L_{style}(a, x)$
-\\ By adjusting the weight of $\alpha$ and $\beta$, we may either emphasize the style or content for the generated image.
+\\ $G^{l}_{ij} = \sum_{k}(F^{l}_{ik} - F^l_{jk})$ will go \textbf{through each combination of inner-producted feature maps}, either in the original image or generated image, consequently all the all vital features of images are represented. Cost function between style and generated image is the \textbf{square of difference between the Gram Matrix of the style Image with the Gram Matrix of generated Image.} $E_{l} = \frac{1}{4N^{2}_{l}M^2_{l}} \sum_{i, j}(G^{l}_{ij} - A^l_{ij})^2$
+\\ Finally we will derive the total loss function $L_{total}(p, a, x) = \alpha L_{content}(p, x) + \beta L_{style}(a, x)$ for gradient descent. By adjusting the weight of $\alpha$ and $\beta$, we may either emphasize the style or content for the generated image.
 
 \section{Dataset Description}
 \\ We have collected some of the young face as the style image and old face as content image hoping to rejuvenile the old face.
 \begin{figure}[H]
     \centering
-    \includegraphics[scale = 0.06]{Final_Project/images.png}
+    \includegraphics[scale = 0.1]{Final_Project/images.png}
     \caption{Dataset images}
     \label{fig:my_label}
 \end{figure}
 \section{Dataset Preprocessing}
+\\ This part credits to my teammate 0416045, Chia-Yu Sun
+\\ Please refer to link \url{https://hackmd.io/@xWWWtVBGS26-VVDjw8iIbw/SkoR7_IyB} for more information about data preprocessing, loading, testing and style transfer effect comparison.
 \section{Result Evaluation}
 \\ Following are some schemes that we evaluate as overall optimal in our project for report and demo.
 \begin{figure}[H]
@@ -226,7 +227,7 @@ Gram matrix $G_{l} \in R^{N_l \times N_l}$
 \\
 \\ 0416324: NN architecture, testing, shell scripting to automatically organize and train data / IO, writing this LaTeX report.
 \\ 0416033: Organize data, checking output result and feedback to 0416324 and 0416045 to revise.
-\\ 0416045: NN architecture, testing and ppt.
+\\ 0416045: NN architecture, preprocessing, testing and ppt.
 \\ 0416022: Make demo video, ppt
 \section{Reference Data}
 \item Neuron Style Algorithm: \url{https://arxiv.org/abs/1508.06576}
