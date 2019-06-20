@@ -158,7 +158,7 @@ algorithm for the creation of artistic images.
 \\ A layer with $N_{l}$ distinct filters has $N_{l}$ feature maps each of size $M_{l}$
 , where $M_{l}$ is the height times the width of the feature map (magnitude).
 \\ So the responses in a layer $l$ can be stored in a matrix $F_{l} \in R^{N_l \times M_l}$ where $F^{l}_{ij}$ is the activation of the $i^{th}$ filter at position $j$ in layer $l$ and the same is true for $P^l_{ij}$ 
-\\ Let $p$ and $x$ be be the original image and the image that is generated. $P^{l}$, $F^{l}$ being their respective feature representation in layer $l$ after extracted by convolutional filter.
+\\ Let $p$ and $x$ be the original image and the image that is generated. $P^{l}$, $F^{l}$ being their respective feature representation in layer $l$ after extracted by convolutional filter.
 \\ We may thus use the \textbf{mean square error} to compare the original content image and generated image \textbf{pixel-wisely.}
 \\ {\Large $$L_{content}(p, x, l) = \frac{1}{2} \sum_{i, j}(F^{l}_{ij} - P^l_{ij})^2$$}
 
@@ -168,7 +168,7 @@ that computes the correlations between the different filter responses, where the
 taken over the spatial extend of the input image. These feature correlations are given by the
 Gram matrix $G^{l} \in R^{N_l \times N_l}$
 , where $G^{l}_{ij}$ is the inner product between the vectorised feature map $i$ and $j$ in layer $l$:
-\\ {\Large $$G^{l}_{ij} = \sum_{k}(F^{l}_{ik} - F^l_{jk})$$}
+\\ {\Large $$G^{l}_{ij} = \sum_{k}(F^{l}_{ik}F^l_{jk})$$}
 \\ Finally we use \textbf{gradient descent} to minimize the difference between original style image $a$ and generated image $x$ and $A^l$ and $G^l$ being their respective style representations in layer $l$
 \\ Total loss of style will be
 \\ {\Large $$E_{l} = \frac{1}{4N^{2}_{l}M^2_{l}} \sum_{i, j}(G^{l}_{ij} - A^l_{ij})^2$$}
@@ -185,7 +185,7 @@ Gram matrix $G^{l} \in R^{N_l \times N_l}$
     \caption{Zhihu reply for understanding the gram matrix}
 \end{figure}
 \\ Based on the reply from \url{https://www.zhihu.com/question/49805962}
-\\ $G^{l}_{ij} = \sum_{k}(F^{l}_{ik} - F^l_{jk})$ will go \textbf{through each combination of inner-producted feature maps}, either in the original image or generated image, consequently all the all vital features of images are represented. Cost function between style and generated image is the \textbf{square of difference between the Gram Matrix of the style Image with the Gram Matrix of generated Image.} $E_{l} = \frac{1}{4N^{2}_{l}M^2_{l}} \sum_{i, j}(G^{l}_{ij} - A^l_{ij})^2$
+\\ $G^{l}_{ij} = \sum_{k}(F^{l}_{ik}F^l_{jk})$ will go \textbf{through each combination of inner-producted feature maps}, either in the original image or generated image, consequently all the all vital features of images are represented. Cost function between style and generated image is the \textbf{square of difference between the Gram Matrix of the style Image with the Gram Matrix of generated Image.} $E_{l} = \frac{1}{4N^{2}_{l}M^2_{l}} \sum_{i, j}(G^{l}_{ij} - A^l_{ij})^2$
 \\ Finally we will derive the total loss function $L_{total}(p, a, x) = \alpha L_{content}(p, x) + \beta L_{style}(a, x)$ for gradient descent. By adjusting the weight of $\alpha$ and $\beta$, we may either emphasize the style or content for the generated image.
 
 \section{Dataset Description}
