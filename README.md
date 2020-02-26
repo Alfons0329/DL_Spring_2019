@@ -15,7 +15,7 @@ HW score shown as below
     * Analyze the correlation-coeffiecnt and find out the principal column element.
     * Discuss the need of one-hot encoding.
     * [LaTeX report](https://github.com/Alfons0329/DL_Spring_2019/blob/master/HW1/HW1_Report_0416324.pdf)
-    * [LaTeX report source code](https://github.com/Alfons0329/DL_Spring_2019/tree/master/Report_LaTeX/HW1)
+    * [LaTeX report source code](https://github.com/Alfons0329/DL_Spring_2019/tree/master/report_latex/HW1)
 * HW2, Score 100/100
     * [Spec PDF](https://github.com/Alfons0329/DL_Spring_2019/tree/master/HW2/HW2.pdf)
     * CNN 
@@ -28,7 +28,7 @@ HW score shown as below
         * Compare the performance b/w RNN and LSTM as well as discussing the reason behind it.
         * Try explain the reason of `Gradient Vanishing` or `Gradient Exploding`
     * [LaTeX report](https://github.com/Alfons0329/DL_Spring_2019/blob/master/HW2/HW2_Report_0416324.pdf)
-    * [LaTeX report source code](https://github.com/Alfons0329/DL_Spring_2019/tree/master/Report_LaTeX/HW2)
+    * [LaTeX report source code](https://github.com/Alfons0329/DL_Spring_2019/tree/master/report_latex/HW2)
  
 * HW3, Score 95/100
     * [Spec PDF](https://github.com/Alfons0329/DL_Spring_2019/tree/master/HW3/hw3.pdf)
@@ -39,11 +39,11 @@ HW score shown as below
         * [Implement this paper](https://github.com/junyanz/CycleGAN)
         * Use CycleGAN to fake generate some anime/cartoon character from the other style. 
     * [LaTeX report](https://github.com/Alfons0329/DL_Spring_2019/blob/master/HW3/HW3_Report_0416324.pdf)
-    * [LaTeX report source code](https://github.com/Alfons0329/DL_Spring_2019/tree/master/Report_LaTeX/HW3)
+    * [LaTeX report source code](https://github.com/Alfons0329/DL_Spring_2019/tree/master/report_latex/HW3)
 
 ## Final Project 期末專題
 * A `Style Transfer` to make picture of someone younger / older.
 * The original idea is taken from [here].(https://www.pytorchtutorial.com/pytorch-style-transfer/)
 * Our team proposed 2 ways to implement, the CycleGAN from above and Neural Style Transfer from [here](https://arxiv.org/pdf/1705.04058.pdf%20http://arxiv.org/abs/1705.04058.pdf).
 * [LaTeX report](https://github.com/Alfons0329/DL_Spring_2019/blob/master/Final_Project/Group13_Final_Project_Report.pdf)
-* [LaTeX report source code](https://github.com/Alfons0329/DL_Spring_2019/tree/master/Report_LaTeX/Final_Project)
+* [LaTeX report source code](https://github.com/Alfons0329/DL_Spring_2019/tree/master/report_latex/Final_Project)
