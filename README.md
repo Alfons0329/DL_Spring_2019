@@ -1,7 +1,6 @@
 # DL_Spring_2019 國立交通大學電機工程學系，深度學習
 Deep Learning Spring 2019 by Jen-Tzung Chien@ ECE NCTU Taiwan 授課教師：簡仁宗
 (PS. This is my first time taking a Deep Learning class, the code might not be optimal, but I have tried my best to make it readable and clean)
-###### tags: `GitHub` `README`
 
 Course website [here](https://plus.nctu.edu.tw/courses/34767) 課程網站 [點此](https://plus.nctu.edu.tw/courses/34767)
 
